@@ -23,6 +23,9 @@ thread(function()
     -- Initialize console
     Console.init()
 
+    -- Initialize console
+    Console.init()
+
     -- Start Criblage Game
     SceneManager.switch("GameScene")
 end)

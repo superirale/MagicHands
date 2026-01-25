@@ -1,0 +1,11 @@
+{
+    "id": "planet_flush",
+    "name": "The Tide",
+    "type": "augment",
+    "category": "flush",
+    "description": "Flushes gain +10 chips and +0.2 mult",
+    "base_effect": {
+        "chips": 10,
+        "mult": 0.2
+    }
+}

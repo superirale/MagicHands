@@ -7,6 +7,8 @@ local HUD = require("ui/HUD")
 local ShopUI = require("ui/ShopUI")
 local CampaignState = require("criblage/CampaignState")
 local JokerManager = require("criblage/JokerManager")
+local BossManager = require("criblage/BossManager")
+local EnhancementManager = require("criblage/EnhancementManager")
 
 GameScene = class()
 
@@ -202,14 +204,40 @@ function GameScene:playHand()
     table.insert(selectedCards, self.cutCard)
 
     -- Score the hand (now with 5 cards: 4 hand + 1 cut)
+    -- 1. Base Score (Hand Result)
     local handResult = cribbage.evaluate(selectedCards)
-    local jokerEffects = JokerManager:applyEffects(selectedCards, "on_score")
     local score = cribbage.score(selectedCards)
 
+    -- 2. Resolve Card Imprints (Pillar 3) (Not implemented in MVP yet, placeholder)
+    -- local imprintEffects = EnhancementManager:resolveImprints(selectedCards)
 
-    -- Apply joker bonuses
-    local finalChips = score.baseChips + jokerEffects.addedChips
-    local finalMult = 1 + score.tempMultiplier + jokerEffects.addedTempMult
+    -- 3. Resolve Hand Augments (Pillar 3)
+    local augmentEffects = EnhancementManager:resolveAugments(handResult) -- returns {chips, mult}
+
+    -- 4. Resolve Rule Warps (Pillar 3)
+    -- local warpEffects = EnhancementManager:resolveWarps()
+
+    -- 5. Resolve Jokers & Stacks (Pillar 1 & 2)
+    -- JokerManager logic now includes stacking simulation
+    local jokerEffects = JokerManager:applyEffects(selectedCards, "on_score")
+
+    -- 6. Apply Boss Rules (Counterplay Layer)
+    score = BossManager:applyRules(score, "score")
+
+
+    -- 7. Final Score Aggregation
+    -- Formula: (Base + Enhancements + JokerChips) * (1 + Temp + JokerTemps) * (Perm + JokerPerms)
+    local finalChips = score.baseChips + augmentEffects.chips + jokerEffects.addedChips
+
+    -- Summing linear multipliers
+    local totalTempMult = score.tempMultiplier + augmentEffects.mult + jokerEffects.addedTempMult
+    local totalPermMult = score.permMultiplier + jokerEffects.addedPermMult -- Augments typically don't add perm mult?
+
+    -- Final calculation
+    local finalMult = (1 + totalTempMult + totalPermMult) -- Simplified formula from GDD?
+    -- GDD: chips * (1 + sum_additive_mult) * prod_multiplicative
+    -- We'll stick to our engine's (1 + temp + perm) structure for now as a close approx
+
     local finalScore = math.floor(finalChips * finalMult)
 
     -- Debug: Show joker effects

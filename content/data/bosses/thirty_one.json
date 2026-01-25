@@ -1,0 +1,11 @@
+{
+    "id": "thirty_one",
+    "name": "Thirty-One",
+    "description": "Only Pairs and Runs score points",
+    "act": 2,
+    "effects": [
+        "fifteens_disabled",
+        "flush_disabled",
+        "nobs_disabled"
+    ]
+}

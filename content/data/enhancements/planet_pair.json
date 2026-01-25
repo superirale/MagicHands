@@ -1,0 +1,11 @@
+{
+    "id": "planet_pair",
+    "name": "The Gemini",
+    "type": "augment",
+    "category": "pairs",
+    "description": "Pairs gain +5 chips and +0.1 mult",
+    "base_effect": {
+        "chips": 5,
+        "mult": 0.1
+    }
+}

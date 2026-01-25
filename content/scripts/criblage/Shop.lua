@@ -13,6 +13,11 @@ Shop = {
         uncommon = { "pair_power", "run_master", "nobs_hunter", "ace_in_hole" },
         rare = { "the_multiplier", "flush_king", "combo_king" },
         legendary = { "golden_ratio" }
+    },
+
+    -- Enhancement Pool (Planets)
+    enhancementPool = {
+        "planet_pair", "planet_run", "planet_15", "planet_flush"
     }
 }
 
@@ -71,45 +76,101 @@ end
 function Shop:generateJokers(act)
     self.jokers = {}
 
-    for i = 1, self.jokerSlots do
-        local rarity = self:selectRarity(act)
+    local attempts = 0
+    while #self.jokers < self.jokerSlots and attempts < 50 do
+        attempts = attempts + 1
 
-        -- Select random joker from pool
-        local pool = self.jokerPool[rarity]
-        if pool and #pool > 0 then
-            local joker_id = pool[math.random(#pool)]
+        -- 30% chance to be an Enhancement instead of a Joker
+        local isEnhancement = math.random() < 0.3
 
+        if isEnhancement then
+            -- Pick random planet
+            local planetId = self.enhancementPool[math.random(#self.enhancementPool)]
             table.insert(self.jokers, {
-                id = joker_id,
-                rarity = rarity,
-                price = self:getJokerPrice(rarity)
+                id = planetId,
+                type = "enhancement",
+                price = 75, -- Flat price for planets for now
+                rarity = "common"
             })
+        else
+            local rarity = self:selectRarity(act)
+
+            -- Select random joker from pool
+            local pool = self.jokerPool[rarity]
+            if pool and #pool > 0 then
+                local joker_id = pool[math.random(#pool)]
+
+                -- Validation 1: Don't allow duplicates in the same shop
+                local alreadyInShop = false
+                for _, j in ipairs(self.jokers) do
+                    if j.id == joker_id then
+                        alreadyInShop = true
+                        break
+                    end
+                end
+
+                -- Validation 2: Check current stack count
+                -- JokerManager is global
+                local currentStack = 0
+                if JokerManager and JokerManager.slots then
+                    for _, slot in ipairs(JokerManager.slots) do
+                        if slot.id == joker_id then
+                            currentStack = slot.stack
+                            break
+                        end
+                    end
+                end
+                local isMaxed = (currentStack >= 5)
+
+                if not alreadyInShop and not isMaxed then
+                    table.insert(self.jokers, {
+                        id = joker_id,
+                        type = "joker",
+                        rarity = rarity,
+                        price = self:getJokerPrice(rarity)
+                    })
+                end
+            end
         end
     end
 end
 
 function Shop:buyJoker(index)
     if index < 1 or index > #self.jokers then
-        return false, "Invalid joker index"
+        return false, "Invalid index"
     end
 
-    local joker = self.jokers[index]
+    local item = self.jokers[index]
 
     -- Check if can afford
-    if not Economy:spend(joker.price) then
-        return false, "Not enough gold (" .. joker.price .. "g needed)"
+    if not Economy:spend(item.price) then
+        return false, "Not enough gold (" .. item.price .. "g needed)"
     end
 
-    -- Try to add to inventory
-    local success, msg = JokerManager:addJoker(joker.id)
-    if not success then
-        Economy:addGold(joker.price) -- Refund
-        return false, msg
-    end
+    if item.type == "enhancement" then
+        -- Handle Enhancement (Planet)
+        -- Map ID to category for now (should be in data)
+        local cat = "pairs"
+        if item.id == "planet_run" then cat = "runs" end
+        if item.id == "planet_15" then cat = "fifteens" end
+        if item.id == "planet_flush" then cat = "flush" end
 
-    -- Remove from shop
-    table.remove(self.jokers, index)
-    return true, "Purchased " .. joker.id
+        local EnhancementManager = require("criblage/EnhancementManager")
+        local success, msg = EnhancementManager:addAugment(cat)
+
+        table.remove(self.jokers, index)
+        return true, "Used " .. item.id
+    else
+        -- Handle Joker
+        local success, msg = JokerManager:addJoker(item.id)
+        if not success then
+            Economy:addGold(item.price) -- Refund
+            return false, msg
+        end
+
+        table.remove(self.jokers, index)
+        return true, "Purchased " .. item.id
+    end
 end
 
 function Shop:reroll()

@@ -1,7 +1,8 @@
 {
     "id": "the_skunk",
     "name": "The Skunk",
-    "description": "Multipliers disabled",
+    "description": "All multipliers are disabled",
+    "act": 1,
     "effects": [
         "multipliers_disabled"
     ]

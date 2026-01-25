@@ -1,7 +1,8 @@
 {
     "id": "the_counter",
     "name": "The Counter",
-    "description": "Fifteens don't count",
+    "description": "Fifteens count as 0 chips",
+    "act": 1,
     "effects": [
         "fifteens_disabled"
     ]

@@ -1,0 +1,11 @@
+{
+    "id": "planet_run",
+    "name": "The Stream",
+    "type": "augment",
+    "category": "runs",
+    "description": "Runs gain +8 chips and +0.1 mult",
+    "base_effect": {
+        "chips": 8,
+        "mult": 0.1
+    }
+}

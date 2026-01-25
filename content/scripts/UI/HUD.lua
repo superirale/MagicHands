@@ -28,13 +28,20 @@ function HUD:draw(state)
     -- Act Info
     graphics.print(self.font, "Act " .. state.currentAct, 1150, 20)
 
+    -- Boss Info (if active)
+    local BossManager = require("criblage/BossManager")
+    if BossManager.activeBoss then
+        graphics.print(self.font, "BOSS: " .. BossManager.activeBoss.name, 500, 80, { r = 1, g = 0, b = 0, a = 1 })
+        graphics.print(self.smallFont, BossManager.activeBoss.description, 500, 110, { r = 1, g = 0.5, b = 0.5, a = 1 })
+    end
+
     -- Jokers Display (bottom left)
     local jokers = JokerManager:getJokers()
     if #jokers > 0 then
         graphics.print(self.font, "Jokers:", 20, 600, { r = 1, g = 0.8, b = 0, a = 1 })
         for i, jokerId in ipairs(jokers) do
             graphics.print(self.smallFont, (i) .. ". " .. jokerId, 20, 625 + (i - 1) * 20,
-            { r = 0.9, g = 0.9, b = 0.9, a = 1 })
+                { r = 0.9, g = 0.9, b = 0.9, a = 1 })
         end
     end
 

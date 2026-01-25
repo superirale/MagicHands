@@ -2,6 +2,7 @@
 local Economy = require("criblage/Economy")
 local JokerManager = require("criblage/JokerManager")
 local Shop = require("criblage/Shop")
+local BossManager = require("criblage/BossManager")
 -- blind module is typically global or engine provided, but let's assume it's global for now or needed
 -- local blind = require("criblage/blind") -- assuming this might be needed later
 
@@ -30,6 +31,7 @@ function CampaignState:init()
     Economy:init()
     JokerManager:init()
     Shop:init()
+    BossManager:init()
 end
 
 function CampaignState:getCurrentBlind()
@@ -38,12 +40,18 @@ function CampaignState:getCurrentBlind()
     local bossId = ""
 
     if self.currentBlind == 3 then
-        -- Select boss based on act
-        if self.currentAct == 1 then
-            bossId = "the_counter"
-        elseif self.currentAct == 2 then
-            bossId = "the_skunk"
+        -- Select boss based on act via BossManager
+        -- If activeBoss is nil, select one
+        if not BossManager.activeBoss then
+            BossManager:selectBossForAct(self.currentAct)
         end
+
+        if BossManager.activeBoss then
+            bossId = BossManager.activeBoss.id
+        end
+    else
+        -- Clear active boss if not boss blind
+        BossManager:clearBoss()
     end
 
     return blind.create(self.currentAct, blindType, bossId)

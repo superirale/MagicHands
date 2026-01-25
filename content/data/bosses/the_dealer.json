@@ -1,0 +1,9 @@
+{
+    "id": "the_dealer",
+    "name": "The Dealer",
+    "description": "-100 chips for each discard used",
+    "act": 2,
+    "effects": [
+        "discard_penalty"
+    ]
+}

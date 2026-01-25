@@ -1,0 +1,11 @@
+{
+    "id": "planet_15",
+    "name": "The Sum",
+    "type": "augment",
+    "category": "fifteens",
+    "description": "Fifteens gain +5 chips and +0.2 mult",
+    "base_effect": {
+        "chips": 5,
+        "mult": 0.2
+    }
+}
