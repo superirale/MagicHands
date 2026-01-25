@@ -9,10 +9,10 @@ Shop = {
 
     -- Available joker pool (would be expanded)
     jokerPool = {
-        common = { "fifteen_fever", "pair_power" },
-        uncommon = { "pair_power" },
-        rare = { "the_multiplier" },
-        legendary = { "the_multiplier" }
+        common = { "fifteen_fever", "lucky_seven", "big_hand", "face_card_fan" },
+        uncommon = { "pair_power", "run_master", "nobs_hunter", "ace_in_hole" },
+        rare = { "the_multiplier", "flush_king", "combo_king" },
+        legendary = { "golden_ratio" }
     }
 }
 

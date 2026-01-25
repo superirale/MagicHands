@@ -1,0 +1,21 @@
+{
+    "id": "run_master",
+    "name": "Run Master",
+    "description": "+30 chips per run",
+    "rarity": "uncommon",
+    "type": "category_amplifier",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "count_runs > 0"
+    ],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 30,
+            "per": "each_run"
+        }
+    ],
+    "ignores_caps": false
+}

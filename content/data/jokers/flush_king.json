@@ -1,0 +1,20 @@
+{
+    "id": "flush_king",
+    "name": "Flush King",
+    "description": "+40 chips for flushes",
+    "rarity": "rare",
+    "type": "category_amplifier",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "flush_count >= 4"
+    ],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 40
+        }
+    ],
+    "ignores_caps": false
+}

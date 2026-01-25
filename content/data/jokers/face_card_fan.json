@@ -1,0 +1,21 @@
+{
+    "id": "face_card_fan",
+    "name": "Face Card Fan",
+    "description": "+15 chips per face card (J,Q,K)",
+    "rarity": "common",
+    "type": "category_amplifier",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "count_face_cards > 0"
+    ],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 15,
+            "per": "each_face_card"
+        }
+    ],
+    "ignores_caps": false
+}

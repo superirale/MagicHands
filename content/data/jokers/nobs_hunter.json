@@ -1,0 +1,20 @@
+{
+    "id": "nobs_hunter",
+    "name": "Nobs Hunter",
+    "description": "x2 chips when you have nobs",
+    "rarity": "uncommon",
+    "type": "multiplier",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "has_nobs"
+    ],
+    "effects": [
+        {
+            "type": "add_temp_mult",
+            "value": 1.0
+        }
+    ],
+    "ignores_caps": false
+}

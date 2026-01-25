@@ -1,0 +1,20 @@
+{
+    "id": "combo_king",
+    "name": "Combo King",
+    "description": "+100 chips if 3+ scoring categories",
+    "rarity": "rare",
+    "type": "utility",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "unique_categories >= 3"
+    ],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 100
+        }
+    ],
+    "ignores_caps": false
+}

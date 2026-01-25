@@ -1,0 +1,19 @@
+{
+    "id": "big_hand",
+    "name": "Big Hand",
+    "description": "+20 chips per card played",
+    "rarity": "common",
+    "type": "utility",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 20,
+            "per": "card_count"
+        }
+    ],
+    "ignores_caps": false
+}

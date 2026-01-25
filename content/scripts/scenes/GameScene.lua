@@ -212,6 +212,10 @@ function GameScene:playHand()
     local finalMult = 1 + score.tempMultiplier + jokerEffects.addedTempMult
     local finalScore = math.floor(finalChips * finalMult)
 
+    -- Debug: Show joker effects
+    if jokerEffects.addedChips > 0 or jokerEffects.addedTempMult > 0 then
+        print(string.format("Joker effects: +%d chips, +%.2f mult", jokerEffects.addedChips, jokerEffects.addedTempMult))
+    end
     print("Scored: " .. finalScore)
 
     -- Check campaign result

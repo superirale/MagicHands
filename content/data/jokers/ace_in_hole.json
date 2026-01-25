@@ -1,0 +1,20 @@
+{
+    "id": "ace_in_hole",
+    "name": "Ace in the Hole",
+    "description": "+80 chips if hand contains an Ace",
+    "rarity": "uncommon",
+    "type": "utility",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "contains_rank:A"
+    ],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 80
+        }
+    ],
+    "ignores_caps": false
+}

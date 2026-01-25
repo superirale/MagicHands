@@ -1,0 +1,18 @@
+{
+    "id": "golden_ratio",
+    "name": "Golden Ratio",
+    "description": "x3 multiplier, ignores caps",
+    "rarity": "legendary",
+    "type": "multiplier",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_temp_mult",
+            "value": 2.0
+        }
+    ],
+    "ignores_caps": true
+}
