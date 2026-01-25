@@ -1,0 +1,24 @@
+{
+    "id": "fifteen_fever",
+    "name": "Fifteen Fever",
+    "description": "+0.2x mult per fifteen",
+    "rarity": "common",
+    "type": "category_amplifier",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "count_15s > 0"
+    ],
+    "effects": [
+        {
+            "type": "add_multiplier",
+            "value": 0.2,
+            "per": "each_15"
+        }
+    ],
+    "caps": {
+        "per_hand": 2.0
+    },
+    "ignores_caps": false
+}

@@ -1,0 +1,39 @@
+{
+    "name": "Magic Hands Game Assets",
+    "version": "1.0",
+    "assets": {
+        "textures": [
+            "content/images/*.png"
+        ],
+        "shaders": [
+            {
+                "name": "darkness",
+                "path": "content/shaders/darkness.metal"
+            }
+        ],
+        "fonts": [
+            {
+                "path": "content/fonts/font.ttf",
+                "sizes": [
+                    11,
+                    12,
+                    14,
+                    16,
+                    18,
+                    20,
+                    22,
+                    24,
+                    28,
+                    30
+                ]
+            }
+        ],
+        "tilemaps": [
+            {
+                "name": "test_simple",
+                "path": "content/maps/test_simple.tmj"
+            }
+        ]
+    },
+    "locales": {}
+}

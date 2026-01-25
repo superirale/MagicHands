@@ -1,0 +1,18 @@
+{
+    "id": "the_multiplier",
+    "name": "The Multiplier",
+    "description": "+1.0x mult (ignores cap!)",
+    "rarity": "legendary",
+    "type": "chaos",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_multiplier",
+            "value": 1.0
+        }
+    ],
+    "ignores_caps": true
+}

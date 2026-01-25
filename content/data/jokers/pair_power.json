@@ -1,0 +1,21 @@
+{
+    "id": "pair_power",
+    "name": "Pair Power",
+    "description": "+25 chips per pair",
+    "rarity": "uncommon",
+    "type": "category_amplifier",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "count_pairs > 0"
+    ],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 25,
+            "per": "each_pair"
+        }
+    ],
+    "ignores_caps": false
+}

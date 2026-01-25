@@ -1,0 +1,23 @@
+{
+  "cache": {
+    "maxSize": 100
+  },
+  "loading": {
+    "maxRetries": 3,
+    "baseDelayMs": 100,
+    "timeout": 30000
+  },
+  "logging": {
+    "level": "Info",
+    "logToFile": false
+  },
+  "paths": {
+    "assetsBasePath": "./assets"
+  },
+  "async": {
+    "threadPoolSize": 4
+  },
+  "fallbacks": {
+    "enabled": true
+  }
+}

@@ -1,0 +1,11 @@
+# LLDB initialization file for Magic Hands game
+# This configures lldb to skip trace stops during SDL3's dynamic library loading
+
+# Set a breakpoint on dyld_image_notifier and auto-continue
+# This prevents the trace instruction from stopping the debugger
+breakpoint set -n lldb_image_notifier
+breakpoint command add -o "continue"
+
+# Also disable stops on shared library events
+settings set target.process.stop-on-sharedlibrary-events false
+

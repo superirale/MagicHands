@@ -1,0 +1,8 @@
+{
+    "id": "the_skunk",
+    "name": "The Skunk",
+    "description": "Multipliers disabled",
+    "effects": [
+        "multipliers_disabled"
+    ]
+}

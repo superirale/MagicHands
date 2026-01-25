@@ -1,0 +1,33 @@
+# Build artifacts
+build/
+cmake-build-*/
+*.o
+*.obj
+*.a
+*.lib
+
+# Log files
+*.log
+
+# macOS
+.DS_Store
+._*
+*/.DS_Store
+
+# IDE / Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.cache/
+compile_commands.json
+
+# Python
+.venv/
+__pycache__/
+*.pyc
+
+# Save files (development only - remove if saves should be tracked)
+saves/autosave.json
+

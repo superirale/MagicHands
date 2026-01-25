@@ -1,0 +1,58 @@
+[
+    {
+        "name": "in_game_music_1",
+        "sound": "content/audio/music/mellotrix-doodle.wav",
+        "bus": "Music",
+        "volumeMin": 0.5,
+        "volumeMax": 0.9,
+        "stream": true
+    },
+    {
+        "name": "in_game_music_2",
+        "sound": "content/audio/music/never-exist-song-loop.ogg",
+        "bus": "Music",
+        "volumeMin": 0.5,
+        "volumeMax": 0.9,
+        "stream": true
+    },
+    {
+        "name": "chop",
+        "sound": "content/audio/sfx/wood-chopping.wav",
+        "bus": "SFX",
+        "volumeMin": 0.9,
+        "volumeMax": 1.0,
+        "pitchMin": 0.9,
+        "pitchMax": 1.1
+    },
+    {
+        "name": "rock_break",
+        "sound": "content/audio/sfx/mining.wav",
+        "bus": "SFX",
+        "volumeMin": 0.9,
+        "volumeMax": 1.0,
+        "pitchMin": 0.9,
+        "pitchMax": 1.1
+    },
+    {
+        "name": "tree_fall",
+        "sound": "content/audio/sfx/falling-tree.wav",
+        "bus": "SFX"
+    },
+    {
+        "name": "mine",
+        "sound": "content/audio/sfx/mining-sound.wav",
+        "bus": "SFX",
+        "pitchMin": 0.8,
+        "pitchMax": 1.2
+    },
+    {
+        "name": "ui_hover_sound",
+        "sound": "content/audio/sfx/ui-hover.wav",
+        "bus": "SFX"
+    },
+    {
+        "name": "ui_select_sound",
+        "sound": "content/audio/sfx/ui-select.wav",
+        "bus": "SFX"
+    }
+]

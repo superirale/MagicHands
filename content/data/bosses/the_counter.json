@@ -1,0 +1,8 @@
+{
+    "id": "the_counter",
+    "name": "The Counter",
+    "description": "Fifteens don't count",
+    "effects": [
+        "fifteens_disabled"
+    ]
+}
