@@ -1,0 +1,10 @@
+{
+    "id": "spectral_void",
+    "name": "The Void",
+    "type": "warp",
+    "description": "Discards are free, but hands score -10% Chips.",
+    "effect": {
+        "free_discard": true,
+        "score_penalty": 0.9
+    }
+}

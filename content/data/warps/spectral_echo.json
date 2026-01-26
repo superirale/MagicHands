@@ -1,0 +1,9 @@
+{
+    "id": "spectral_echo",
+    "name": "The Echo",
+    "type": "warp",
+    "description": "Retrigger all scored cards once.",
+    "effect": {
+        "retrigger": 1
+    }
+}

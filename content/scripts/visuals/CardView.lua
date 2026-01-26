@@ -44,9 +44,8 @@ function CardView:draw()
     -- But avoiding DrawRect (Screen Space) which might occlude DrawSub (World Space).
 
     -- Draw sprite (World Space defaults)
-    local r = self.card:getRank()
-    local s = self.card:getSuit()
-    local spriteX, spriteY = self:getSpriteCoords()
+    local r, s = self:getCardValues()
+    local spriteX, spriteY = self:getSpriteCoords(r, s)
 
     local cardW = 1024 / 13
     local cardH = 1024 / 4
@@ -64,9 +63,18 @@ function CardView:draw()
 
     -- Draw Text Overlay (SCREEN SPACE) as fail-safe
     if self.font then
-        local text = self.card:toString()
+        local text = ""
+        if self.card.rank then
+            text = self.card.rank .. self.card.suit
+        elseif self.card.toString then
+            text = self.card:toString()
+        end
+
         local color = { r = 0, g = 0, b = 0, a = 1 }
+        -- Red suits: Hearts(0), Diamonds(1) -> based on conversion logic below
+        -- My strings: H, D
         if s == 0 or s == 1 then color = { r = 1, g = 0, b = 0, a = 1 } end
+
         graphics.print(self.font, text, self.x + 5, self.currentY + 5, color)
     end
 
@@ -78,10 +86,41 @@ function CardView:draw()
     end
 end
 
-function CardView:getSpriteCoords()
-    -- Get integer values
-    local r = self.card:getRank()
-    local s = self.card:getSuit() -- 0=H, 1=D, 2=C, 3=S
+function CardView:getCardValues()
+    -- Handle Class Object (Legacy)
+    if self.card.getRank then
+        return self.card:getRank(), self.card:getSuit()
+    end
+
+    -- Handle Table Data (Strings: A,2..K, H,D,S,C)
+    local rStr = self.card.rank
+    local sStr = self.card.suit
+
+    local rInt = 1
+    if rStr == "A" then
+        rInt = 1
+    elseif rStr == "J" then
+        rInt = 11
+    elseif rStr == "Q" then
+        rInt = 12
+    elseif rStr == "K" then
+        rInt = 13
+    else
+        rInt = tonumber(rStr) or 1
+    end
+
+    local sInt = 0
+    if sStr == "H" then sInt = 0 end
+    if sStr == "D" then sInt = 1 end
+    if sStr == "C" then sInt = 2 end
+    if sStr == "S" then sInt = 3 end
+
+    return rInt, sInt
+end
+
+function CardView:getSpriteCoords(r, s)
+    -- If valid r,s passed, use them. Else fetch.
+    if not r then r, s = self:getCardValues() end
 
     -- Generated Sheet Layout:
     -- Row 0: Spades (s=3)

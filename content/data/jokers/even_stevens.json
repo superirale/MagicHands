@@ -1,0 +1,33 @@
+{
+    "id": "even_stevens",
+    "name": "Even Stevens",
+    "rarity": "common",
+    "cost": 4,
+    "effect_type": "card_mod",
+    "trigger": "on_score",
+    "value": 4,
+    "description": "+4 Chips for each even card scored",
+    "condition": "card_is_even",
+    "stack_bonuses": [
+        {
+            "tier": 1,
+            "value": 4
+        },
+        {
+            "tier": 2,
+            "value": 8
+        },
+        {
+            "tier": 3,
+            "value": 12
+        },
+        {
+            "tier": 4,
+            "value": 16
+        },
+        {
+            "tier": 5,
+            "value": 24
+        }
+    ]
+}

@@ -1,0 +1,9 @@
+{
+    "id": "the_drain",
+    "name": "The Drain",
+    "description": "Discards cost 5 Gold",
+    "trigger": "on_discard",
+    "effect": "gold_penalty",
+    "value": 5,
+    "act_min": 2
+}

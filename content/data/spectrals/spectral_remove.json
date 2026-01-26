@@ -1,0 +1,9 @@
+{
+    "id": "spectral_remove",
+    "name": "The Scythe",
+    "type": "spectral",
+    "description": "Destroy 1 selected card from your deck.",
+    "effect": {
+        "action": "remove_card"
+    }
+}

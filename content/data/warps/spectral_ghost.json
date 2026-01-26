@@ -1,0 +1,9 @@
+{
+    "id": "spectral_ghost",
+    "name": "Ghost Cut",
+    "type": "warp",
+    "description": "The Cut Card grants +20 Chips regardless of combos.",
+    "effect": {
+        "cut_bonus": 20
+    }
+}

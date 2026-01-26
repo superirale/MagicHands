@@ -1,0 +1,12 @@
+{
+    "id": "lucky_pips",
+    "name": "Lucky Pips",
+    "type": "imprint",
+    "description": "1 in 5 chance for +20 Mult and +20 Gold",
+    "trigger": "on_score",
+    "chance": 0.2,
+    "effect": {
+        "mult": 20,
+        "gold": 20
+    }
+}

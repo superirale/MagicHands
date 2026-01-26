@@ -1,0 +1,11 @@
+{
+    "id": "planet_noble",
+    "name": "The Noble",
+    "type": "augment",
+    "category": "nobs",
+    "description": "Nobs (His Heels) gain +10 chips and +0.5 mult",
+    "base_effect": {
+        "chips": 10,
+        "mult": 0.5
+    }
+}

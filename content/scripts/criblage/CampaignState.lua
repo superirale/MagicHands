@@ -32,6 +32,61 @@ function CampaignState:init()
     JokerManager:init()
     Shop:init()
     BossManager:init()
+
+    self:initDeck()
+end
+
+function CampaignState:initDeck()
+    self.masterDeck = {}
+    local ranks = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" }
+    local suits = { "H", "D", "S", "C" }
+
+    -- Standard 52 card deck
+    for _, s in ipairs(suits) do
+        for _, r in ipairs(ranks) do
+            table.insert(self.masterDeck, {
+                rank = r,
+                suit = s,
+                id = r .. "_" .. s -- Initial ID
+            })
+        end
+    end
+end
+
+-- Return a COPY of the master deck for the current hand
+function CampaignState:getDeck()
+    local deckCopy = {}
+    for _, card in ipairs(self.masterDeck) do
+        -- Deep copy card to prevent reference issues if hand modifies it temporarily
+        table.insert(deckCopy, {
+            rank = card.rank,
+            suit = card.suit,
+            id = card.id
+        })
+    end
+    return deckCopy
+end
+
+function CampaignState:removeCard(idx)
+    if idx > 0 and idx <= #self.masterDeck then
+        table.remove(self.masterDeck, idx)
+        return true
+    end
+    return false
+end
+
+function CampaignState:duplicateCard(idx)
+    if idx > 0 and idx <= #self.masterDeck then
+        local original = self.masterDeck[idx]
+        local copy = {
+            rank = original.rank,
+            suit = original.suit,
+            id = original.id .. "_copy" .. os.time() -- Unique ID for the copy
+        }
+        table.insert(self.masterDeck, copy)
+        return true
+    end
+    return false
 end
 
 function CampaignState:getCurrentBlind()
@@ -55,6 +110,38 @@ function CampaignState:getCurrentBlind()
     end
 
     return blind.create(self.currentAct, blindType, bossId)
+end
+
+function CampaignState:getNextBlind()
+    -- Peek at next blind logic without advancing state
+    local nextBlindIdx = self.currentBlind + 1
+    local nextAct = self.currentAct
+
+    if nextBlindIdx > 3 then
+        nextBlindIdx = 1
+        nextAct = nextAct + 1
+    end
+
+    local types = { "small", "big", "boss" }
+    local typeStr = types[nextBlindIdx]
+    local bossId = ""
+
+    if nextBlindIdx == 3 then
+        -- For preview, we might need to pre-select boss if not set?
+        -- Or just show "Boss" if dynamic?
+        -- Ideally we reuse BossManager logic
+        local BossManager = require("criblage/BossManager")
+        if BossManager.activeBoss then
+            bossId = BossManager.activeBoss.id
+        else
+            -- If no boss active yet, we might need a way to predict it
+            -- For MVP, just reusing current act logic
+            if nextAct == 1 then bossId = "the_counter" end
+            if nextAct == 2 then bossId = "the_skunk" end
+        end
+    end
+
+    return blind.create(nextAct, typeStr, bossId)
 end
 
 function CampaignState:advanceBlind()

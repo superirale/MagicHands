@@ -8,6 +8,7 @@
 #include "core/pch.h"
 #include "graphics/Animation.h"
 #include "graphics/FontRenderer.h"
+#include "graphics/ParticleSystem.h"
 #include "ui/UILayout.h"
 
 // Forward declaration for TileMap bindings
@@ -619,6 +620,9 @@ void LuaBindings::Register(lua_State *L) {
 
   // Register FontRenderer bindings (adds to graphics table)
   FontRenderer::RegisterLua(L);
+
+  // Register ParticleSystem bindings
+  ParticleSystem::RegisterLua(L, &Engine::Instance().Particles());
 
   // Register UI
   lua_newtable(L);

@@ -9,15 +9,19 @@ Shop = {
 
     -- Available joker pool (would be expanded)
     jokerPool = {
-        common = { "fifteen_fever", "lucky_seven", "big_hand", "face_card_fan" },
-        uncommon = { "pair_power", "run_master", "nobs_hunter", "ace_in_hole" },
-        rare = { "the_multiplier", "flush_king", "combo_king" },
+        common = { "fifteen_fever", "lucky_seven", "big_hand", "face_card_fan", "even_stevens" },
+        uncommon = { "pair_power", "run_master", "nobs_hunter", "ace_in_hole", "the_trio" },
+        rare = { "the_multiplier", "flush_king", "combo_king", "blackjack" },
         legendary = { "golden_ratio" }
     },
 
-    -- Enhancement Pool (Planets)
+    -- Enhancement Pool (Planets, Imprints, Warps, Spectrals)
     enhancementPool = {
-        "planet_pair", "planet_run", "planet_15", "planet_flush"
+        "planet_pair", "planet_run", "planet_15", "planet_flush",
+        "planet_noble", "planet_triad",
+        "gold_inlay", "lucky_pips", "steel_plating",
+        "spectral_ghost", "spectral_echo", "spectral_void",
+        "spectral_remove", "spectral_clone"
     }
 }
 
@@ -84,12 +88,12 @@ function Shop:generateJokers(act)
         local isEnhancement = math.random() < 0.3
 
         if isEnhancement then
-            -- Pick random planet
-            local planetId = self.enhancementPool[math.random(#self.enhancementPool)]
+            -- Pick random enhancement (Planet, Imprint, Warp)
+            local itemID = self.enhancementPool[math.random(#self.enhancementPool)]
             table.insert(self.jokers, {
-                id = planetId,
+                id = itemID,
                 type = "enhancement",
-                price = 75, -- Flat price for planets for now
+                price = 75, -- Flat price for enhancements
                 rarity = "common"
             })
         else
@@ -148,18 +152,55 @@ function Shop:buyJoker(index)
     end
 
     if item.type == "enhancement" then
-        -- Handle Enhancement (Planet)
-        -- Map ID to category for now (should be in data)
-        local cat = "pairs"
-        if item.id == "planet_run" then cat = "runs" end
-        if item.id == "planet_15" then cat = "fifteens" end
-        if item.id == "planet_flush" then cat = "flush" end
-
         local EnhancementManager = require("criblage/EnhancementManager")
-        local success, msg = EnhancementManager:addAugment(cat)
 
-        table.remove(self.jokers, index)
-        return true, "Used " .. item.id
+        -- Check if it's a Planet (Augment), Imprint (Card Mod), or Warp (Spectral)
+        if string.find(item.id, "planet") then
+            -- Handle Planet
+            local cat = "pairs"
+            if item.id == "planet_run" then cat = "runs" end
+            if item.id == "planet_15" then cat = "fifteens" end
+            if item.id == "planet_flush" then cat = "flush" end
+            if item.id == "planet_noble" then cat = "nobs" end
+            if item.id == "planet_triad" then cat = "three_kind" end
+
+            local success, msg = EnhancementManager:addAugment(cat)
+            table.remove(self.jokers, index)
+            return true, "Used " .. item.id
+        elseif string.find(item.id, "spectral") then
+            -- Check for Sculptors (Action requiring selection)
+            if item.id == "spectral_remove" or item.id == "spectral_clone" then
+                -- Return signal to open DeckView
+                -- We verify funds first but don't charge yet
+                if not Economy:canAfford(item.price) then
+                    return false, "Not enough gold"
+                end
+
+                return { action = "select_card", itemId = item.id, itemIndex = index }, "Select card to modify"
+            else
+                -- Handle Rule Warps
+                local success, msg = EnhancementManager:addWarp(item.id)
+                if not success then
+                    Economy:addGold(item.price) -- Refund if charged (logic above charges before this check)
+                    return false, msg
+                end
+                table.remove(self.jokers, index)
+                return true, msg
+            end
+        else
+            -- Handle Imprint (Apply to random card for MVP)
+            -- For MVP: Pick a random card stub to simulate imprinting
+            local ranks = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" }
+            local suits = { "H", "D", "S", "C" }
+            local r = ranks[math.random(#ranks)]
+            local s = suits[math.random(#suits)]
+            local cardStub = { rank = r, suit = s } -- Mock card
+
+            local success, msg = EnhancementManager:imprintCard(cardStub, item.id)
+
+            table.remove(self.jokers, index)
+            return true, "Imprinted " .. r .. s .. " with " .. item.id
+        end
     else
         -- Handle Joker
         local success, msg = JokerManager:addJoker(item.id)

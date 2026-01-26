@@ -1,0 +1,11 @@
+{
+    "id": "planet_triad",
+    "name": "The Triad",
+    "type": "augment",
+    "category": "three_kind",
+    "description": "3 of a Kind gains +20 chips and +0.3 mult",
+    "base_effect": {
+        "chips": 20,
+        "mult": 0.3
+    }
+}

@@ -5,10 +5,13 @@
 local CardView = require("visuals/CardView")
 local HUD = require("ui/HUD")
 local ShopUI = require("ui/ShopUI")
+local BlindPreview = require("ui/BlindPreview")
+local DeckView = require("ui/DeckView")
 local CampaignState = require("criblage/CampaignState")
 local JokerManager = require("criblage/JokerManager")
 local BossManager = require("criblage/BossManager")
 local EnhancementManager = require("criblage/EnhancementManager")
+local EffectManager = require("visuals/EffectManager")
 
 GameScene = class()
 
@@ -17,6 +20,9 @@ function GameScene:init()
 
     -- Initialize Campaign
     CampaignState:init()
+
+    -- Initialize Effects
+    EffectManager:init() -- Verify particles global exists
 
     -- Load Assets
     self.cardAtlas = graphics.loadTexture("content/images/cards_sheet.png")
@@ -34,14 +40,17 @@ function GameScene:init()
     self.time = 0
 
     -- Game State
-    self.state = "DEAL" -- DEAL, PLAY, SCORE, SHOP, GAME_OVER
+    self.state = "DEAL" -- DEAL, PLAY, SCORE, SHOP, BLIND_PREVIEW, DECK_VIEW
     self.hand = {}
     self.cutCard = nil
+    self.pendingShopItem = nil -- For spectral actions
 
     -- Visual Components
     self.cardViews = {}
     self.cutCardView = nil
     self.shopUI = ShopUI(self.font)
+    self.blindPreview = BlindPreview(self.font, self.smallFont)
+    self.deckView = DeckView(self.font, self.smallFont, self.cardAtlas)
     self.hud = HUD(self.font, self.smallFont)
 
     if not self.hud then
@@ -69,13 +78,41 @@ end
 function GameScene:startNewHand()
     print("Starting new hand...")
 
-    -- Reset deck
-    self.deck = Deck.new()
-    self.deck:shuffle()
+    -- Get persistent deck from CampaignState
+    -- self.deck = Deck.new() -- OLD
+    -- self.deck:shuffle() -- OLD
 
-    -- Draw 6 cards (standard criblage hand size)
-    self.hand = self.deck:drawMultiple(6)
-    self.cutCard = self.deck:draw()
+    -- We get a table of cards from CampaignState
+    -- We need to wrap it in a Deck object if your Deck class logic requires it,
+    -- OR just treat self.deck as a list if methods like 'draw' allow it.
+    -- Looking at previous code: `self.deck = Deck.new()`
+    -- Let's check Deck.lua usage. Ah, I don't see Deck.lua, wait.
+    -- User said "Deck.lua does not exist" in my thought process earlier?
+    -- No, I listed checking for Deck.lua and found ZERO results.
+    -- BUT GameScene line 77: `self.deck = Deck.new()` implies Deck is global or loaded.
+    -- It might be engine provided or I missed it.
+    -- Line 81: `self.deck:drawMultiple(6)`
+    -- To facilitate custom deck, I should implement a simple Deck helper here or in Lua if the engine one is rigid.
+    -- Or better: Just implement manual drawing from the array returned by CampaignState.
+
+    local deckList = CampaignState:getDeck()
+
+    -- Shuffle manually
+    for i = #deckList, 2, -1 do
+        local j = math.random(i)
+        deckList[i], deckList[j] = deckList[j], deckList[i]
+    end
+
+    self.deckList = deckList -- Store as list
+
+    -- Draw 6 cards
+    self.hand = {}
+    for i = 1, 6 do
+        table.insert(self.hand, table.remove(self.deckList))
+    end
+
+    -- Cut card
+    self.cutCard = table.remove(self.deckList)
 
     -- Create visual cards
     self.cardViews = {}
@@ -114,6 +151,9 @@ function GameScene:update(dt)
         })
     end
 
+    -- Update Effects
+    EffectManager:update(dt)
+
     -- Input Handling (Simple click detection)
     local mx, my = input.getMousePosition()
 
@@ -125,8 +165,40 @@ function GameScene:update(dt)
 
     -- Pass input to Shop if active
     if self.state == "SHOP" then
-        if self.shopUI:update(dt, mx, my, clicked) then
-            -- Shop closed, next blind
+        local result = self.shopUI:update(dt, mx, my, clicked)
+        -- Handle result table or legacy boolean
+        local action = nil
+        if type(result) == "table" then
+            action = result.action
+        elseif result == true then
+            action = "close"
+        end
+
+        if action == "close" then
+            -- Shop closed, show blind preview
+            self.state = "BLIND_PREVIEW"
+
+            -- Prepare preview data
+            local nextBlind = CampaignState:getNextBlind()
+            local required = blind.getRequiredScore(nextBlind, CampaignState.difficulty)
+            local rewardBase = 35
+            if nextBlind.type == "big" then rewardBase = 50 end
+            if nextBlind.type == "boss" then rewardBase = 100 end
+
+            self.blindPreview:show(nextBlind, rewardBase)
+        elseif action == "select_card" then
+            -- Enter DeckView mode
+            self.state = "DECK_VIEW"
+            self.pendingShopItem = result
+            self.deckView:show(CampaignState.masterDeck, "SELECT",
+                function(index, cardData) self:onDeckCardSelected(index, cardData) end,
+                function() self.state = "SHOP" end -- On close/cancel
+            )
+        end
+    elseif self.state == "DECK_VIEW" then
+        self.deckView:update(dt)
+    elseif self.state == "BLIND_PREVIEW" then
+        if self.blindPreview:update(dt, mx, my, clicked) then
             self.state = "DEAL"
             self:startNewHand()
         end
@@ -138,6 +210,10 @@ function GameScene:update(dt)
             -- Toggle selection
             if clicked and view:isHovered(mx, my) then
                 view:toggleSelected()
+                if view.selected then
+                    -- Sparkle on Select
+                    EffectManager:spawnSparkles(view.x + view.width / 2, view.y + view.height / 2, 5)
+                end
             end
         end
 
@@ -153,37 +229,6 @@ function GameScene:update(dt)
     end
 
     self.lastMouseState = { x = mx, y = my, left = mLeft }
-end
-
-function GameScene:discardSelected()
-    if CampaignState.discardsRemaining <= 0 then
-        print("No discards remaining!")
-        return
-    end
-
-    -- Find selected indices
-    local selectedIndices = {}
-    for i, view in ipairs(self.cardViews) do
-        if view.selected then
-            table.insert(selectedIndices, i)
-        end
-    end
-
-    if #selectedIndices > 0 then
-        CampaignState:useDiscard()
-
-        -- Remove cards and draw new ones
-        -- (Simplified for MVP: Just replace selected cards)
-        for _, index in ipairs(selectedIndices) do
-            if not self.deck:isEmpty() then
-                local newCard = self.deck:draw()
-                self.hand[index] = newCard
-                self.cardViews[index]:setCard(newCard)
-                self.cardViews[index]:setSelected(false)
-            end
-        end
-        print("Discard used. " .. CampaignState.discardsRemaining .. " left.")
-    end
 end
 
 function GameScene:playHand()
@@ -204,47 +249,92 @@ function GameScene:playHand()
     table.insert(selectedCards, self.cutCard)
 
     -- Score the hand (now with 5 cards: 4 hand + 1 cut)
-    -- 1. Base Score (Hand Result)
-    local handResult = cribbage.evaluate(selectedCards)
-    local score = cribbage.score(selectedCards)
+    -- We need to convert Lua tables to C++ Card objects for the engine
+    local engineCards = {}
+    for _, c in ipairs(selectedCards) do
+        -- Check if it's already a userdata (legacy) or table (new)
+        if type(c) == "userdata" then
+            table.insert(engineCards, c) -- Should not happen with new system but safety first
+        else
+            -- Convert table {rank="A", suit="H"} to Card.new("A", "H")
+            -- We might need to handle rank conversion if Card.new expects specific strings
+            -- CardBindings says: "Ace"/"A", "2".."10", "Jack"/"J", "Queen"/"Q", "King"/"K"
+            -- Suits: "Hearts"/"H", "Diamonds"/"D", etc.
+            -- Our tables use "A", "2", "3"... "H", "D"... matches bindings!
+            table.insert(engineCards, Card.new(c.rank, c.suit))
+        end
+    end
 
-    -- 2. Resolve Card Imprints (Pillar 3) (Not implemented in MVP yet, placeholder)
-    -- local imprintEffects = EnhancementManager:resolveImprints(selectedCards)
+    -- 1. Base Score (Hand Result)
+    local handResult = cribbage.evaluate(engineCards)
+    local score = cribbage.score(engineCards)
+
+    -- 2. Resolve Card Imprints (Pillar 3)
+    local imprintEffects = EnhancementManager:resolveImprints(selectedCards, "score")
 
     -- 3. Resolve Hand Augments (Pillar 3)
-    local augmentEffects = EnhancementManager:resolveAugments(handResult) -- returns {chips, mult}
+    local augmentEffects = EnhancementManager:resolveAugments(handResult)
 
     -- 4. Resolve Rule Warps (Pillar 3)
-    -- local warpEffects = EnhancementManager:resolveWarps()
+    local warpEffects = EnhancementManager:resolveWarps()
 
     -- 5. Resolve Jokers & Stacks (Pillar 1 & 2)
     -- JokerManager logic now includes stacking simulation
-    local jokerEffects = JokerManager:applyEffects(selectedCards, "on_score")
+    -- PASS engineCards (C++ objects) because applyEffects calls C++ bindings
+    local jokerEffects = JokerManager:applyEffects(engineCards, "on_score")
 
     -- 6. Apply Boss Rules (Counterplay Layer)
     score = BossManager:applyRules(score, "score")
 
 
     -- 7. Final Score Aggregation
-    -- Formula: (Base + Enhancements + JokerChips) * (1 + Temp + JokerTemps) * (Perm + JokerPerms)
-    local finalChips = score.baseChips + augmentEffects.chips + jokerEffects.addedChips
+    -- Formula: (Base + Enhancements + Imprints + JokerChips + Warps)
+    local finalChips = score.baseChips + augmentEffects.chips + jokerEffects.addedChips + imprintEffects.chips
+
+    -- Apply Warp: Cut Bonus (Ghost Cut)
+    if warpEffects.cut_bonus > 0 then
+        finalChips = finalChips + warpEffects.cut_bonus
+    end
 
     -- Summing linear multipliers
-    local totalTempMult = score.tempMultiplier + augmentEffects.mult + jokerEffects.addedTempMult
-    local totalPermMult = score.permMultiplier + jokerEffects.addedPermMult -- Augments typically don't add perm mult?
+    local totalTempMult = score.tempMultiplier + augmentEffects.mult + jokerEffects.addedTempMult + imprintEffects.mult
+    local totalPermMult = score.permMultiplier + jokerEffects.addedPermMult
 
-    -- Final calculation
-    local finalMult = (1 + totalTempMult + totalPermMult) -- Simplified formula from GDD?
-    -- GDD: chips * (1 + sum_additive_mult) * prod_multiplicative
-    -- We'll stick to our engine's (1 + temp + perm) structure for now as a close approx
+    -- Final calculation (with XMult from Imprints)
+    local finalMult = (1 + totalTempMult + totalPermMult) * imprintEffects.x_mult
 
     local finalScore = math.floor(finalChips * finalMult)
+
+    -- Apply Warp: Score Penalty (The Void)
+    if warpEffects.score_penalty ~= 1.0 then
+        finalScore = math.floor(finalScore * warpEffects.score_penalty)
+    end
+
+    -- Apply Warp: Retrigger (The Echo) - Simplified as 2x score for MVP
+    if warpEffects.retrigger > 0 then
+        finalScore = finalScore * (1 + warpEffects.retrigger)
+    end
+
+    -- Handle Imprint Gold (e.g. Gold Inlay)
+    if imprintEffects.gold > 0 then
+        Economy:addGold(imprintEffects.gold)
+        print("Earned " .. imprintEffects.gold .. "g from Imprints")
+    end
 
     -- Debug: Show joker effects
     if jokerEffects.addedChips > 0 or jokerEffects.addedTempMult > 0 then
         print(string.format("Joker effects: +%d chips, +%.2f mult", jokerEffects.addedChips, jokerEffects.addedTempMult))
     end
     print("Scored: " .. finalScore)
+
+    -- Visual FX: Chip Burst!
+    -- Spawn centered or distributed? Let's center for now
+    EffectManager:spawnChips(640, 360, 20) -- 20 particles
+
+    -- Screen Shake for impact
+    if finalScore > 50 then
+        EffectManager:shake(5, 0.5)
+    end
 
     -- Check campaign result
     local result, reward = CampaignState:playHand(finalScore)
@@ -259,6 +349,88 @@ function GameScene:playHand()
     else
         -- High enough for demo to just refresh hand
         self:startNewHand()
+    end
+end
+
+function GameScene:onDeckCardSelected(index, cardData)
+    if not self.pendingShopItem then return end
+
+    local item = self.pendingShopItem
+    local action = item.action -- "select_card"
+    local itemId = item.itemId
+
+    -- Apply Effect
+    if itemId == "spectral_remove" then
+        CampaignState:removeCard(index)
+        print("Removed card at index " .. index)
+    elseif itemId == "spectral_clone" then
+        CampaignState:duplicateCard(index)
+        print("Duplicated card at index " .. index)
+    end
+
+    -- Finalize Purchase (Manual)
+    -- We need to find the item in shop again (by index) or trust the index is valid
+    local shopIndex = item.itemIndex
+    local shopItem = Shop.jokers[shopIndex]
+
+    if shopItem and shopItem.id == itemId then
+        Economy:spend(shopItem.price)
+        table.remove(Shop.jokers, shopIndex)
+    end
+
+    -- Clear state
+    self.pendingShopItem = nil
+    self.state = "SHOP"
+end
+
+function GameScene:discardSelected()
+    -- MVP Discard Logic via CampaignState
+    if CampaignState:useDiscard() then
+        -- 1. Identify indices to remove
+        -- We removed table.insert(..., 1, i) which reverses it.
+        -- Let's stick to simple list of indices and sort descending to remove safely.
+        local indicesToRemove = {}
+        for i, view in ipairs(self.cardViews) do
+            if view.selected then
+                table.insert(indicesToRemove, i)
+            end
+        end
+
+        if #indicesToRemove == 0 then return end
+
+        -- Sort descending (biggest index first) so removal doesn't shift lower indices
+        table.sort(indicesToRemove, function(a, b) return a > b end)
+
+        -- 2. Remove from hand data
+        for _, idx in ipairs(indicesToRemove) do
+            table.remove(self.hand, idx)
+        end
+
+        -- 3. Draw new cards from CURRENT deck list (Preserving Deck State)
+        if not self.deckList then
+            print("Error: No deck list found!")
+            return
+        end
+
+        while #self.hand < 6 and #self.deckList > 0 do
+            table.insert(self.hand, table.remove(self.deckList))
+        end
+
+        -- 4. Recreate visuals (Full redraw of HAND views only, Preserving Cut Card View)
+        self.cardViews = {}
+        local startX = 200
+        local startY = 500
+        local spacing = 110
+
+        -- Asset/Font ref must be available (self.cardAtlas, self.smallFont)
+        local CardView = require("visuals/CardView")
+
+        for i, card in ipairs(self.hand) do
+            local view = CardView(card, startX + (i - 1) * spacing, startY, self.cardAtlas, self.smallFont)
+            table.insert(self.cardViews, view)
+        end
+
+        print("Discard used. " .. CampaignState.discardsRemaining .. " left.")
     end
 end
 
@@ -283,6 +455,16 @@ function GameScene:draw()
         -- Draw Shop if active
         if self.state == "SHOP" then
             self.shopUI:draw()
+        end
+
+        -- Draw Blind Preview (Overlay)
+        if self.state == "BLIND_PREVIEW" and self.blindPreview then
+            self.blindPreview:draw()
+        end
+
+        -- Draw DeckView (Overlay)
+        if self.state == "DECK_VIEW" and self.deckView then
+            self.deckView:draw()
         end
 
         -- Draw Game Over

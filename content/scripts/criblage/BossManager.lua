@@ -67,16 +67,29 @@ function BossManager:applyRules(scoreResult, context)
     for _, effect in ipairs(self.activeBoss.effects) do
         if effect == "fifteens_disabled" then
             scoreResult.fifteenChips = 0
-        elseif effect == "multipliers_disabled" then
+        elseif effect == "disable_mult" then
             scoreResult.tempMultiplier = 0
             scoreResult.permMultiplier = 0
-        elseif effect == "flush_disabled" then
+        elseif effect == "only_pairs_runs" then
+            scoreResult.fifteenChips = 0
             scoreResult.flushChips = 0
-        elseif effect == "nobs_disabled" then
             scoreResult.nobsChips = 0
-        elseif effect == "discard_penalty" and context == "discard" then
-            -- Handled separately in discard flow
         end
+    end
+
+    -- Recalculate base chips
+    scoreResult.baseChips = (scoreResult.fifteenChips or 0) +
+        (scoreResult.pairChips or 0) +
+        (scoreResult.runChips or 0) +
+        (scoreResult.flushChips or 0) +
+        (scoreResult.nobsChips or 0)
+
+    -- Handle The Drain (Discard Penalty handled in discard flow, not scoring flow)
+    -- But we need to support it if context is 'discard'
+    if context == "discard" and effect == "gold_penalty" then
+        local Economy = require("criblage/Economy")
+        Economy:spend(rule.value)
+        -- We won't block discard here, but player loses gold
     end
 
     return scoreResult

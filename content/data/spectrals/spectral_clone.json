@@ -1,0 +1,9 @@
+{
+    "id": "spectral_clone",
+    "name": "The Mirror",
+    "type": "spectral",
+    "description": "Create a copy of 1 selected card in your deck.",
+    "effect": {
+        "action": "duplicate_card"
+    }
+}

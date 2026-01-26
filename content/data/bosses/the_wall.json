@@ -1,0 +1,9 @@
+{
+    "id": "the_wall",
+    "name": "The Wall",
+    "description": "Blind score requirement increased by 50%",
+    "trigger": "on_blind_start",
+    "effect": "scale_blind",
+    "value": 1.5,
+    "act_min": 2
+}

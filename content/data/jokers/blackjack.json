@@ -1,0 +1,33 @@
+{
+    "id": "blackjack",
+    "name": "Blackjack",
+    "rarity": "rare",
+    "cost": 8,
+    "effect_type": "conditional_mult",
+    "trigger": "on_score",
+    "value": 5,
+    "description": "+5 Mult if hand total is exactly 21",
+    "condition": "hand_total_21",
+    "stack_bonuses": [
+        {
+            "tier": 1,
+            "value": 5
+        },
+        {
+            "tier": 2,
+            "value": 10
+        },
+        {
+            "tier": 3,
+            "value": 15
+        },
+        {
+            "tier": 4,
+            "value": 21
+        },
+        {
+            "tier": 5,
+            "value": 50
+        }
+    ]
+}

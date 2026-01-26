@@ -29,13 +29,17 @@ function ShopUI:update(dt, mx, my, clicked)
             local y = 300
 
             if mx >= x and mx <= x + 200 and my >= y and my <= y + 250 then
-                Shop:buyJoker(i)
+                local result, msg = Shop:buyJoker(i)
+                -- Check if result is a signal (table)
+                if type(result) == "table" and result.action == "select_card" then
+                    return result
+                end
             end
         end
 
         -- Next Round Button
         if mx >= 1000 and mx <= 1200 and my >= 600 and my <= 660 then
-            return true -- Close shop
+            return { action = "close" } -- Close shop
         end
     end
 

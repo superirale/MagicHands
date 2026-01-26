@@ -1,0 +1,10 @@
+{
+    "id": "steel_plating",
+    "name": "Steel Plating",
+    "type": "imprint",
+    "description": "X1.5 Mult while this card is held in hand",
+    "trigger": "on_held",
+    "effect": {
+        "x_mult": 1.5
+    }
+}
