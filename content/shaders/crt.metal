@@ -51,6 +51,8 @@ fragment float4 post_fragment(VertexOutput in [[stage_in]],
     // Darken scanlines
     color *= 1.0 - (uniforms.scanStrength * (1.0 - scanlineVal));
     
+
+
     // --- 4. Vignette (Smooth darkening at edges) ---
     float vignette = 1.0 - dot(centered, centered) * 1.5;
     color *= smoothstep(0.0, 1.0, vignette);

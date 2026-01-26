@@ -28,6 +28,13 @@ function GameScene:init()
 
     -- Load Assets
     self.cardAtlas = graphics.loadTexture("content/images/cards_sheet.png")
+    if self.cardAtlas then
+        local w, h = graphics.getTextureSize(self.cardAtlas)
+        print("DEBUG: Card Atlas Loaded. ID: " .. tostring(self.cardAtlas) .. " Size: " .. w .. "x" .. h)
+    else
+        print("ERROR: Failed to load cards_sheet.png")
+    end
+
     self.font = graphics.loadFont("content/fonts/font.ttf", 24)
     self.smallFont = graphics.loadFont("content/fonts/font.ttf", 16)
 
@@ -42,8 +49,10 @@ function GameScene:init()
     self.time = 0
 
     -- Game State
-    self.state = "DEAL" -- DEAL, PLAY, SCORE, SHOP, BLIND_PREVIEW, DECK_VIEW
+    self.state = "DEAL"        -- DEAL, PLAY, SCORE, SHOP, BLIND_PREVIEW, DECK_VIEW
+    self.state = "DEAL"        -- DEAL, PLAY, SCORE, SHOP, BLIND_PREVIEW, DECK_VIEW
     self.hand = {}
+    self.crib = {}             -- New Crib Data
     self.cutCard = nil
     self.pendingShopItem = nil -- For spectral actions
 
@@ -67,6 +76,8 @@ function GameScene:init()
     -- Drag State
     self.draggingView = nil
     self.dragOffset = { x = 0, y = 0 }
+    self.dragStartX = 0
+    self.dragStartY = 0
 
     print("Game Scene initialized!")
 end
@@ -113,6 +124,10 @@ function GameScene:startNewHand()
 
     -- Draw 6 cards
     self.hand = {}
+    self.draggingView = nil -- Clear any stale drag state
+    self.dragStartX = 0
+    self.dragStartY = 0
+
     for i = 1, 6 do
         table.insert(self.hand, table.remove(self.deckList))
     end
@@ -122,6 +137,7 @@ function GameScene:startNewHand()
 
     -- Create visual cards
     self.cardViews = {}
+    self.cribViews = {} -- New Crib Views
     local startX = 200
     local startY = 500
     local spacing = 110
@@ -138,6 +154,19 @@ function GameScene:startNewHand()
     print("Hand dealt: " .. #self.hand .. " cards")
 end
 
+function GameScene:rebuildCribViews()
+    self.cribViews = {}
+    local startX = 990
+    local startY = 490
+    local spacing = 120 -- Spacing for 2 slots (980, 1100)
+
+    local CardView = require("visuals/CardView")
+    for i, card in ipairs(self.crib) do
+        local view = CardView(card, startX + (i - 1) * spacing, startY, self.cardAtlas, self.smallFont)
+        table.insert(self.cribViews, view)
+    end
+end
+
 function GameScene:update(dt)
     -- Initialize if missing (Fallback)
     if not self.hud then
@@ -151,9 +180,9 @@ function GameScene:update(dt)
         -- Format: { time, distortion, scanStrength, chromaStr }
         graphics.setShaderUniform("crt", {
             self.time,
-            0.15, -- Curvature
-            0.15, -- Scanline Strength
-            0.003 -- Chromatic Aberration
+            0.25, -- Curvature (Boosted)
+            0.35, -- Scanline Strength (Boosted)
+            0.005 -- Chromatic Aberration
         })
     end
 
@@ -217,20 +246,38 @@ function GameScene:update(dt)
 
             -- Release Drag
             if not mLeft then
-                -- Check for Click (Short Drag)
-                local dist = math.abs(mx - self.dragStartX) + math.abs(my - self.dragStartY)
-                if dist < 5 then
-                    self.draggingView:toggleSelected()
-                    if self.draggingView.selected then
-                        EffectManager:spawnSparkles(self.draggingView.x + self.draggingView.width / 2,
-                            self.draggingView.y + self.draggingView.height / 2, 5)
-                        -- AudioManager:playClick()
-                    else
-                        -- AudioManager:playHover()
+                -- Check Drop in Crib (980, 480, 240x160 approx for entire visual area)
+                if mx > 980 and mx < 1220 and my > 480 and my < 640 and #self.crib < 2 then
+                    -- Move Card to Crib
+                    local card = self.draggingView.card
+
+                    -- Remove from Hand
+                    for k, c in ipairs(self.hand) do
+                        if c == card then
+                            table.remove(self.hand, k)
+                            break
+                        end
                     end
+
+                    -- Add to Crib
+                    table.insert(self.crib, card)
+
+                    -- Rebuild Views
+                    self:rebuildHandViews()
+                    self:rebuildCribViews()
+
+                    -- AudioManager:playPlace()
                 else
-                    -- Real drop
-                    -- AudioManager:playClick() -- Drop sound
+                    -- Normal Click/Drop Logic
+                    local dist = math.abs(mx - self.dragStartX) + math.abs(my - self.dragStartY)
+                    if dist < 5 then
+                        self.draggingView:toggleSelected()
+                        if self.draggingView.selected then
+                            EffectManager:spawnSparkles(self.draggingView.x + self.draggingView.width / 2,
+                                self.draggingView.y + self.draggingView.height / 2, 5)
+                        end
+                    end
+                    -- If dragged but not to crib, it snaps back via rebuild/update loop
                 end
 
                 self.draggingView.isDragging = false
@@ -558,6 +605,11 @@ function GameScene:draw()
     -- Draw Background
     graphics.drawRect(0, 0, 1280, 720, { r = 0.1, g = 0.3, b = 0.2, a = 1.0 }, true)
 
+    -- Crib Placeholder UI
+    graphics.print(self.font, "CRIB", 1000, 450, { r = 1, g = 1, b = 1, a = 0.5 })
+    graphics.drawRect(980, 480, 110, 150, { r = 0, g = 0, b = 0, a = 0.3 }, true)
+    graphics.drawRect(1100, 480, 110, 150, { r = 0, g = 0, b = 0, a = 0.3 }, true)
+
     if self.hud then
         -- Draw HUD
         self.hud:draw(CampaignState)
@@ -569,6 +621,9 @@ function GameScene:draw()
 
         -- Draw Cards
         for _, view in ipairs(self.cardViews) do
+            view:draw()
+        end
+        for _, view in ipairs(self.cribViews) do
             view:draw()
         end
 

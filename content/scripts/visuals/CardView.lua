@@ -66,15 +66,15 @@ function CardView:draw()
     local cardW = 1024 / 13
     local cardH = 1024 / 4
 
-    -- Try Normalized UVs (0..1)
-    local u = spriteX / 1024
-    local v = spriteY / 1024
-    local uw = cardW / 1024
-    local vh = cardH / 1024
+    -- Use PIXEL coordinates for DrawSub (Engine expects pixels, not UVs)
+    local u = spriteX
+    local v = spriteY
+    local uw = cardW
+    local vh = cardH
 
     graphics.drawSub(self.atlas,
         self.currentX, self.currentY, self.width, self.height, -- Dest
-        u, v, uw, vh                                           -- Source (Normalized)
+        u, v, uw, vh                                           -- Source (Pixels)
     )
 
     -- Draw Text Overlay (SCREEN SPACE) as fail-safe
