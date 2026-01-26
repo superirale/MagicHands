@@ -17,6 +17,10 @@ function CardView:init(card, x, y, atlas, font)
     -- Animation state
     self.targetY = y
     self.currentY = y
+    self.targetX = x
+    self.currentX = x
+
+    self.isDragging = false
 end
 
 function CardView:setCard(card)
@@ -27,16 +31,28 @@ function CardView:update(dt, mx, my, clicked)
     self.hovered = self:isHovered(mx, my)
 
     -- Selection offset calculation
-    if self.selected then
-        self.targetY = self.y - 30
-    elseif self.hovered then
-        self.targetY = self.y - 10
-    else
-        self.targetY = self.y
+    if not self.isDragging then
+        if self.selected then
+            self.targetY = self.y - 30
+        elseif self.hovered then
+            self.targetY = self.y - 10
+        else
+            self.targetY = self.y
+        end
+
+        -- Target X is usually just self.x (grid position) unless moved
+        self.targetX = self.x
     end
 
     -- Smooth movement (lerp)
-    self.currentY = self.currentY + (self.targetY - self.currentY) * 10 * dt
+    -- If dragging, currentX/Y are set directly by GameScene, so we skip lerp?
+    -- Actually GameScene updates X/Y directly for drag, but we want lerp for SNAP BACK or REORDER
+    -- So: If dragging, we might set currentX directly. If not, we lerp to targetX.
+
+    if not self.isDragging then
+        self.currentX = self.currentX + (self.targetX - self.currentX) * 15 * dt
+        self.currentY = self.currentY + (self.targetY - self.currentY) * 15 * dt
+    end
 end
 
 function CardView:draw()
@@ -57,8 +73,8 @@ function CardView:draw()
     local vh = cardH / 1024
 
     graphics.drawSub(self.atlas,
-        self.x, self.currentY, self.width, self.height, -- Dest
-        u, v, uw, vh                                    -- Source (Normalized)
+        self.currentX, self.currentY, self.width, self.height, -- Dest
+        u, v, uw, vh                                           -- Source (Normalized)
     )
 
     -- Draw Text Overlay (SCREEN SPACE) as fail-safe
@@ -75,12 +91,12 @@ function CardView:draw()
         -- My strings: H, D
         if s == 0 or s == 1 then color = { r = 1, g = 0, b = 0, a = 1 } end
 
-        graphics.print(self.font, text, self.x + 5, self.currentY + 5, color)
+        graphics.print(self.font, text, self.currentX + 5, self.currentY + 5, color)
     end
 
     -- Visual selection highlight (Screen Space)
     if self.selected then
-        graphics.drawRect(self.x - 2, self.currentY - 2, self.width + 4, self.height + 4,
+        graphics.drawRect(self.currentX - 2, self.currentY - 2, self.width + 4, self.height + 4,
             { r = 1, g = 1, b = 0.2, a = 0.5 },
             true)
     end
@@ -144,7 +160,7 @@ function CardView:getSpriteCoords(r, s)
 end
 
 function CardView:isHovered(mx, my)
-    return mx >= self.x and mx <= self.x + self.width and
+    return mx >= self.currentX and mx <= self.currentX + self.width and
         my >= self.currentY and my <= self.currentY + self.height
 end
 

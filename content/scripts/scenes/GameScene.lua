@@ -24,7 +24,7 @@ function GameScene:init()
 
     -- Initialize Effects
     EffectManager:init() -- Verify particles global exists
-    AudioManager:init()
+    -- AudioManager:init()
 
     -- Load Assets
     self.cardAtlas = graphics.loadTexture("content/images/cards_sheet.png")
@@ -63,6 +63,10 @@ function GameScene:init()
 
     -- Mouse State
     self.lastMouseState = { x = 0, y = 0, left = false }
+
+    -- Drag State
+    self.draggingView = nil
+    self.dragOffset = { x = 0, y = 0 }
 
     print("Game Scene initialized!")
 end
@@ -205,21 +209,69 @@ function GameScene:update(dt)
             self:startNewHand()
         end
     elseif self.state == "PLAY" then
-        -- Handle Card Interaction
-        for _, view in ipairs(self.cardViews) do
-            view:update(dt, mx, my, clicked)
+        -- Handle Dragging State
+        if self.draggingView then
+            -- Update Position
+            self.draggingView.currentX = mx - self.dragOffset.x
+            self.draggingView.currentY = my - self.dragOffset.y
 
-            -- Toggle selection
-            if clicked and view:isHovered(mx, my) then
-                view:toggleSelected()
-                if view.selected then
-                    -- Sparkle on Select
-                    EffectManager:spawnSparkles(view.x + view.width / 2, view.y + view.height / 2, 5)
-                    AudioManager:playClick()
+            -- Release Drag
+            if not mLeft then
+                -- Check for Click (Short Drag)
+                local dist = math.abs(mx - self.dragStartX) + math.abs(my - self.dragStartY)
+                if dist < 5 then
+                    self.draggingView:toggleSelected()
+                    if self.draggingView.selected then
+                        EffectManager:spawnSparkles(self.draggingView.x + self.draggingView.width / 2,
+                            self.draggingView.y + self.draggingView.height / 2, 5)
+                        -- AudioManager:playClick()
+                    else
+                        -- AudioManager:playHover()
+                    end
                 else
-                    AudioManager:playHover()
+                    -- Real drop
+                    -- AudioManager:playClick() -- Drop sound
                 end
+
+                self.draggingView.isDragging = false
+                self.draggingView = nil
             end
+        end
+
+        -- Handle Card Interaction
+        local startX = 200
+        local spacing = 110
+
+        -- Sort views by X to handle reordering dynamically
+        if self.draggingView then
+            table.sort(self.cardViews, function(a, b) return a.currentX < b.currentX end)
+
+            -- Sync self.hand to match visual order
+            self.hand = {}
+            for _, view in ipairs(self.cardViews) do
+                table.insert(self.hand, view.card)
+            end
+        end
+
+        -- Update Targets & Logic
+        for i, view in ipairs(self.cardViews) do
+            -- Start Dragging
+            if clicked and not self.draggingView and view:isHovered(mx, my) then
+                self.draggingView = view
+                view.isDragging = true
+                self.dragOffset.x = mx - view.currentX
+                self.dragOffset.y = my - view.currentY
+                self.dragStartX = mx
+                self.dragStartY = my
+
+                -- AudioManager:playHover() -- Pickup sound
+            end
+
+            -- Set Target Layout (Grid)
+            view.targetX = startX + (i - 1) * spacing
+            -- Target Y handled inside CardView based on selection
+
+            view:update(dt, mx, my, clicked)
         end
 
         -- Play Button Logic (Simulated by pressing Enter for now)
@@ -230,6 +282,14 @@ function GameScene:update(dt)
         -- Discard Button Logic (Simulated by pressing Backspace)
         if input.isPressed("backspace") then
             self:discardSelected()
+        end
+
+        -- Sorting Keys
+        if input.isPressed("1") then
+            self:sortHand("rank")
+        end
+        if input.isPressed("2") then
+            self:sortHand("suit")
         end
     end
 
@@ -335,7 +395,7 @@ function GameScene:playHand()
     -- Visual FX: Chip Burst!
     -- Spawn centered or distributed? Let's center for now
     EffectManager:spawnChips(640, 360, 20) -- 20 particles
-    AudioManager:playScore()
+    -- AudioManager:playScore()
 
     -- Screen Shake for impact
     if finalScore > 50 then
@@ -355,6 +415,58 @@ function GameScene:playHand()
     else
         -- High enough for demo to just refresh hand
         self:startNewHand()
+    end
+end
+
+function GameScene:sortHand(criteria)
+    if #self.hand == 0 then return end
+
+    local function getRankVal(rStr)
+        if rStr == "A" then return 1 end
+        if rStr == "J" then return 11 end
+        if rStr == "Q" then return 12 end
+        if rStr == "K" then return 13 end
+        return tonumber(rStr) or 0
+    end
+
+    local function getSuitVal(sStr)
+        -- Spades(3) > Hearts(2) > Clubs(1) > Diamonds(0)
+        if sStr == "S" then return 4 end
+        if sStr == "H" then return 3 end
+        if sStr == "C" then return 2 end
+        if sStr == "D" then return 1 end
+        return 0
+    end
+
+    table.sort(self.hand, function(a, b)
+        local ra, rb = getRankVal(a.rank), getRankVal(b.rank)
+        local sa, sb = getSuitVal(a.suit), getSuitVal(b.suit)
+
+        if criteria == "rank" then
+            if ra ~= rb then return ra < rb end
+            return sa < sb
+        elseif criteria == "suit" then
+            if sa ~= sb then return sa < sb end
+            return ra < rb
+        end
+        return false
+    end)
+
+    -- Rebuild Views
+    self:rebuildHandViews()
+    -- AudioManager:playDeal()
+end
+
+function GameScene:rebuildHandViews()
+    self.cardViews = {}
+    local startX = 200
+    local startY = 500
+    local spacing = 110
+    local CardView = require("visuals/CardView")
+
+    for i, card in ipairs(self.hand) do
+        local view = CardView(card, startX + (i - 1) * spacing, startY, self.cardAtlas, self.smallFont)
+        table.insert(self.cardViews, view)
     end
 end
 
@@ -422,7 +534,7 @@ function GameScene:discardSelected()
             table.insert(self.hand, table.remove(self.deckList))
         end
 
-        AudioManager:playDeal()
+        -- AudioManager:playDeal()
 
         -- 4. Recreate visuals (Full redraw of HAND views only, Preserving Cut Card View)
         self.cardViews = {}
