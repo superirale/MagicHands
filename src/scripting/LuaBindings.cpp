@@ -126,15 +126,15 @@ int Lua_DrawSpriteRect(lua_State *L) {
   g_Renderer.GetTextureSize(id, &texWidth, &texHeight);
 
   // Normalize UV coordinates (shader expects 0.0-1.0 range, not pixels)
-  // sw and sh are WIDTH and HEIGHT, not end coordinates
+  // sw and sh are WIDTH and HEIGHT in pixels
   float u0 = sx / texWidth;
   float v0 = sy / texHeight;
-  float u1 = (sx + sw) / texWidth;  // End X = Start X + Width
-  float v1 = (sy + sh) / texHeight; // End Y = Start Y + Height
+  float uWidth = sw / texWidth;   // Normalized Width
+  float vHeight = sh / texHeight; // Normalized Height
 
-
-  g_Renderer.DrawSpriteRect(id, x, y, w, h, u0, v0, u1, v1, 0.0f, false, false,
-                            Color::White, true,
+  // DrawSpriteRect expects (x, y, w, h, u0, v0, uWidth, vHeight, ...)
+  g_Renderer.DrawSpriteRect(id, x, y, w, h, u0, v0, uWidth, vHeight, 0.0f,
+                            false, false, Color::White, true,
                             0); // screenSpace=true for UI elements
   return 0;
 }
