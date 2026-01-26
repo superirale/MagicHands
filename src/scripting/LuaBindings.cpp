@@ -121,22 +121,21 @@ int Lua_DrawSpriteRect(lua_State *L) {
   float sw = (float)luaL_checknumber(L, 8);
   float sh = (float)luaL_checknumber(L, 9);
 
-  // Optional args for DrawSpriteRect can be added here if needed,
-  // currently just passing defaults + zIndex if we want to expose it later.
-  // For now, let's keep it simple as it is mostly used internally or for
-  // specific rect drawing. But to be consistent with DrawSprite, we might want
-  // to expose it. The original function didn't expose rotation/tint/etc from
-  // Lua for DrawSpriteRect? Checking the original code:
-  /*
-  g_Renderer.DrawSpriteRect(id, x, y, w, h, sx, sy, sw, sh, 0.0f, false, false,
-                            Color::White, false);
-  */
-  // It seems DrawSpriteRect Lua binding was VERY basic.
-  // Let's at least update the C++ call to match the new signature (add
-  // zIndex=0).
+  // Get texture size for UV normalization
+  int texWidth, texHeight;
+  g_Renderer.GetTextureSize(id, &texWidth, &texHeight);
 
-  g_Renderer.DrawSpriteRect(id, x, y, w, h, sx, sy, sw, sh, 0.0f, false, false,
-                            Color::White, false, 0);
+  // Normalize UV coordinates (shader expects 0.0-1.0 range, not pixels)
+  // sw and sh are WIDTH and HEIGHT, not end coordinates
+  float u0 = sx / texWidth;
+  float v0 = sy / texHeight;
+  float u1 = (sx + sw) / texWidth;  // End X = Start X + Width
+  float v1 = (sy + sh) / texHeight; // End Y = Start Y + Height
+
+
+  g_Renderer.DrawSpriteRect(id, x, y, w, h, u0, v0, u1, v1, 0.0f, false, false,
+                            Color::White, true,
+                            0); // screenSpace=true for UI elements
   return 0;
 }
 
