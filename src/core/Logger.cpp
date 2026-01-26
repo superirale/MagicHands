@@ -1,5 +1,7 @@
 #include "core/Logger.h"
+#include <cstring>
 #include <ctime>
+#include <lua.hpp>
 
 // Static member initialization
 LogLevel Logger::s_MinLevel = LogLevel::Info;
@@ -86,4 +88,70 @@ void Logger::Log(LogLevel level, const char *file, int line, const char *fmt,
 
   fprintf(stderr, "\n");
   fflush(stderr);
+}
+
+// --- Lua Bindings ---
+
+static int Lua_LogTrace(lua_State *L) {
+  const char *msg = luaL_checkstring(L, 1);
+  Logger::Log(LogLevel::Trace, "Lua", 0, "%s", msg);
+  return 0;
+}
+
+static int Lua_LogDebug(lua_State *L) {
+  const char *msg = luaL_checkstring(L, 1);
+  Logger::Log(LogLevel::Debug, "Lua", 0, "%s", msg);
+  return 0;
+}
+
+static int Lua_LogInfo(lua_State *L) {
+  const char *msg = luaL_checkstring(L, 1);
+  Logger::Log(LogLevel::Info, "Lua", 0, "%s", msg);
+  return 0;
+}
+
+static int Lua_LogWarn(lua_State *L) {
+  const char *msg = luaL_checkstring(L, 1);
+  Logger::Log(LogLevel::Warn, "Lua", 0, "%s", msg);
+  return 0;
+}
+
+static int Lua_LogError(lua_State *L) {
+  const char *msg = luaL_checkstring(L, 1);
+  Logger::Log(LogLevel::Error, "Lua", 0, "%s", msg);
+  return 0;
+}
+
+static int Lua_LogSetLevel(lua_State *L) {
+  const char *levelStr = luaL_checkstring(L, 1);
+  LogLevel level = LogLevel::Info;
+  if (strcmp(levelStr, "trace") == 0)
+    level = LogLevel::Trace;
+  else if (strcmp(levelStr, "debug") == 0)
+    level = LogLevel::Debug;
+  else if (strcmp(levelStr, "info") == 0)
+    level = LogLevel::Info;
+  else if (strcmp(levelStr, "warn") == 0)
+    level = LogLevel::Warn;
+  else if (strcmp(levelStr, "error") == 0)
+    level = LogLevel::Error;
+  Logger::SetMinLevel(level);
+  return 0;
+}
+
+void Logger::RegisterLuaBindings(lua_State *L) {
+  lua_newtable(L);
+  lua_pushcfunction(L, Lua_LogTrace);
+  lua_setfield(L, -2, "trace");
+  lua_pushcfunction(L, Lua_LogDebug);
+  lua_setfield(L, -2, "debug");
+  lua_pushcfunction(L, Lua_LogInfo);
+  lua_setfield(L, -2, "info");
+  lua_pushcfunction(L, Lua_LogWarn);
+  lua_setfield(L, -2, "warn");
+  lua_pushcfunction(L, Lua_LogError);
+  lua_setfield(L, -2, "error");
+  lua_pushcfunction(L, Lua_LogSetLevel);
+  lua_setfield(L, -2, "setLevel");
+  lua_setglobal(L, "log");
 }

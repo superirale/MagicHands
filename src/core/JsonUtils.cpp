@@ -6,9 +6,14 @@
 #include <vector>
 
 void RegisterJsonUtils(lua_State *L) {
-  lua_register(L, "loadJSON", Lua_LoadJSON);
-  lua_register(L, "saveFile", Lua_SaveFile); // Phase 5: File I/O
-  lua_register(L, "loadFile", Lua_LoadFile); // Phase 5: File I/O
+  lua_newtable(L);
+  lua_pushcfunction(L, Lua_LoadJSON);
+  lua_setfield(L, -2, "loadJSON");
+  lua_pushcfunction(L, Lua_SaveFile);
+  lua_setfield(L, -2, "saveFile");
+  lua_pushcfunction(L, Lua_LoadFile);
+  lua_setfield(L, -2, "loadFile");
+  lua_setglobal(L, "files");
 }
 
 int Lua_LoadJSON(lua_State *L) {

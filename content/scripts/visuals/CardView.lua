@@ -77,22 +77,7 @@ function CardView:draw()
         u, v, uw, vh                                           -- Source (Pixels)
     )
 
-    -- Draw Text Overlay (SCREEN SPACE) as fail-safe
-    if self.font then
-        local text = ""
-        if self.card.rank then
-            text = self.card.rank .. self.card.suit
-        elseif self.card.toString then
-            text = self.card:toString()
-        end
 
-        local color = { r = 0, g = 0, b = 0, a = 1 }
-        -- Red suits: Hearts(0), Diamonds(1) -> based on conversion logic below
-        -- My strings: H, D
-        if s == 0 or s == 1 then color = { r = 1, g = 0, b = 0, a = 1 } end
-
-        graphics.print(self.font, text, self.currentX + 5, self.currentY + 5, color)
-    end
 
     -- Visual selection highlight (Screen Space)
     if self.selected then

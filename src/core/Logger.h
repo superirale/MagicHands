@@ -22,6 +22,9 @@ public:
   // Get current log level
   static LogLevel GetMinLevel();
 
+  // Register Lua bindings
+  static void RegisterLuaBindings(struct lua_State *L);
+
 private:
   static LogLevel s_MinLevel;
   static const char *LevelToString(LogLevel level);

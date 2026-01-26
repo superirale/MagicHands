@@ -139,6 +139,7 @@ add_executable(MagicHand
     src/core/Engine.cpp
     src/scripting/LuaBindings.cpp
     src/scripting/WindowManagerBindings.cpp
+    src/scripting/ProfilerBindings.cpp
     src/graphics/DebugDraw.cpp
     src/asset/AssetManager.cpp
     src/asset/AssetConfig.cpp

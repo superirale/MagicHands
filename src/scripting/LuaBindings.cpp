@@ -3,6 +3,7 @@
 #include "audio/AudioSystem.h"
 #include "core/Color.h"
 #include "core/Engine.h"
+#include "core/JsonUtils.h"
 #include "core/Logger.h"
 #include "core/ObjectPool.h"
 #include "core/Profiler.h"
@@ -10,7 +11,9 @@
 #include "graphics/Animation.h"
 #include "graphics/FontRenderer.h"
 #include "graphics/ParticleSystem.h"
+#include "scripting/ProfilerBindings.h"
 #include "ui/UILayout.h"
+#include <fstream>
 
 // Forward declaration for TileMap bindings
 extern void RegisterTileMapBindings(lua_State *L);
@@ -530,53 +533,6 @@ int Lua_AssetLoadFont(lua_State *L) {
 
 // --- Logger Bindings ---
 
-static int Lua_LogTrace(lua_State *L) {
-  const char *msg = luaL_checkstring(L, 1);
-  Logger::Log(LogLevel::Trace, "Lua", 0, "%s", msg);
-  return 0;
-}
-
-static int Lua_LogDebug(lua_State *L) {
-  const char *msg = luaL_checkstring(L, 1);
-  Logger::Log(LogLevel::Debug, "Lua", 0, "%s", msg);
-  return 0;
-}
-
-static int Lua_LogInfo(lua_State *L) {
-  const char *msg = luaL_checkstring(L, 1);
-  Logger::Log(LogLevel::Info, "Lua", 0, "%s", msg);
-  return 0;
-}
-
-static int Lua_LogWarn(lua_State *L) {
-  const char *msg = luaL_checkstring(L, 1);
-  Logger::Log(LogLevel::Warn, "Lua", 0, "%s", msg);
-  return 0;
-}
-
-static int Lua_LogError(lua_State *L) {
-  const char *msg = luaL_checkstring(L, 1);
-  Logger::Log(LogLevel::Error, "Lua", 0, "%s", msg);
-  return 0;
-}
-
-static int Lua_LogSetLevel(lua_State *L) {
-  const char *levelStr = luaL_checkstring(L, 1);
-  LogLevel level = LogLevel::Info;
-  if (strcmp(levelStr, "trace") == 0)
-    level = LogLevel::Trace;
-  else if (strcmp(levelStr, "debug") == 0)
-    level = LogLevel::Debug;
-  else if (strcmp(levelStr, "info") == 0)
-    level = LogLevel::Info;
-  else if (strcmp(levelStr, "warn") == 0)
-    level = LogLevel::Warn;
-  else if (strcmp(levelStr, "error") == 0)
-    level = LogLevel::Error;
-  Logger::SetMinLevel(level);
-  return 0;
-}
-
 void LuaBindings::Register(lua_State *L) {
   // Register Graphics
   lua_newtable(L);
@@ -721,72 +677,13 @@ void LuaBindings::Register(lua_State *L) {
   RegisterBossBindings(L);
 
   // Register Logger bindings
-  lua_newtable(L);
-  lua_pushcfunction(L, Lua_LogTrace);
-  lua_setfield(L, -2, "trace");
-  lua_pushcfunction(L, Lua_LogDebug);
-  lua_setfield(L, -2, "debug");
-  lua_pushcfunction(L, Lua_LogInfo);
-  lua_setfield(L, -2, "info");
-  lua_pushcfunction(L, Lua_LogWarn);
-  lua_setfield(L, -2, "warn");
-  lua_pushcfunction(L, Lua_LogError);
-  lua_setfield(L, -2, "error");
-  lua_pushcfunction(L, Lua_LogSetLevel);
-  lua_setfield(L, -2, "setLevel");
-  lua_setglobal(L, "log");
+  Logger::RegisterLuaBindings(L);
 
-  // Register Profiler bindings (Tracy integration)
-  // Note: These are no-ops when TRACY_ENABLE is not defined
-  lua_newtable(L);
+  // Register Profiler bindings
+  RegisterProfilerBindings(L);
 
-  // profiler.beginZone(name) - Start a named profiling zone
-  lua_pushcfunction(L, [](lua_State *L) -> int {
-#ifdef TRACY_ENABLE
-    const char *name = luaL_checkstring(L, 1);
-    // Tracy requires static source location, use message instead for dynamic
-    // names
-    TracyMessageL(name);
-#else
-    (void)L;
-#endif
-    return 0;
-  });
-  lua_setfield(L, -2, "beginZone");
-
-  // profiler.endZone() - End current zone (no-op for message-based profiling)
-  lua_pushcfunction(L, [](lua_State *L) -> int {
-    (void)L;
-    return 0;
-  });
-  lua_setfield(L, -2, "endZone");
-
-  // profiler.mark(name) - Place a single marker/message
-  lua_pushcfunction(L, [](lua_State *L) -> int {
-#ifdef TRACY_ENABLE
-    const char *name = luaL_checkstring(L, 1);
-    TracyMessageL(name);
-#else
-    (void)L;
-#endif
-    return 0;
-  });
-  lua_setfield(L, -2, "mark");
-
-  // profiler.plot(name, value) - Plot a numeric value
-  lua_pushcfunction(L, [](lua_State *L) -> int {
-#ifdef TRACY_ENABLE
-    const char *name = luaL_checkstring(L, 1);
-    double value = luaL_checknumber(L, 2);
-    TracyPlot(name, value);
-#else
-    (void)L;
-#endif
-    return 0;
-  });
-  lua_setfield(L, -2, "plot");
-
-  lua_setglobal(L, "profiler");
+  // Register File I/O bindings
+  RegisterJsonUtils(L);
 
   // Register LuaSocket (socket.core and mime.core)
   lua_getglobal(L, "package");
