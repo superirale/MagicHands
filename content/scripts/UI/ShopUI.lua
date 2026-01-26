@@ -14,6 +14,8 @@ ShopUI.RarityColors = {
     enhancement = { r = 0.5, g = 0.4, b = 0.8, a = 1 }, -- Purple
 }
 
+local UILayout = require("UI.UILayout")
+
 function ShopUI:init(font)
     self.font = font
     self.active = false
@@ -21,6 +23,12 @@ function ShopUI:init(font)
     -- Hover state
     self.hoveredIndex = -1
     self.hoveredButton = nil -- "next", "reroll"
+
+    -- Register Layout Regions
+    UILayout.register("Shop_Title", { anchor = "top-center", width = 100, height = 40, offsetX = 0, offsetY = 40 })
+    UILayout.register("Shop_Gold", { anchor = "top-center", width = 100, height = 30, offsetX = 0, offsetY = 90 })
+    UILayout.register("Shop_Reroll", { anchor = "bottom-left", width = 200, height = 60, offsetX = 50, offsetY = 40 })
+    UILayout.register("Shop_Next", { anchor = "bottom-right", width = 200, height = 60, offsetX = 30, offsetY = 40 })
 end
 
 function ShopUI:getMetadata(id)
@@ -58,11 +66,21 @@ function ShopUI:update(dt, mx, my, clicked)
     if not self.active then return false end
 
     -- Layout Constants
-    local startX = 290
+    local winW, winH = graphics.getWindowSize()
+
+    -- Dynamic Card Layout
     local cardW = 220
     local cardH = 300
     local spacing = 240
-    local startY = 250
+    local numCards = #Shop.jokers
+    local totalWidth = (numCards * cardW) + ((numCards - 1) * (spacing - cardW)) -- Spacing includes gap?
+    -- Logic: x = start + (i-1)*spacing.
+    -- Max X = start + (n-1)*spacing. Right edge = Max X + cardW.
+    -- Width = (n-1)*spacing + cardW.
+    local contentWidth = math.max(0, (numCards - 1) * spacing + cardW)
+    local startX = (winW - contentWidth) / 2
+    local startY = (winH - cardH) / 2          -- Center vertically too? Or fixed Y? Original 250.
+    startY = math.max(150, (winH - cardH) / 2) -- Center but keep space for title
 
     self.hoveredIndex = -1
     self.hoveredButton = nil
@@ -83,16 +101,20 @@ function ShopUI:update(dt, mx, my, clicked)
         end
     end
 
-    -- Next Round Button (Bottom Right)
-    if mx >= 1050 and mx <= 1250 and my >= 620 and my <= 680 then
+    -- Next Round Button
+    local nx, ny = UILayout.getPosition("Shop_Next")
+    local regionNext = UILayout.get("Shop_Next")
+    if regionNext and mx >= nx and mx <= nx + regionNext.width and my >= ny and my <= ny + regionNext.height then
         self.hoveredButton = "next"
         if clicked then
             return { action = "close" }
         end
     end
 
-    -- Reroll Button (Bottom Left)
-    if mx >= 50 and mx <= 250 and my >= 620 and my <= 680 then
+    -- Reroll Button
+    local rx, ry = UILayout.getPosition("Shop_Reroll")
+    local regionReroll = UILayout.get("Shop_Reroll")
+    if regionReroll and mx >= rx and mx <= rx + regionReroll.width and my >= ry and my <= ry + regionReroll.height then
         self.hoveredButton = "reroll"
         if clicked then
             Shop:reroll()
@@ -105,25 +127,32 @@ end
 function ShopUI:draw()
     if not self.active then return end
 
+    local winW, winH = graphics.getWindowSize()
+
     -- Background Overlay
-    graphics.drawRect(0, 0, 1280, 720, { r = 0.05, g = 0.05, b = 0.08, a = 0.95 }, true)
+    graphics.drawRect(0, 0, winW, winH, { r = 0.05, g = 0.05, b = 0.08, a = 0.95 }, true)
 
     -- Header
-    graphics.print(self.font, "SHOP", 600, 40, { r = 1, g = 1, b = 1, a = 1 })
+    local tx, ty = UILayout.getPosition("Shop_Title")
+    graphics.print(self.font, "SHOP", tx, ty, { r = 1, g = 1, b = 1, a = 1 })
 
     -- Gold Display
+    local gx, gy = UILayout.getPosition("Shop_Gold")
     local goldColor = { r = 1, g = 0.8, b = 0.2, a = 1 }
-    graphics.print(self.font, "Gold: " .. Economy.gold, 600, 90, goldColor)
+    graphics.print(self.font, "Gold: " .. Economy.gold, gx, gy, goldColor)
 
-    -- Reroll info
-    graphics.print(self.font, "Reroll: " .. Shop.shopRerollCost .. "g", 100, 590, { r = 0.7, g = 0.7, b = 0.7 })
+    -- Reroll info (Near Reroll Button)
+    local rx, ry = UILayout.getPosition("Shop_Reroll")
+    graphics.print(self.font, "Reroll: " .. Shop.shopRerollCost .. "g", rx + 50, ry - 30, { r = 0.7, g = 0.7, b = 0.7 })
 
     -- Render Jokers
-    local startX = 290
     local cardW = 220
     local cardH = 300
     local spacing = 240
-    local startY = 250
+    local numCards = #Shop.jokers
+    local contentWidth = math.max(0, (numCards - 1) * spacing + cardW)
+    local startX = (winW - contentWidth) / 2
+    local startY = math.max(150, (winH - cardH) / 2)
 
     for i, joker in ipairs(Shop.jokers) do
         local x = startX + (i - 1) * spacing
@@ -147,8 +176,7 @@ function ShopUI:draw()
         graphics.print(self.font, meta.name, x + 10, y + 10, { r = 0, g = 0, b = 0, a = 0.5 }) -- Shadow
         graphics.print(self.font, meta.name, x + 9, y + 9, { r = 1, g = 1, b = 1, a = 1 })
 
-        -- Description (Wrapped manually logic or just split lines known)
-        -- Assuming primitive print, manually spacing
+        -- Description
         graphics.print(self.font, meta.desc, x + 10, y + 70, { r = 0.9, g = 0.9, b = 0.9, a = 1 })
 
         -- Price Tag
@@ -165,16 +193,20 @@ function ShopUI:draw()
     end
 
     -- Next Round Button
+    local nx, ny = UILayout.getPosition("Shop_Next")
+    local regionNext = UILayout.get("Shop_Next")
     local nextColor = { r = 0.8, g = 0.2, b = 0.2, a = 1 }
     if self.hoveredButton == "next" then nextColor = { r = 0.9, g = 0.3, b = 0.3, a = 1 } end
-    graphics.drawRect(1050, 620, 200, 60, nextColor, true)
-    graphics.print(self.font, "Next Round >", 1080, 635)
+    -- regionNext.width/height is available
+    graphics.drawRect(nx, ny, regionNext.width, regionNext.height, nextColor, true)
+    graphics.print(self.font, "Next Round >", nx + 30, ny + 15)
 
     -- Reroll Button
+    local regionReroll = UILayout.get("Shop_Reroll")
     local rerollColor = { r = 0.3, g = 0.3, b = 0.8, a = 1 }
     if self.hoveredButton == "reroll" then rerollColor = { r = 0.4, g = 0.4, b = 0.9, a = 1 } end
-    graphics.drawRect(50, 620, 200, 60, rerollColor, true)
-    graphics.print(self.font, "Reroll", 100, 635)
+    graphics.drawRect(rx, ry, regionReroll.width, regionReroll.height, rerollColor, true)
+    graphics.print(self.font, "Reroll", rx + 50, ry + 15)
 end
 
 return ShopUI

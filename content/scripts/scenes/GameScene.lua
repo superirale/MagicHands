@@ -15,6 +15,7 @@ local EffectManager = require("visuals/EffectManager")
 local AudioManager = require("audio/AudioManager")
 local Camera = require("Camera")
 
+local UILayout = require("UI.UILayout")
 GameScene = class()
 
 function GameScene:init()
@@ -178,9 +179,22 @@ function GameScene:update(dt)
         self:init()
     end
 
-    -- Update Camera
-    if self.camera then
-        self.camera:update(dt)
+    -- Check for window resize to update viewport scaling and UI Layout
+    local winW, winH = graphics.getWindowSize()
+    if winW ~= self.lastWinW or winH ~= self.lastWinH then
+        self.lastWinW = winW
+        self.lastWinH = winH
+
+        -- Re-apply viewport to force zoom recalculation in C++
+        if self.camera and self.camera.viewportWidth and self.camera.viewportHeight then
+            graphics.setViewport(self.camera.viewportWidth, self.camera.viewportHeight)
+            print("Camera: Window resized to " .. winW .. "x" .. winH .. ". Re-applying viewport.")
+        end
+
+        -- Update UI Layout
+        if UILayout then
+            UILayout.setScreenSize(winW, winH)
+        end
     end
 
     -- Update CRT Shader
