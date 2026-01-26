@@ -611,8 +611,12 @@ function GameScene:discardSelected()
 end
 
 function GameScene:draw()
-    -- Draw Background
-    graphics.drawRect(0, 0, 1280, 720, { r = 0.1, g = 0.3, b = 0.2, a = 1.0 }, true)
+    -- Draw UI (Reset Camera to 0,0 so UI scales with Zoom but stays fixed relative to screen)
+    local gameCamX, gameCamY = self.camera:getPosition()
+    graphics.setCamera(0, 0)
+
+    -- Draw Background (screenSpace = false to use zoom, but clamped to 0,0)
+    graphics.drawRect(0, 0, 1280, 720, { r = 0.1, g = 0.3, b = 0.2, a = 1.0 }, false)
 
     -- Crib Placeholder UI
     graphics.print(self.font, "CRIB", 1000, 450, { r = 1, g = 1, b = 1, a = 0.5 })
