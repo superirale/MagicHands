@@ -82,6 +82,19 @@ end
 --- Call this every frame after following the target
 --- @param dt number Delta time in seconds
 function Camera:update(dt)
+    -- Check for window resize to update viewport scaling
+    local winW, winH = graphics.getWindowSize()
+    if winW ~= self.lastWinW or winH ~= self.lastWinH then
+        self.lastWinW = winW
+        self.lastWinH = winH
+
+        -- Re-apply viewport to force zoom recalculation in C++
+        if self.viewportWidth and self.viewportHeight then
+            graphics.setViewport(self.viewportWidth, self.viewportHeight)
+            print("Camera: Window resized to " .. winW .. "x" .. winH .. ". Re-applying viewport.")
+        end
+    end
+
     -- Smooth interpolation toward target using frame-rate independent lerp
     -- The pow() formula ensures consistent smoothing regardless of frame rate
     local lerpFactor = 1 - (self.smoothing ^ (dt * 60))

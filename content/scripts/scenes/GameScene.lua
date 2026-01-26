@@ -13,11 +13,15 @@ local BossManager = require("criblage/BossManager")
 local EnhancementManager = require("criblage/EnhancementManager")
 local EffectManager = require("visuals/EffectManager")
 local AudioManager = require("audio/AudioManager")
+local Camera = require("Camera")
 
 GameScene = class()
 
 function GameScene:init()
     print("Initializing Game Scene (Constructor)...")
+
+    -- Initialize Camera (1280x720 fixed viewport)
+    self.camera = Camera({ viewportWidth = 1280, viewportHeight = 720 })
 
     -- Initialize Campaign
     CampaignState:init()
@@ -172,6 +176,11 @@ function GameScene:update(dt)
     if not self.hud then
         print("Late initialization of GameScene...")
         self:init()
+    end
+
+    -- Update Camera
+    if self.camera then
+        self.camera:update(dt)
     end
 
     -- Update CRT Shader
