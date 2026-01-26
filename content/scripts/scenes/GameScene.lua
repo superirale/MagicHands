@@ -12,6 +12,7 @@ local JokerManager = require("criblage/JokerManager")
 local BossManager = require("criblage/BossManager")
 local EnhancementManager = require("criblage/EnhancementManager")
 local EffectManager = require("visuals/EffectManager")
+local AudioManager = require("audio/AudioManager")
 
 GameScene = class()
 
@@ -23,6 +24,7 @@ function GameScene:init()
 
     -- Initialize Effects
     EffectManager:init() -- Verify particles global exists
+    AudioManager:init()
 
     -- Load Assets
     self.cardAtlas = graphics.loadTexture("content/images/cards_sheet.png")
@@ -213,6 +215,9 @@ function GameScene:update(dt)
                 if view.selected then
                     -- Sparkle on Select
                     EffectManager:spawnSparkles(view.x + view.width / 2, view.y + view.height / 2, 5)
+                    AudioManager:playClick()
+                else
+                    AudioManager:playHover()
                 end
             end
         end
@@ -330,6 +335,7 @@ function GameScene:playHand()
     -- Visual FX: Chip Burst!
     -- Spawn centered or distributed? Let's center for now
     EffectManager:spawnChips(640, 360, 20) -- 20 particles
+    AudioManager:playScore()
 
     -- Screen Shake for impact
     if finalScore > 50 then
@@ -415,6 +421,8 @@ function GameScene:discardSelected()
         while #self.hand < 6 and #self.deckList > 0 do
             table.insert(self.hand, table.remove(self.deckList))
         end
+
+        AudioManager:playDeal()
 
         -- 4. Recreate visuals (Full redraw of HAND views only, Preserving Cut Card View)
         self.cardViews = {}

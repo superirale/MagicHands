@@ -1,5 +1,6 @@
 #include "scripting/LuaBindings.h"
 #include "asset/AssetManager.h"
+#include "audio/AudioSystem.h"
 #include "core/Color.h"
 #include "core/Engine.h"
 #include "core/Logger.h"
@@ -623,6 +624,9 @@ void LuaBindings::Register(lua_State *L) {
 
   // Register ParticleSystem bindings
   ParticleSystem::RegisterLua(L, &Engine::Instance().Particles());
+
+  // Register AudioSystem bindings
+  AudioSystem::RegisterLua(L);
 
   // Register UI
   lua_newtable(L);
