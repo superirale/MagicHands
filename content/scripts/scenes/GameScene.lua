@@ -7,6 +7,7 @@ local HUD = require("ui/HUD")
 local ShopUI = require("ui/ShopUI")
 local BlindPreview = require("ui/BlindPreview")
 local DeckView = require("ui/DeckView")
+local UIButton = require("UI.elements.UIButton")
 local CampaignState = require("criblage/CampaignState")
 local JokerManager = require("criblage/JokerManager")
 local BossManager = require("criblage/BossManager")
@@ -110,6 +111,18 @@ function GameScene:init()
     self.dragStartX = 0
     self.dragStartY = 0
 
+    -- Add to Crib Button
+    self.addToCribButton = UIButton(nil, "Add to Crib", self.font, function()
+        self:addSelectedCardsToCrib()
+    end)
+    self.addToCribButton.x = 980
+    self.addToCribButton.y = 420
+    self.addToCribButton.width = 240
+    self.addToCribButton.height = 50
+    self.addToCribButton.bgColor = { r = 0.2, g = 0.6, b = 0.3, a = 1 }
+    self.addToCribButton.hoverColor = { r = 0.3, g = 0.8, b = 0.4, a = 1 }
+    self.addToCribButton.visible = false  -- Only show during DEAL state
+
     print("Game Scene initialized!")
 end
 
@@ -121,6 +134,69 @@ end
 function GameScene:enter()
     print("Entered Game Scene")
     self:startNewHand()
+end
+
+function GameScene:addSelectedCardsToCrib()
+    -- Add selected cards to crib (max 2, cannot replace)
+    if #self.crib >= 2 then
+        log.warn("Crib is full (max 2 cards)")
+        return
+    end
+    
+    -- Find selected cards
+    local selectedCards = {}
+    for i, view in ipairs(self.cardViews) do
+        if view.selected then
+            table.insert(selectedCards, { view = view, index = i })
+        end
+    end
+    
+    -- Check how many we can add
+    local spaceLeft = 2 - #self.crib
+    if #selectedCards == 0 then
+        log.warn("No cards selected")
+        return
+    end
+    
+    if #selectedCards > spaceLeft then
+        log.warn("Too many cards selected. Can only add " .. spaceLeft .. " more card(s) to crib")
+        return
+    end
+    
+    -- Count how many cards we're adding
+    local numCardsToAdd = #selectedCards
+    
+    -- Check if deck has enough cards
+    if not self.deckList or #self.deckList < numCardsToAdd then
+        log.warn("Not enough cards in deck to replace (" .. #self.deckList .. " available, " .. numCardsToAdd .. " needed)")
+        return
+    end
+    
+    -- Add selected cards to crib
+    for _, cardInfo in ipairs(selectedCards) do
+        local card = cardInfo.view.card
+        table.insert(self.crib, card)
+    end
+    
+    -- Remove from hand (iterate backwards to avoid index issues)
+    for i = #selectedCards, 1, -1 do
+        local cardInfo = selectedCards[i]
+        table.remove(self.hand, cardInfo.index)
+    end
+    
+    -- Deal replacement cards from deck
+    for i = 1, numCardsToAdd do
+        local newCard = table.remove(self.deckList)
+        if newCard then
+            table.insert(self.hand, newCard)
+        end
+    end
+    
+    -- Rebuild views
+    self:rebuildHandViews()
+    self:rebuildCribViews()
+    
+    log.info("Added " .. numCardsToAdd .. " card(s) to crib and dealt " .. numCardsToAdd .. " replacement(s)")
 end
 
 function GameScene:startNewHand()
@@ -274,6 +350,17 @@ function GameScene:update(dt)
     local mLeft = input.isMouseButtonPressed("left")
 
     local clicked = mLeft
+    
+    -- Update Add to Crib button (only visible when crib is not full and has cards in hand)
+    if #self.hand > 0 and #self.crib < 2 then
+        self.addToCribButton.visible = true
+        self.addToCribButton:update(dt, mx, my, clicked)
+        
+        -- Update button text to show progress
+        self.addToCribButton.text = "Add to Crib (" .. #self.crib .. "/2)"
+    else
+        self.addToCribButton.visible = false
+    end
 
 
     -- Handle Collection UI if open (takes priority)
@@ -846,6 +933,9 @@ function GameScene:draw()
         for _, view in ipairs(self.cribViews) do
             view:draw()
         end
+        
+        -- Draw Add to Crib button
+        self.addToCribButton:draw()
 
         -- Draw Shop if active
         if self.state == "SHOP" then
