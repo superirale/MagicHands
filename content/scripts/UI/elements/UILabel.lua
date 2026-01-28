@@ -14,12 +14,28 @@ function UILabel:setText(text)
     self.text = text
 end
 
-function UILabel:draw()
-    if not self.visible then return end
+function UILabel:setAlign(align)
+    -- Valid values: "left", "center", "right"
+    self.align = align
+end
 
+function UILabel:draw()
+    if not self.visible or not self.font then return end
+
+    local textW, textH, baselineOffset = graphics.getTextSize(self.font, self.text)
+    
+    -- Calculate x position based on alignment
     local x = self.x
-    -- Alignment logic could go here if we had text width
-    graphics.print(self.font, self.text, x, self.y, self.color)
+    if self.align == "center" then
+        x = self.x + (self.width - textW) / 2
+    elseif self.align == "right" then
+        x = self.x + self.width - textW
+    end
+    
+    -- Center vertically within the label's height using baseline offset
+    local y = self.y + (self.height - textH) / 2 + baselineOffset
+    
+    graphics.print(self.font, self.text, x, y, self.color)
 end
 
 return UILabel

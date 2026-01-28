@@ -1,5 +1,5 @@
--- Test script to verify text centering in headers
--- This creates a simple card-like header to visualize the centered text
+-- Test script to verify text centering in headers and buttons
+-- This creates simple card headers and buttons to visualize the centered text
 
 TestTextCentering = {}
 
@@ -25,12 +25,19 @@ function TestTextCentering.init()
         "Mighty King"     -- Mixed with ascenders
     }
     
-    TestTextCentering.colors = {
-        { r = 0.4, g = 0.6, b = 0.8, a = 1 }, -- Blue
-        { r = 0.2, g = 0.7, b = 0.4, a = 1 }, -- Green
-        { r = 0.8, g = 0.3, b = 0.3, a = 1 }, -- Red
-        { r = 0.9, g = 0.8, b = 0.2, a = 1 }, -- Gold
-        { r = 0.5, g = 0.4, b = 0.8, a = 1 }, -- Purple
+    -- Button test texts
+    TestTextCentering.buttonTexts = {
+        "Click Me",
+        "Next Round >",
+        "Reroll Shop",
+        "BUY"
+    }
+    
+    -- Label test
+    TestTextCentering.labelTests = {
+        {text = "Left Aligned", align = "left"},
+        {text = "Center Aligned", align = "center"},
+        {text = "Right Aligned", align = "right"}
     }
     
     log.info("Test initialized with " .. #TestTextCentering.testTexts .. " test cases")
@@ -86,10 +93,102 @@ function TestTextCentering.draw()
         graphics.drawRect(x, centerY, cardWidth, 1, {r=1, g=1, b=0, a=0.5}, true)
     end
     
+    -- Draw button tests (right side)
+    local buttonWidth = 200
+    local buttonHeight = 60
+    local btnStartX = startX + cardWidth + 300
+    local btnStartY = startY
+    
+    -- Section title
+    graphics.print(TestTextCentering.font, "Button Centering Test", btnStartX, btnStartY - 30, {r=1, g=1, b=1, a=1})
+    
+    for i, text in ipairs(TestTextCentering.buttonTexts) do
+        local x = btnStartX
+        local y = btnStartY + (i - 1) * (buttonHeight + spacing)
+        local bgColor = {r=0.3, g=0.3, b=0.3, a=1}
+        
+        -- Draw button background
+        graphics.drawRect(x, y, buttonWidth, buttonHeight, bgColor, true)
+        
+        -- Draw button border
+        graphics.drawRect(x, y, buttonWidth, buttonHeight, {r=1, g=1, b=1, a=0.5}, true)
+        
+        -- Get text size with baseline offset
+        local textW, textH, baselineOffset = graphics.getTextSize(TestTextCentering.font, text)
+        
+        -- Center text (same as UIButton.lua does now)
+        local tx = x + (buttonWidth - textW) / 2
+        local ty = y + (buttonHeight - textH) / 2 + baselineOffset
+        
+        -- Draw text
+        graphics.print(TestTextCentering.font, text, tx, ty, {r=1, g=1, b=1, a=1})
+        
+        -- Draw center line for visual reference (horizontal line through middle)
+        local centerY = y + buttonHeight / 2
+        graphics.drawRect(x, centerY, buttonWidth, 1, {r=1, g=1, b=0, a=0.5}, true)
+        
+        -- Draw debug info
+        local debugText = string.format("w:%.1f h:%.1f bl:%.1f", textW, textH, baselineOffset)
+        graphics.print(TestTextCentering.font, debugText, x + buttonWidth + 10, y + buttonHeight/2 - 8, {r=0.7, g=0.7, b=0.7, a=1})
+    end
+    
+    -- Draw label tests (bottom section)
+    local labelY = math.max(startY + #TestTextCentering.testTexts * (headerHeight + spacing),
+                            btnStartY + #TestTextCentering.buttonTexts * (buttonHeight + spacing)) + 60
+    
+    -- Section title
+    graphics.print(TestTextCentering.font, "Label Alignment Test", startX, labelY - 30, {r=1, g=1, b=1, a=1})
+    
+    local labelWidth = 300
+    local labelHeight = 40
+    
+    for i, labelData in ipairs(TestTextCentering.labelTests) do
+        local x = startX
+        local y = labelY + (i - 1) * (labelHeight + 15)
+        local bgColor = {r=0.2, g=0.2, b=0.25, a=1}
+        
+        -- Draw label background
+        graphics.drawRect(x, y, labelWidth, labelHeight, bgColor, true)
+        
+        -- Draw label border
+        graphics.drawRect(x, y, labelWidth, labelHeight, {r=1, g=1, b=1, a=0.3}, true)
+        
+        -- Get text size
+        local textW, textH, baselineOffset = graphics.getTextSize(TestTextCentering.font, labelData.text)
+        
+        -- Calculate position based on alignment (same as UILabel.lua)
+        local tx = x
+        if labelData.align == "center" then
+            tx = x + (labelWidth - textW) / 2
+        elseif labelData.align == "right" then
+            tx = x + labelWidth - textW
+        end
+        
+        -- Center vertically
+        local ty = y + (labelHeight - textH) / 2 + baselineOffset
+        
+        -- Draw text
+        graphics.print(TestTextCentering.font, labelData.text, tx, ty, {r=1, g=1, b=1, a=1})
+        
+        -- Draw vertical center line
+        local centerY = y + labelHeight / 2
+        graphics.drawRect(x, centerY, labelWidth, 1, {r=1, g=1, b=0, a=0.3}, true)
+        
+        -- Draw alignment markers (vertical lines)
+        if labelData.align == "left" then
+            graphics.drawRect(x, y, 2, labelHeight, {r=0, g=1, b=0, a=0.5}, true)
+        elseif labelData.align == "center" then
+            local centerX = x + labelWidth / 2
+            graphics.drawRect(centerX, y, 2, labelHeight, {r=0, g=1, b=1, a=0.5}, true)
+        elseif labelData.align == "right" then
+            graphics.drawRect(x + labelWidth - 2, y, 2, labelHeight, {r=1, g=0, b=0, a=0.5}, true)
+        end
+    end
+    
     -- Instructions
-    local instrY = startY + #TestTextCentering.testTexts * (headerHeight + spacing) + 20
-    graphics.print(TestTextCentering.font, "Yellow line = visual center of header", 50, instrY, {r=1, g=1, b=0.7, a=1})
-    graphics.print(TestTextCentering.font, "Text should be centered around the yellow line", 50, instrY + 25, {r=1, g=1, b=0.7, a=1})
+    local instrY = labelY + #TestTextCentering.labelTests * (labelHeight + 15) + 30
+    graphics.print(TestTextCentering.font, "Yellow line = vertical center | Colored lines = alignment reference", 50, instrY, {r=1, g=1, b=0.7, a=1})
+    graphics.print(TestTextCentering.font, "Text should be centered vertically and aligned horizontally as labeled", 50, instrY + 25, {r=1, g=1, b=0.7, a=1})
 end
 
 function TestTextCentering.update(dt)

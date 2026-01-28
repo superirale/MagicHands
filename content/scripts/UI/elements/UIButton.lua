@@ -48,9 +48,13 @@ function UIButton:draw()
     -- Draw Border
     graphics.drawRect(self.x, self.y, self.width, self.height, { r = 1, g = 1, b = 1, a = 0.5 }, false)
 
-    -- Draw Text (Centered)
+    -- Draw Text (Properly Centered)
     if self.font then
-        graphics.print(self.font, self.text, self.x + 10, self.y + 10, self.textColor)
+        local textW, textH, baselineOffset = graphics.getTextSize(self.font, self.text)
+        local tx = self.x + (self.width - textW) / 2
+        local ty = self.y + (self.height - textH) / 2 + baselineOffset
+        
+        graphics.print(self.font, self.text, tx, ty, self.textColor)
     end
 end
 
