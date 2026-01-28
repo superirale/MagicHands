@@ -58,6 +58,7 @@ function ShopUI:init(font, layout)
     self.layout:register("Shop_Title", { anchor = "top-center", width = 100, height = 40, offsetX = 0, offsetY = 40 })
     self.layout:register("Shop_Gold", { anchor = "top-center", width = 100, height = 30, offsetX = 0, offsetY = 90 })
     self.layout:register("Shop_Reroll", { anchor = "bottom-left", width = 200, height = 60, offsetX = 0, offsetY = 0 })
+    self.layout:register("Shop_SellJokers", { anchor = "bottom-left", width = 200, height = 60, offsetX = 220, offsetY = 0 })
     self.layout:register("Shop_Next", { anchor = "bottom-right", width = 200, height = 60, offsetX = 0, offsetY = 0 })
 
     -- Initialize Buttons
@@ -74,6 +75,20 @@ function ShopUI:init(font, layout)
     end)
     self.rerollButton.bgColor = { r = 0.3, g = 0.3, b = 0.8, a = 1 }
     self.rerollButton.hoverColor = { r = 0.4, g = 0.4, b = 0.9, a = 1 }
+    
+    self.sellButton = UIButton("Shop_SellJokers", "Sell Jokers", self.font, function()
+        self.sellMode = not self.sellMode
+        if self.sellMode then
+            log.info("Sell mode enabled - click a joker to sell it")
+        else
+            log.info("Sell mode disabled")
+        end
+    end)
+    self.sellButton.bgColor = { r = 0.6, g = 0.4, b = 0.1, a = 1 }
+    self.sellButton.hoverColor = { r = 0.8, g = 0.5, b = 0.2, a = 1 }
+    
+    self.sellMode = false
+    self.sellPrice = 25  -- Default sell price (half of typical buy price)
 end
 
 function ShopUI:getMetadata(id)
@@ -113,6 +128,35 @@ function ShopUI:getMetadata(id)
     end
 
     return self.Metadata[id]
+end
+
+function ShopUI:handleJokerSellClick(mx, my)
+    if not JokerManager or not JokerManager.slots then return nil end
+    
+    -- Joker display area (top of screen)
+    local jokerW = 120
+    local jokerH = 40
+    local jokerSpacing = 10
+    local startX = 50
+    local startY = 140
+    
+    for i, joker in ipairs(JokerManager.slots) do
+        local x = startX + (i - 1) * (jokerW + jokerSpacing)
+        local y = startY
+        
+        if mx >= x and mx <= x + jokerW and my >= y and my <= y + jokerH then
+            -- Clicked on this joker - sell it
+            local success, msg = JokerManager:sellJoker(i, self.sellPrice)
+            if success then
+                log.info("Sold joker: " .. msg .. " for " .. self.sellPrice .. "g")
+            else
+                log.warn("Failed to sell joker: " .. msg)
+            end
+            return { action = "joker_sold" }
+        end
+    end
+    
+    return nil
 end
 
 function ShopUI:rebuildCards()
@@ -189,6 +233,32 @@ function ShopUI:update(dt, mx, my, clicked)
     self.rerollButton:setPos(rx, ry)
     self.rerollButton:setSize(rr.width, rr.height)
     self.rerollButton:update(dt, mx, my, clicked)
+    
+    local sx, sy = self.layout:getPosition("Shop_SellJokers")
+    local sr = self.layout.regions["Shop_SellJokers"]
+    
+    self.sellButton:setPos(sx, sy)
+    self.sellButton:setSize(sr.width, sr.height)
+    self.sellButton:update(dt, mx, my, clicked)
+    
+    -- Update sell button text based on mode
+    if self.sellMode then
+        self.sellButton.text = "Cancel Sell"
+        self.sellButton.bgColor = { r = 0.8, g = 0.3, b = 0.1, a = 1 }
+    else
+        self.sellButton.text = "Sell Jokers"
+        self.sellButton.bgColor = { r = 0.6, g = 0.4, b = 0.1, a = 1 }
+    end
+    
+    -- Handle joker selling in sell mode
+    if self.sellMode and clicked then
+        -- Check if player clicked on their jokers (displayed at top)
+        local jokerClickResult = self:handleJokerSellClick(mx, my)
+        if jokerClickResult then
+            self.sellMode = false
+            return jokerClickResult
+        end
+    end
 
     -- Dynamic Card Layout
     local cardW = 220
@@ -237,9 +307,76 @@ function ShopUI:draw()
     local rerollTextX = rx + (rr.width - rerollTextW) / 2
     graphics.print(self.font, rerollText, rerollTextX, ry - 30, { r = 0.7, g = 0.7, b = 0.7, a = 1 })
 
+    -- Draw Player's Jokers Section (at top)
+    if JokerManager and JokerManager.slots then
+        local jokerSectionY = 120
+        graphics.print(self.font, "Your Jokers:", 50, jokerSectionY, { r = 1, g = 1, b = 1, a = 1 })
+        
+        if self.sellMode then
+            graphics.print(self.font, "Click a joker to sell for " .. self.sellPrice .. "g", 200, jokerSectionY, { r = 1, g = 0.8, b = 0.2, a = 1 })
+        end
+        
+        local jokerW = 120
+        local jokerH = 40
+        local jokerSpacing = 10
+        local startX = 50
+        local startY = 140
+        local mx, my = input.getMousePosition()
+        
+        for i, joker in ipairs(JokerManager.slots) do
+            local x = startX + (i - 1) * (jokerW + jokerSpacing)
+            local y = startY
+            
+            -- Check hover
+            local isHovered = mx >= x and mx <= x + jokerW and my >= y and my <= y + jokerH
+            
+            -- Background color
+            local bgColor = { r = 0.2, g = 0.2, b = 0.25, a = 1 }
+            if self.sellMode and isHovered then
+                bgColor = { r = 0.8, g = 0.3, b = 0.3, a = 1 }  -- Red hover in sell mode
+            elseif isHovered then
+                bgColor = { r = 0.3, g = 0.3, b = 0.35, a = 1 }
+            end
+            
+            -- Draw joker slot
+            graphics.drawRect(x, y, jokerW, jokerH, bgColor, true)
+            graphics.drawRect(x, y, jokerW, jokerH, { r = 0.5, g = 0.5, b = 0.5, a = 1 }, true)
+            
+            -- Joker text
+            local jokerText = joker.id
+            if joker.stack > 1 then
+                jokerText = jokerText .. " x" .. joker.stack
+            end
+            
+            -- Get text size and center it
+            local textW, textH, baselineOffset = graphics.getTextSize(self.font, jokerText)
+            local textX = x + (jokerW - textW) / 2
+            local textY = y + (jokerH - textH) / 2 + baselineOffset
+            
+            graphics.print(self.font, jokerText, textX, textY, { r = 1, g = 1, b = 1, a = 1 })
+        end
+        
+        -- Show empty slots
+        if #JokerManager.slots < JokerManager.maxSlots then
+            for i = #JokerManager.slots + 1, JokerManager.maxSlots do
+                local x = startX + (i - 1) * (jokerW + jokerSpacing)
+                local y = startY
+                graphics.drawRect(x, y, jokerW, jokerH, { r = 0.1, g = 0.1, b = 0.15, a = 1 }, true)
+                graphics.drawRect(x, y, jokerW, jokerH, { r = 0.3, g = 0.3, b = 0.3, a = 1 }, true)
+                
+                local emptyText = "Empty"
+                local textW, textH, baselineOffset = graphics.getTextSize(self.font, emptyText)
+                local textX = x + (jokerW - textW) / 2
+                local textY = y + (jokerH - textH) / 2 + baselineOffset
+                graphics.print(self.font, emptyText, textX, textY, { r = 0.5, g = 0.5, b = 0.5, a = 1 })
+            end
+        end
+    end
+
     -- Buttons
     self.nextButton:draw()
     self.rerollButton:draw()
+    self.sellButton:draw()
 
     -- Render Cards
     for _, card in ipairs(self.cards) do
