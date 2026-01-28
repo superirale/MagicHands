@@ -1,7 +1,7 @@
 {
     "id": "nobs_hunter",
     "name": "Nobs Hunter",
-    "description": "x2 chips when you have nobs",
+    "description": "x2 Mult if you have Nobs",
     "rarity": "uncommon",
     "type": "multiplier",
     "triggers": [
