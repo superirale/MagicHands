@@ -37,19 +37,41 @@ function ShopUI:getMetadata(id)
     -- Try Loading from JSON
     -- Determine correct path based on item ID pattern
     local path = "content/data/jokers/" .. id .. ".json"
-    
+
     -- Known imprints (from Phase 2 content)
     local imprints = {
-        gold_inlay = true, lucky_pips = true, steel_plating = true, mint = true, tax = true,
-        investment = true, insurance = true, dividend = true, echo = true, cascade = true,
-        fractal = true, resonance = true, spark = true, ripple = true, pulse = true,
-        crown = true, underdog = true, clutch = true, opener = true, majority = true,
-        minority = true, wildcard_imprint = true, suit_shifter = true, mimic = true, nullifier = true
+        gold_inlay = true,
+        lucky_pips = true,
+        steel_plating = true,
+        mint = true,
+        tax = true,
+        investment = true,
+        insurance = true,
+        dividend = true,
+        echo = true,
+        cascade = true,
+        fractal = true,
+        resonance = true,
+        spark = true,
+        ripple = true,
+        pulse = true,
+        crown = true,
+        underdog = true,
+        clutch = true,
+        opener = true,
+        majority = true,
+        minority = true,
+        wildcard_imprint = true,
+        suit_shifter = true,
+        mimic = true,
+        nullifier = true
     }
-    
+
     if string.find(id, "planet_") then
         path = "content/data/enhancements/" .. id .. ".json"
-    elseif string.find(id, "spectral_") or string.find(id, "warp_") then
+    elseif string.find(id, "warp_") or id == "spectral_echo" or id == "spectral_ghost" or id == "spectral_void" then
+        path = "content/data/warps/" .. id .. ".json"
+    elseif string.find(id, "spectral_") then
         path = "content/data/spectrals/" .. id .. ".json"
     elseif imprints[id] then
         path = "content/data/imprints/" .. id .. ".json"

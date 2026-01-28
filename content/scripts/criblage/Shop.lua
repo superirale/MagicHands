@@ -38,20 +38,20 @@ Shop = {
         "planet_venus", "planet_saturn", "planet_neptune", "planet_uranus",
         "planet_mercury", "planet_pluto", "planet_earth", "planet_moon",
         "planet_sun", "planet_comet", "planet_asteroid", "planet_nebula",
-        
+
         -- Imprints (25 total)
         "gold_inlay", "lucky_pips", "steel_plating", "mint", "tax",
         "investment", "insurance", "dividend", "echo", "cascade",
         "fractal", "resonance", "spark", "ripple", "pulse",
         "crown", "underdog", "clutch", "opener", "majority",
         "minority", "wildcard_imprint", "suit_shifter", "mimic", "nullifier",
-        
+
         -- Warps (15 total)
         "spectral_ghost", "spectral_echo", "spectral_void",
         "warp_wildfire", "warp_ascension", "warp_greed", "warp_gambit",
         "warp_time", "warp_infinity", "warp_chaos", "warp_inversion",
         "warp_mirror", "warp_fortune", "warp_blaze", "warp_phantom",
-        
+
         -- Sculptors (8 total)
         "spectral_remove", "spectral_clone", "spectral_ascend", "spectral_collapse",
         "spectral_split", "spectral_purge", "spectral_rainbow", "spectral_fusion"
@@ -183,7 +183,7 @@ function Shop:buyJoker(index)
     if not Economy:spend(item.price) then
         return false, "Not enough gold (" .. item.price .. "g needed)"
     end
-    
+
     -- Emit shop purchase event
     events.emit("shop_purchase", { id = item.id, type = item.type, price = item.price })
 
@@ -199,7 +199,7 @@ function Shop:buyJoker(index)
             end
             table.remove(self.jokers, index)
             return true, msg
-        elseif string.find(item.id, "spectral") then
+        elseif string.find(item.id, "spectral") or string.find(item.id, "warp") then
             -- Check for Sculptors (Action requiring selection)
             if item.id == "spectral_remove" or item.id == "spectral_clone" then
                 -- Return signal to open DeckView
@@ -224,7 +224,7 @@ function Shop:buyJoker(index)
             if Economy.gold < item.price then
                 return false, "Not enough gold"
             end
-            
+
             -- Return signal to open card selection for imprinting
             return { action = "select_card_for_imprint", itemId = item.id, itemIndex = index }, "Select card to imprint"
         end
@@ -259,37 +259,57 @@ function Shop:applyImprint(shopIndex, cardId)
     if shopIndex < 1 or shopIndex > #self.jokers then
         return false, "Invalid shop index"
     end
-    
+
     local item = self.jokers[shopIndex]
-    
+
     -- Verify it's an imprint item
     -- Known imprints (all 25 from Phase 2)
     local imprints = {
-        gold_inlay = true, lucky_pips = true, steel_plating = true, mint = true, tax = true,
-        investment = true, insurance = true, dividend = true, echo = true, cascade = true,
-        fractal = true, resonance = true, spark = true, ripple = true, pulse = true,
-        crown = true, underdog = true, clutch = true, opener = true, majority = true,
-        minority = true, wildcard_imprint = true, suit_shifter = true, mimic = true, nullifier = true
+        gold_inlay = true,
+        lucky_pips = true,
+        steel_plating = true,
+        mint = true,
+        tax = true,
+        investment = true,
+        insurance = true,
+        dividend = true,
+        echo = true,
+        cascade = true,
+        fractal = true,
+        resonance = true,
+        spark = true,
+        ripple = true,
+        pulse = true,
+        crown = true,
+        underdog = true,
+        clutch = true,
+        opener = true,
+        majority = true,
+        minority = true,
+        wildcard_imprint = true,
+        suit_shifter = true,
+        mimic = true,
+        nullifier = true
     }
-    
+
     if item.type ~= "enhancement" or not imprints[item.id] then
         return false, "Item is not an imprint"
     end
-    
+
     -- Charge player
     if not Economy:spend(item.price) then
         return false, "Not enough gold"
     end
-    
+
     -- Apply imprint to card via CampaignState
     local success, msg = CampaignState:addImprintToCard(cardId, item.id)
-    
+
     if not success then
         -- Refund on failure
         Economy:addGold(item.price)
         return false, msg
     end
-    
+
     -- Remove from shop
     table.remove(self.jokers, shopIndex)
     return true, "Imprinted with " .. item.id
@@ -300,22 +320,22 @@ function Shop:applySculptor(shopIndex, cardIndex, action)
     if shopIndex < 1 or shopIndex > #self.jokers then
         return false, "Invalid shop index"
     end
-    
+
     local item = self.jokers[shopIndex]
-    
+
     -- Verify it's a sculptor item
     if item.id ~= "spectral_remove" and item.id ~= "spectral_clone" then
         return false, "Item is not a deck sculptor"
     end
-    
+
     -- Charge player
     if not Economy:spend(item.price) then
         return false, "Not enough gold"
     end
-    
+
     local success = false
     local msg = ""
-    
+
     if item.id == "spectral_remove" then
         success = CampaignState:removeCard(cardIndex)
         msg = success and "Card removed from deck" or "Failed to remove card"
@@ -323,21 +343,21 @@ function Shop:applySculptor(shopIndex, cardIndex, action)
         success = CampaignState:duplicateCard(cardIndex)
         msg = success and "Card duplicated" or "Failed to duplicate card"
     end
-    
+
     if success then
         -- Emit sculptor used event
         events.emit("sculptor_used", {
             id = item.id,
             newDeckSize = #CampaignState.masterDeck
         })
-        
+
         -- Remove from shop
         table.remove(self.jokers, shopIndex)
     else
         -- Refund on failure
         Economy:addGold(item.price)
     end
-    
+
     return success, msg
 end
 
