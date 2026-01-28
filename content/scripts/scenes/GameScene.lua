@@ -87,34 +87,34 @@ function GameScene:init()
 
     -- Phase 3: Initialize Meta-Progression & Polish Systems
     print("Initializing Phase 3 Systems...")
-    
+
     -- Achievement System (module singleton)
     MagicHandsAchievements:init()
     print("Achievement system initialized")
-    
+
     -- Unlock System (module singleton)
     UnlockSystem:init()
     print("Unlock system initialized")
-    
+
     -- Undo System (module singleton)
     UndoSystem:init()
     print("Undo system initialized")
-    
+
     -- UI Systems (Classes - need instantiation)
     self.collectionUI = CollectionUI(self.font, self.smallFont)
     self.achievementNotification = AchievementNotification(self.font, self.smallFont)
     self.runStatsPanel = RunStatsPanel(self.font, self.smallFont)
-    
+
     -- Score preview state
     self.scorePreviewData = nil -- Stores calculated preview data
-    
+
     -- Note: ScorePreview and TierIndicator are modules with static functions
     -- They are used directly via ScorePreview.calculate() and TierIndicator.draw()
-    
+
     -- UI visibility flags
     self.showCollection = false
     self.showRunStats = false
-    
+
     print("Phase 3 systems initialized successfully!")
 
     -- Mouse State
@@ -256,7 +256,7 @@ function GameScene:update(dt)
 
     -- Phase 3: Update systems
     self.achievementNotification:update(dt)
-    
+
     -- Handle global keyboard shortcuts
     if input.isPressed("c") then
         self.showCollection = not self.showCollection
@@ -266,11 +266,11 @@ function GameScene:update(dt)
             self.collectionUI:close()
         end
     end
-    
+
     if input.isPressed("tab") then
         self.showRunStats = not self.showRunStats
     end
-    
+
     if input.isPressed("z") and self.state == "PLAY" then
         local success, action = UndoSystem:undo()
         if success then
@@ -346,14 +346,14 @@ function GameScene:update(dt)
                 table.insert(selectedCards, self.hand[i])
             end
         end
-        
+
         if #selectedCards == 4 and self.cutCard then
             -- Calculate score preview
             self.scorePreviewData = ScorePreview.calculate(selectedCards, self.cutCard)
         else
             self.scorePreviewData = nil
         end
-        
+
         -- Handle Dragging State
         if self.draggingView then
             -- Update Position
@@ -391,7 +391,7 @@ function GameScene:update(dt)
                         UndoSystem:saveState("card_selection", {
                             wasSelected = self.draggingView.selected
                         })
-                        
+
                         self.draggingView:toggleSelected()
                         if self.draggingView.selected then
                             EffectManager:spawnSparkles(self.draggingView.x + self.draggingView.width / 2,
@@ -484,11 +484,22 @@ function GameScene:update(dt)
         local tests = require "content.scripts.tests.JokerTests"
         tests.run()
     end
-    
+
     -- Phase 3: JSON Loading Test (press 'y')
     if input.isPressed("y") then
         package.loaded["content.scripts.tests.TestJSONLoading"] = nil
         local jsonTest = require "content.scripts.tests.TestJSONLoading"
+    end
+
+    if self.state == "GAME_OVER" then
+        if input.isPressed("r") then
+            -- Restart Game
+            print("Restarting game...")
+            -- For MVP, a simple reload or reset state
+            CampaignState:init()
+            self:enter()
+            self.state = "PLAY"
+        end
     end
 
     self.lastMouseState = { x = mx, y = my, left = mLeft }
@@ -629,7 +640,7 @@ function GameScene:playHand()
 
     if result == "win" then
         print("Blind Cleared! entering shop...")
-        
+
         -- Emit blind won event for achievements
         local currentBlind = CampaignState:getCurrentBlind()
         events.emit("blind_won", {
@@ -638,13 +649,13 @@ function GameScene:playHand()
             bossId = BossManager.activeBoss and BossManager.activeBoss.id or nil,
             score = finalScore
         })
-        
+
         self.state = "SHOP"
         self.shopUI:open(reward)
     elseif result == "loss" then
         print("GAME OVER")
         self.state = "GAME_OVER"
-        
+
         -- Emit run complete event
         events.emit("run_complete", { won = false })
     else
@@ -657,9 +668,12 @@ function GameScene:calculateHandTotal(cards)
     local total = 0
     for _, card in ipairs(cards) do
         local val = 0
-        if card.rank == "A" then val = 1
-        elseif card.rank == "J" or card.rank == "Q" or card.rank == "K" then val = 10
-        else val = tonumber(card.rank) or 0
+        if card.rank == "A" then
+            val = 1
+        elseif card.rank == "J" or card.rank == "Q" or card.rank == "K" then
+            val = 10
+        else
+            val = tonumber(card.rank) or 0
         end
         total = total + val
     end
@@ -827,10 +841,11 @@ function GameScene:draw()
     if self.hud then
         -- Draw HUD
         self.hud:draw(CampaignState)
-        
+
         -- Phase 3: Draw keyboard shortcuts helper text
         if self.state == "PLAY" then
-            graphics.print(self.smallFont, "[C] Collection  [TAB] Stats  [Z] Undo", 20, 680, { r = 0.7, g = 0.7, b = 0.7, a = 0.8 })
+            graphics.print(self.smallFont, "[C] Collection  [TAB] Stats  [Z] Undo", 20, 680,
+                { r = 0.7, g = 0.7, b = 0.7, a = 0.8 })
         end
 
         -- Draw Cut Card
@@ -860,12 +875,12 @@ function GameScene:draw()
         if self.state == "DECK_VIEW" and self.deckView then
             self.deckView:draw()
         end
-        
+
         -- Phase 3: Draw Score Preview (in PLAY state)
         if self.state == "PLAY" and self.scorePreviewData then
             ScorePreview.draw(850, 300, self.scorePreviewData, self.font, self.smallFont)
         end
-        
+
         -- Phase 3: Draw Tier Indicators on Jokers
         if JokerManager and JokerManager.slots then
             for i, joker in ipairs(JokerManager.slots) do
@@ -877,17 +892,17 @@ function GameScene:draw()
                 end
             end
         end
-        
+
         -- Phase 3: Draw Run Stats Panel (TAB toggle)
         if self.showRunStats and self.runStatsPanel then
             self.runStatsPanel:draw()
         end
-        
+
         -- Phase 3: Draw Collection UI (C toggle)
         if self.showCollection and self.collectionUI then
             self.collectionUI:draw()
         end
-        
+
         -- Phase 3: Draw Achievement Notifications (always on top)
         if self.achievementNotification then
             self.achievementNotification:draw()
@@ -905,7 +920,7 @@ function GameScene:draw()
                 if self.runStatsPanel then
                     self.runStatsPanel:reset()
                 end
-                
+
                 CampaignState:init()
                 self:startNewHand()
             end

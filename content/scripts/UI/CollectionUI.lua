@@ -107,6 +107,7 @@ function CollectionUI:update(dt)
     -- Close button
     if input.isPressed("escape") or input.isPressed("c") then
         self:hide()
+        return "close"
     end
 end
 
