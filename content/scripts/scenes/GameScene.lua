@@ -224,6 +224,7 @@ function GameScene:update(dt)
     -- Check for window resize to update viewport scaling and UI Layout
     local winW, winH = graphics.getWindowSize()
     if winW ~= self.lastWinW or winH ~= self.lastWinH then
+        print("DEBUG GameScene: Resize detected " .. winW .. "x" .. winH)
         self.lastWinW = winW
         self.lastWinH = winH
 
@@ -235,6 +236,7 @@ function GameScene:update(dt)
 
         -- Update UI Layout
         if UILayout then
+            print("DEBUG GameScene: Updating UILayout size")
             UILayout.setScreenSize(winW, winH)
         end
     end
@@ -600,7 +602,7 @@ function GameScene:playHand()
 
     -- Debug: Show joker effects
     print("--- SCORE BREAKDOWN ---")
-    print("Base: " .. score.baseChips .. " x " .. (score.tempMultiplier + score.permMultiplier))
+    print("Base: " .. score.baseChips .. " x " .. (1 + score.tempMultiplier + score.permMultiplier))
     print("Augments: +" .. augmentEffects.chips .. " Chips, +" .. augmentEffects.mult .. " Mult")
     print("Jokers: +" ..
         jokerEffects.addedChips .. " Chips, +" .. (jokerEffects.addedTempMult + jokerEffects.addedPermMult) .. " Mult")

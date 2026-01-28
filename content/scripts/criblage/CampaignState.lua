@@ -39,7 +39,7 @@ end
 function CampaignState:initDeck()
     self.masterDeck = {}
     self.cardImprints = {} -- Track imprints: { [cardId] = { imprint1_id, imprint2_id } }
-    
+
     local ranks = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" }
     local suits = { "H", "D", "S", "C" }
 
@@ -69,14 +69,14 @@ function CampaignState:getDeck()
             id = card.id,
             imprints = {} -- Copy imprints for this card
         }
-        
+
         -- Copy imprints array
         if self.cardImprints[card.id] then
             for _, imprintId in ipairs(self.cardImprints[card.id]) do
                 table.insert(cardCopy.imprints, imprintId)
             end
         end
-        
+
         table.insert(deckCopy, cardCopy)
     end
     return deckCopy
@@ -105,7 +105,7 @@ function CampaignState:duplicateCard(idx)
             id = copyId
         }
         table.insert(self.masterDeck, copy)
-        
+
         -- Copy imprints to the duplicated card
         self.cardImprints[copyId] = {}
         if self.cardImprints[original.id] then
@@ -113,7 +113,7 @@ function CampaignState:duplicateCard(idx)
                 table.insert(self.cardImprints[copyId], imprintId)
             end
         end
-        
+
         return true
     end
     return false
@@ -124,25 +124,25 @@ function CampaignState:addImprintToCard(cardId, imprintId)
     if not self.cardImprints then
         self.cardImprints = {}
     end
-    
+
     if not self.cardImprints[cardId] then
         self.cardImprints[cardId] = {}
     end
-    
+
     local imprints = self.cardImprints[cardId]
-    
+
     -- Check if already has this imprint
     for _, existing in ipairs(imprints) do
         if existing == imprintId then
             return false, "Card already has this imprint"
         end
     end
-    
+
     -- GDD: Max 2 imprints per card
     if #imprints >= 2 then
         return false, "Card already has maximum imprints (2)"
     end
-    
+
     table.insert(imprints, imprintId)
     return true, "Imprint applied successfully"
 end
@@ -245,8 +245,10 @@ function CampaignState:advanceBlind()
 end
 
 function CampaignState:playHand(score)
+    print("DEBUG Campaign: playHand score=" .. score)
     self.handsRemaining = self.handsRemaining - 1
     self.currentScore = self.currentScore + score
+    print("DEBUG Campaign: new currentScore=" .. self.currentScore)
 
     local currentBlind = self:getCurrentBlind()
     local required = blind.getRequiredScore(currentBlind, self.difficulty)

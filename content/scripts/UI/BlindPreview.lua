@@ -155,7 +155,7 @@ function BlindPreview:draw()
     local playText = "PLAY"
     local playW = estimateWidth(playText, 24)
     -- Vertically center text in button (approx)
-    graphics.print(self.font, playText, btnX + (self.btnWidth - playW) / 2, btnY + (self.btnHeight - 24) / 2,
+    graphics.print(self.font, playText, btnX + (self.btnWidth - playW) / 2 + 4, btnY + (self.btnHeight - 24) / 2 + 8,
         { r = 1, g = 1, b = 1, a = 1 })
 
     local hintText = "[Enter]"
