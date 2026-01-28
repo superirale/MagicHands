@@ -33,11 +33,18 @@ function TestTextCentering.init()
         "BUY"
     }
     
-    -- Label test
+    -- Label test (horizontal alignment)
     TestTextCentering.labelTests = {
-        {text = "Left Aligned", align = "left"},
-        {text = "Center Aligned", align = "center"},
-        {text = "Right Aligned", align = "right"}
+        {text = "Left Aligned", align = "left", valign = "middle"},
+        {text = "Center Aligned", align = "center", valign = "middle"},
+        {text = "Right Aligned", align = "right", valign = "middle"}
+    }
+    
+    -- Label vertical alignment test
+    TestTextCentering.vlabelTests = {
+        {text = "Top Aligned", align = "center", valign = "top"},
+        {text = "Middle Aligned", align = "center", valign = "middle"},
+        {text = "Bottom Aligned", align = "center", valign = "bottom"}
     }
     
     log.info("Test initialized with " .. #TestTextCentering.testTexts .. " test cases")
@@ -185,10 +192,65 @@ function TestTextCentering.draw()
         end
     end
     
+    -- Draw vertical alignment tests
+    local vlabelY = labelY + #TestTextCentering.labelTests * (labelHeight + 15) + 60
+    local vlabelX = startX + 400
+    
+    -- Section title
+    graphics.print(TestTextCentering.font, "Vertical Alignment Test", vlabelX, vlabelY - 30, {r=1, g=1, b=1, a=1})
+    
+    local vlabelWidth = 250
+    local vlabelHeight = 80  -- Taller to show vertical alignment better
+    
+    for i, labelData in ipairs(TestTextCentering.vlabelTests) do
+        local x = vlabelX
+        local y = vlabelY + (i - 1) * (vlabelHeight + 15)
+        local bgColor = {r=0.2, g=0.2, b=0.25, a=1}
+        
+        -- Draw label background
+        graphics.drawRect(x, y, vlabelWidth, vlabelHeight, bgColor, true)
+        
+        -- Draw label border
+        graphics.drawRect(x, y, vlabelWidth, vlabelHeight, {r=1, g=1, b=1, a=0.3}, true)
+        
+        -- Get text size
+        local textW, textH, baselineOffset = graphics.getTextSize(TestTextCentering.font, labelData.text)
+        
+        -- Calculate horizontal position (centered)
+        local tx = x + (vlabelWidth - textW) / 2
+        
+        -- Calculate vertical position based on valign (same as UILabel.lua)
+        local ty = y
+        if labelData.valign == "middle" then
+            ty = y + (vlabelHeight - textH) / 2 + baselineOffset
+        elseif labelData.valign == "top" then
+            ty = y + baselineOffset
+        elseif labelData.valign == "bottom" then
+            ty = y + vlabelHeight - textH + baselineOffset
+        end
+        
+        -- Draw text
+        graphics.print(TestTextCentering.font, labelData.text, tx, ty, {r=1, g=1, b=1, a=1})
+        
+        -- Draw horizontal reference lines
+        if labelData.valign == "top" then
+            -- Top line (green)
+            graphics.drawRect(x, y, vlabelWidth, 2, {r=0, g=1, b=0, a=0.5}, true)
+        elseif labelData.valign == "middle" then
+            -- Middle line (cyan)
+            local centerY = y + vlabelHeight / 2
+            graphics.drawRect(x, centerY, vlabelWidth, 2, {r=0, g=1, b=1, a=0.5}, true)
+        elseif labelData.valign == "bottom" then
+            -- Bottom line (red)
+            graphics.drawRect(x, y + vlabelHeight - 2, vlabelWidth, 2, {r=1, g=0, b=0, a=0.5}, true)
+        end
+    end
+    
     -- Instructions
-    local instrY = labelY + #TestTextCentering.labelTests * (labelHeight + 15) + 30
-    graphics.print(TestTextCentering.font, "Yellow line = vertical center | Colored lines = alignment reference", 50, instrY, {r=1, g=1, b=0.7, a=1})
-    graphics.print(TestTextCentering.font, "Text should be centered vertically and aligned horizontally as labeled", 50, instrY + 25, {r=1, g=1, b=0.7, a=1})
+    local instrY = math.max(labelY + #TestTextCentering.labelTests * (labelHeight + 15),
+                            vlabelY + #TestTextCentering.vlabelTests * (vlabelHeight + 15)) + 30
+    graphics.print(TestTextCentering.font, "Yellow line = visual center | Colored lines = alignment reference", 50, instrY, {r=1, g=1, b=0.7, a=1})
+    graphics.print(TestTextCentering.font, "Green = top, Cyan = middle, Red = bottom | All text uses baseline offset for perfect positioning", 50, instrY + 25, {r=1, g=1, b=0.7, a=1})
 end
 
 function TestTextCentering.update(dt)
