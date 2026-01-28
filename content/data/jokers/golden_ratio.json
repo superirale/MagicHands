@@ -10,8 +10,9 @@
     "conditions": [],
     "effects": [
         {
-            "type": "add_temp_mult",
-            "value": 2.0
+            "type": "add_multiplier",
+            "value": 2.0,
+            "per": ""
         }
     ],
     "ignores_caps": true

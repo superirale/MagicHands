@@ -7,14 +7,12 @@
     "triggers": [
         "on_score"
     ],
-    "conditions": [
-        "count_face_cards > 0"
-    ],
+    "conditions": [],
     "effects": [
         {
             "type": "add_chips",
             "value": 15,
-            "per": "each_face_card"
+            "per": "each_face"
         }
     ],
     "ignores_caps": false

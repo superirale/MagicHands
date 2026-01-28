@@ -37,6 +37,9 @@ function ShopUI:getMetadata(id)
     -- Try Loading from JSON
     -- Helper to check file existence? loadJSON returns nil if failed.
     local path = "content/data/jokers/" .. id .. ".json"
+    if string.find(id, "planet") or string.find(id, "spectral") then
+        path = "content/data/enhancements/" .. id .. ".json"
+    end
     local data = nil
 
     if files and files.loadJSON then

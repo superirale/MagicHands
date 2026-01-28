@@ -9,6 +9,21 @@ Its core fantasy is *intentional degeneracy*: players build focused, rule-breaki
 
 ---
 
+## 1.1 Adaptation from Classic Cribbage
+Magic Hands is a **roguelike score-attack** game, not a simulation of traditional Cribbage.
+
+### ❌ Removed Mechanics
+- **The Pegging Phase**: There is no alternating play sequence. The tactical depth comes from hand construction and economy management, not play sequencing.
+- **The Opponent**: You play against a target score (Blind), not an AI opponent.
+- **The Board**: Victory is not reaching 121 points; it is surviving the current Blind.
+
+### ✅ Retained Mechanics
+- **The Deal**: 6 cards per hand.
+- **The Discard**: Choosing 2 cards for the Crib remains the central tactical decision.
+- **The Show**: Hand and Crib are scored using standard Cribbage rules (15s, runs, pairs, flushes, nobs).
+
+---
+
 ## 2. Core Progression Pillars
 
 - Limited slots

@@ -17,11 +17,12 @@ Shop = {
 
     -- Enhancement Pool (Planets, Imprints, Warps, Spectrals)
     enhancementPool = {
-        "planet_pair", "planet_run", "planet_15", "planet_flush",
+        "planet_pair", "planet_run", "planet_fifteen", "planet_flush",
         "planet_noble", "planet_triad",
-        "gold_inlay", "lucky_pips", "steel_plating",
-        "spectral_ghost", "spectral_echo", "spectral_void",
-        "spectral_remove", "spectral_clone"
+        --"gold_inlay", "lucky_pips", "steel_plating",
+        --"spectral_ghost", "spectral_echo", "spectral_void",
+        --"spectral_remove", "spectral_clone"
+        "spectral_echo"
     }
 }
 
@@ -156,17 +157,13 @@ function Shop:buyJoker(index)
 
         -- Check if it's a Planet (Augment), Imprint (Card Mod), or Warp (Spectral)
         if string.find(item.id, "planet") then
-            -- Handle Planet
-            local cat = "pairs"
-            if item.id == "planet_run" then cat = "runs" end
-            if item.id == "planet_15" then cat = "fifteens" end
-            if item.id == "planet_flush" then cat = "flush" end
-            if item.id == "planet_noble" then cat = "nobs" end
-            if item.id == "planet_triad" then cat = "three_kind" end
-
-            local success, msg = EnhancementManager:addAugment(cat)
+            local success, msg = EnhancementManager:addEnhancement(item.id, "augment")
+            if not success then
+                Economy:addGold(item.price)
+                return false, msg
+            end
             table.remove(self.jokers, index)
-            return true, "Used " .. item.id
+            return true, msg
         elseif string.find(item.id, "spectral") then
             -- Check for Sculptors (Action requiring selection)
             if item.id == "spectral_remove" or item.id == "spectral_clone" then
@@ -179,7 +176,7 @@ function Shop:buyJoker(index)
                 return { action = "select_card", itemId = item.id, itemIndex = index }, "Select card to modify"
             else
                 -- Handle Rule Warps
-                local success, msg = EnhancementManager:addWarp(item.id)
+                local success, msg = EnhancementManager:addEnhancement(item.id, "warp")
                 if not success then
                     Economy:addGold(item.price) -- Refund if charged (logic above charges before this check)
                     return false, msg

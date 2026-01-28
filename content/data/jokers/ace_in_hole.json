@@ -8,12 +8,13 @@
         "on_score"
     ],
     "conditions": [
-        "contains_rank:A"
+        "contains_rank:Ace"
     ],
     "effects": [
         {
             "type": "add_chips",
-            "value": 80
+            "value": 80,
+            "per": ""
         }
     ],
     "ignores_caps": false

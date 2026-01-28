@@ -2,32 +2,20 @@
     "id": "the_trio",
     "name": "The Trio",
     "rarity": "uncommon",
-    "cost": 6,
-    "effect_type": "conditional_chips",
-    "trigger": "on_score",
-    "value": 150,
-    "description": "Gain +150 Chips if hand contains a 3 of a Kind",
-    "condition": "contains_three_of_a_kind",
-    "stack_bonuses": [
+    "type": "conditional_chips",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "count_pairs >= 3"
+    ],
+    "effects": [
         {
-            "tier": 1,
-            "value": 150
-        },
-        {
-            "tier": 2,
-            "value": 300
-        },
-        {
-            "tier": 3,
-            "value": 450
-        },
-        {
-            "tier": 4,
-            "value": 600
-        },
-        {
-            "tier": 5,
-            "value": 750
+            "type": "add_chips",
+            "value": 150,
+            "per": ""
         }
-    ]
+    ],
+    "ignores_caps": false,
+    "description": "Gain +150 Chips if hand contains a 3 of a Kind"
 }

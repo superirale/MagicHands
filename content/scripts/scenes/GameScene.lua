@@ -363,6 +363,26 @@ function GameScene:update(dt)
         end
     end
 
+    -- DEBUG: Enhancement System
+    if input.isPressed("p") then
+        local success, msg = EnhancementManager:addEnhancement("planet_fifteen", "augment")
+        print("DEBUG: " .. msg)
+    end
+    if input.isPressed("l") then
+        local success, msg = EnhancementManager:addEnhancement("spectral_echo", "warp")
+        print("DEBUG: " .. msg)
+    end
+    if input.isPressed("j") then
+        local success, msg = JokerManager:addJoker("lucky_seven")
+        print("DEBUG: " .. msg)
+    end
+
+    if input.isPressed("t") then
+        package.loaded["content.scripts.tests.JokerTests"] = nil -- Force reload for iteration
+        local tests = require "content.scripts.tests.JokerTests"
+        tests.run()
+    end
+
     self.lastMouseState = { x = mx, y = my, left = mLeft }
 end
 
@@ -408,7 +428,7 @@ function GameScene:playHand()
     local imprintEffects = EnhancementManager:resolveImprints(selectedCards, "score")
 
     -- 3. Resolve Hand Augments (Pillar 3)
-    local augmentEffects = EnhancementManager:resolveAugments(handResult)
+    local augmentEffects = EnhancementManager:resolveAugments(handResult, engineCards)
 
     -- 4. Resolve Rule Warps (Pillar 3)
     local warpEffects = EnhancementManager:resolveWarps()
@@ -457,6 +477,14 @@ function GameScene:playHand()
     end
 
     -- Debug: Show joker effects
+    print("--- SCORE BREAKDOWN ---")
+    print("Base: " .. score.baseChips .. " x " .. (score.tempMultiplier + score.permMultiplier))
+    print("Augments: +" .. augmentEffects.chips .. " Chips, +" .. augmentEffects.mult .. " Mult")
+    print("Jokers: +" ..
+        jokerEffects.addedChips .. " Chips, +" .. (jokerEffects.addedTempMult + jokerEffects.addedPermMult) .. " Mult")
+    print("Warps: Cut Bonus " .. warpEffects.cut_bonus .. ", Retrigger " .. warpEffects.retrigger)
+    print("-----------------------")
+
     if jokerEffects.addedChips > 0 or jokerEffects.addedTempMult > 0 then
         print(string.format("Joker effects: +%d chips, +%.2f mult", jokerEffects.addedChips, jokerEffects.addedTempMult))
     end

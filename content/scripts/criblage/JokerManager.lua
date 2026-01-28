@@ -105,7 +105,23 @@ function JokerManager:applyEffects(hand, trigger)
         end
     end
 
+    for _, p in ipairs(jokerPaths) do
+        print("DEBUG: Applying Joker Path: " .. p)
+    end
+    print("DEBUG: Hand size sent to Jokers: " .. #(hand.cards or hand))
+
     return joker.applyEffects(jokerPaths, hand, trigger)
+end
+
+function JokerManager:getPaths()
+    -- Return list of JSON paths for all active jokers (handling stacks)
+    local paths = {}
+    for _, jokerObj in ipairs(self.slots) do
+        for k = 1, jokerObj.stack do
+            table.insert(paths, "content/data/jokers/" .. jokerObj.id .. ".json")
+        end
+    end
+    return paths
 end
 
 return JokerManager

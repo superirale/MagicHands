@@ -1,9 +1,9 @@
 {
-    "id": "even_stevens",
-    "name": "Even Stevens",
-    "description": "+4 chips (DEBUG - was even card)",
+    "id": "planet_fifteen",
+    "name": "The Fifteen",
+    "description": "All 15s give +4 Chips",
     "rarity": "common",
-    "type": "joker",
+    "type": "augment",
     "triggers": [
         "on_score"
     ],
@@ -12,7 +12,7 @@
         {
             "type": "add_chips",
             "value": 4,
-            "per": "each_even"
+            "per": "each_15"
         }
     ],
     "ignores_caps": false

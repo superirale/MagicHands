@@ -1,19 +1,18 @@
 {
     "id": "lucky_seven",
     "name": "Lucky Seven",
-    "description": "+50 chips if hand contains a 7",
+    "description": "+7 Mult per 7",
     "rarity": "common",
     "type": "utility",
     "triggers": [
         "on_score"
     ],
-    "conditions": [
-        "contains_rank:7"
-    ],
+    "conditions": [],
     "effects": [
         {
-            "type": "add_chips",
-            "value": 50
+            "type": "add_multiplier",
+            "value": 7,
+            "per": "each_7"
         }
     ],
     "ignores_caps": false

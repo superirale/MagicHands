@@ -1,0 +1,21 @@
+{
+    "id": "spectral_echo",
+    "name": "Spectral Echo",
+    "description": "Add x0.5 Mult for every pair",
+    "rarity": "rare",
+    "type": "warp",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "count_pairs > 0"
+    ],
+    "effects": [
+        {
+            "type": "add_multiplier",
+            "value": 0.5,
+            "per": "each_pair"
+        }
+    ],
+    "ignores_caps": false
+}

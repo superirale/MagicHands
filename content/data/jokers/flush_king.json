@@ -13,7 +13,8 @@
     "effects": [
         {
             "type": "add_chips",
-            "value": 40
+            "value": 40,
+            "per": ""
         }
     ],
     "ignores_caps": false

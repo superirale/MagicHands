@@ -11,6 +11,7 @@ HandEvaluator::HandResult HandEvaluator::Evaluate(const std::vector<Card> &hand,
   // Combine hand + cut for evaluation
   std::vector<Card> allCards = hand;
   allCards.push_back(cut);
+  result.cards = allCards;
 
   // Find all scoring patterns
   findFifteens(allCards, result);

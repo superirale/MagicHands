@@ -23,7 +23,11 @@ public:
     int flushCount = 0;
 
     /// True if hand contains Jack matching cut card's suit (Nobs)
+    /// True if hand contains Jack matching cut card's suit (Nobs)
     bool hasNobs = false;
+
+    /// The cards involved in the evaluation (Hand + Cut)
+    std::vector<Card> cards;
   };
 
   /// @brief Evaluate a hand with a cut card
