@@ -3,6 +3,36 @@ ShopUI = class()
 -- Metadata cache (lazy loaded)
 ShopUI.Metadata = {}
 
+-- Known imprint IDs (to avoid checking jokers directory for these)
+-- This list is maintained by scanning content/data/imprints/
+ShopUI.KnownImprints = {
+    cascade = true,
+    clutch = true,
+    crown = true,
+    dividend = true,
+    echo = true,
+    fractal = true,
+    gold_inlay = true,
+    insurance = true,
+    investment = true,
+    lucky_pips = true,
+    majority = true,
+    mimic = true,
+    minority = true,
+    mint = true,
+    nullifier = true,
+    opener = true,
+    pulse = true,
+    resonance = true,
+    ripple = true,
+    spark = true,
+    steel_plating = true,
+    suit_shifter = true,
+    tax = true,
+    underdog = true,
+    wildcard_imprint = true
+}
+
 ShopUI.RarityColors = {
     common      = { r = 0.4, g = 0.6, b = 0.8, a = 1 }, -- Blueish
     uncommon    = { r = 0.2, g = 0.7, b = 0.4, a = 1 }, -- Greenish
@@ -27,8 +57,8 @@ function ShopUI:init(font, layout)
     -- Register Layout Regions
     self.layout:register("Shop_Title", { anchor = "top-center", width = 100, height = 40, offsetX = 0, offsetY = 40 })
     self.layout:register("Shop_Gold", { anchor = "top-center", width = 100, height = 30, offsetX = 0, offsetY = 90 })
-    self.layout:register("Shop_Reroll", { anchor = "bottom-left", width = 200, height = 60, offsetX = 50, offsetY = 40 })
-    self.layout:register("Shop_Next", { anchor = "bottom-right", width = 200, height = 60, offsetX = 30, offsetY = 40 })
+    self.layout:register("Shop_Reroll", { anchor = "bottom-left", width = 200, height = 60, offsetX = 0, offsetY = 0 })
+    self.layout:register("Shop_Next", { anchor = "bottom-right", width = 200, height = 60, offsetX = 0, offsetY = 0 })
 
     -- Initialize Buttons
     self.nextButton = UIButton("Shop_Next", "Next Round >", self.font, function()
@@ -50,59 +80,35 @@ function ShopUI:getMetadata(id)
     if self.Metadata[id] then return self.Metadata[id] end
 
     -- Try Loading from JSON
-    -- Determine correct path based on item ID pattern
-    local path = "content/data/jokers/" .. id .. ".json"
-
-    -- Known imprints (from Phase 2 content)
-    local imprints = {
-        gold_inlay = true,
-        lucky_pips = true,
-        steel_plating = true,
-        mint = true,
-        tax = true,
-        investment = true,
-        insurance = true,
-        dividend = true,
-        echo = true,
-        cascade = true,
-        fractal = true,
-        resonance = true,
-        spark = true,
-        ripple = true,
-        pulse = true,
-        crown = true,
-        underdog = true,
-        clutch = true,
-        opener = true,
-        majority = true,
-        minority = true,
-        wildcard_imprint = true,
-        suit_shifter = true,
-        mimic = true,
-        nullifier = true
-    }
-
+    -- Determine correct path based on item ID patterns
+    local path = nil
+    
     if string.find(id, "planet_") then
         path = "content/data/enhancements/" .. id .. ".json"
     elseif string.find(id, "warp_") or id == "spectral_echo" or id == "spectral_ghost" or id == "spectral_void" then
         path = "content/data/warps/" .. id .. ".json"
     elseif string.find(id, "spectral_") then
         path = "content/data/spectrals/" .. id .. ".json"
-    elseif imprints[id] then
+    elseif ShopUI.KnownImprints[id] then
+        -- Check known imprints first to avoid unnecessary error logs
         path = "content/data/imprints/" .. id .. ".json"
+    else
+        -- Default to jokers directory
+        path = "content/data/jokers/" .. id .. ".json"
     end
+    
     local data = nil
-
     if files and files.loadJSON then
         data = files.loadJSON(path)
     else
-        print("Error: files.loadJSON not available")
+        log.error("files.loadJSON not available")
     end
 
     if data then
         self.Metadata[id] = { name = data.name or id, desc = data.description or "No description" }
     else
-        -- Fallback for enhancements not yet in JSON or missing files
+        -- Fallback for items not yet in JSON or missing files
+        log.warn("No metadata found for: " .. id .. " at path: " .. (path or "nil"))
         self.Metadata[id] = { name = id, desc = "Effect not defined" }
     end
 
@@ -222,10 +228,14 @@ function ShopUI:draw()
     local goldColor = { r = 1, g = 0.8, b = 0.2, a = 1 }
     graphics.print(self.font, "Gold: " .. Economy.gold, gx, gy, goldColor)
 
-    -- Reroll info (Near Reroll Button)
+    -- Reroll cost (Above Reroll Button)
     local rx, ry = self.layout:getPosition("Shop_Reroll")
-    graphics.print(self.font, "Reroll: " .. Shop.shopRerollCost .. "g", rx + 50, ry - 30,
-        { r = 0.7, g = 0.7, b = 0.7 })
+    local rr = self.layout.regions["Shop_Reroll"]
+    local rerollText = "Cost: " .. Shop.shopRerollCost .. "g"
+    local rerollTextW = graphics.getTextSize(self.font, rerollText)
+    -- Center above the button
+    local rerollTextX = rx + (rr.width - rerollTextW) / 2
+    graphics.print(self.font, rerollText, rerollTextX, ry - 30, { r = 0.7, g = 0.7, b = 0.7, a = 1 })
 
     -- Buttons
     self.nextButton:draw()

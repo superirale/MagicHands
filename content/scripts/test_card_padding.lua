@@ -116,9 +116,10 @@ function TestCardPadding.draw()
     local instrY = 450
     graphics.print(TestCardPadding.font, "Padding format: (top, left, right, bottom, lineSpacing)", 50, instrY, {r=0.8, g=0.8, b=0.8, a=1})
     graphics.print(TestCardPadding.font, "Use setPadding() to customize spacing around description text", 50, instrY + 25, {r=0.8, g=0.8, b=0.8, a=1})
+    graphics.print(TestCardPadding.font, "Header, footer, and description text all perfectly centered!", 50, instrY + 50, {r=0.4, g=1, b=0.4, a=1})
     
     -- Show default values
-    graphics.print(TestCardPadding.font, "Default values: top=20, left=10, right=10, bottom=10, lineSpacing=20", 50, instrY + 50, {r=0.6, g=0.6, b=0.6, a=1})
+    graphics.print(TestCardPadding.font, "Default values: top=20, left=10, right=10, bottom=10, lineSpacing=20", 50, instrY + 75, {r=0.6, g=0.6, b=0.6, a=1})
 end
 
 -- Initialize

@@ -175,11 +175,20 @@ function UICard:draw()
         priceColor = { r = 0.8, g = 0.2, b = 0.2, a = 1 }
     end
 
-    graphics.print(self.font, self.jokerData.price .. "g", self.x + 15, priceY + 8, priceColor)
+    -- Price text (left side, vertically centered)
+    local priceText = self.jokerData.price .. "g"
+    local priceW, priceTextH, priceBaselineOffset = graphics.getTextSize(self.font, priceText)
+    local priceTX = self.x + 15  -- Left padding
+    local priceTY = priceY + (priceH - priceTextH) / 2 + priceBaselineOffset
+    graphics.print(self.font, priceText, priceTX, priceTY, priceColor)
 
-    -- BUY Text on Hover
+    -- BUY Text on Hover (right side, vertically centered)
     if self.isHoveredState then
-        graphics.print(self.font, "BUY", self.x + self.width - 60, priceY + 8, self.colors.buyText)
+        local buyText = "BUY"
+        local buyW, buyTextH, buyBaselineOffset = graphics.getTextSize(self.font, buyText)
+        local buyTX = self.x + self.width - buyW - 15  -- Right padding
+        local buyTY = priceY + (priceH - buyTextH) / 2 + buyBaselineOffset
+        graphics.print(self.font, buyText, buyTX, buyTY, self.colors.buyText)
     end
 end
 

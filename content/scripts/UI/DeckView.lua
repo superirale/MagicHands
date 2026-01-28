@@ -17,7 +17,77 @@ function DeckView:init(font, smallFont, cardAtlas, layout)
     self.onClose = nil        -- Callback
 end
 
--- ...
+function DeckView:show(deck, mode, onCardSelected, onClose)
+    self.visible = true
+    self.mode = mode or "VIEW"
+    self.onCardSelected = onCardSelected
+    self.onClose = onClose
+    
+    -- Create card views for the deck
+    self.cards = {}
+    local cardWidth = 71
+    local cardHeight = 96
+    local padding = 20
+    local cols = 8  -- Number of cards per row
+    local startX = 100
+    local startY = 130
+    
+    for i, cardData in ipairs(deck) do
+        local col = (i - 1) % cols
+        local row = math.floor((i - 1) / cols)
+        local x = startX + col * (cardWidth + padding)
+        local y = startY + row * (cardHeight + padding)
+        
+        -- CardView constructor: init(card, x, y, atlas, font)
+        local cardView = CardView(cardData, x, y, self.cardAtlas, self.smallFont)
+        
+        table.insert(self.cards, {
+            cardData = cardData,
+            view = cardView
+        })
+    end
+end
+
+function DeckView:hide()
+    self.visible = false
+    self.cards = {}
+end
+
+function DeckView:update(dt)
+    if not self.visible then return end
+    
+    -- Handle input
+    local mx, my = input.getMousePosition()
+    
+    -- Update card views (for animations/hover states)
+    for _, item in ipairs(self.cards) do
+        item.view:update(dt, mx, my, false)
+    end
+    
+    -- Check for ESC or right click to close
+    if input.isPressed("escape") or input.isMouseButtonPressed("right") then
+        if self.onClose then
+            self.onClose()
+        end
+        return
+    end
+    
+    -- Handle card selection in SELECT mode
+    if self.mode == "SELECT" and input.isMouseButtonPressed("left") then
+        for i, item in ipairs(self.cards) do
+            local w = item.view.width or 100
+            local h = item.view.height or 140
+            
+            if mx >= item.view.x and mx <= item.view.x + w and 
+               my >= item.view.y and my <= item.view.y + h then
+                if self.onCardSelected then
+                    self.onCardSelected(i, item.cardData)
+                end
+                return
+            end
+        end
+    end
+end
 
 function DeckView:draw()
     if not self.visible then return end
@@ -36,16 +106,11 @@ function DeckView:draw()
     for _, item in ipairs(self.cards) do
         item.view:draw()
 
-        -- Highlight if mode is select
-        if self.mode == "SELECT" then
-            local mx, my = input.getMousePosition()
-            local w, h = 71, 96
-            if item.view.width then w = item.view.width end
-            if item.view.height then h = item.view.height end
-
-            if mx >= item.view.x and mx <= item.view.x + w and my >= item.view.y and my <= item.view.y + h then
-                graphics.drawRect(item.view.x, item.view.y, w, h, { r = 1, g = 1, b = 0, a = 0.5 }, false)
-            end
+        -- Highlight hovered card in SELECT mode
+        if self.mode == "SELECT" and item.view.hovered then
+            local w = item.view.width or 100
+            local h = item.view.height or 140
+            graphics.drawRect(item.view.x, item.view.y, w, h, { r = 1, g = 1, b = 0, a = 0.5 }, true)
         end
     end
 end
