@@ -108,11 +108,24 @@ static int Lua_CribbageScore(lua_State *L) {
   Card *cutCard = (Card *)luaL_checkudata(L, -1, "MagicHands.Card");
   lua_pop(L, 1);
 
+  // Optional: boss rules (table of strings)
+  std::vector<std::string> bossRules;
+  if (lua_gettop(L) >= 4 && lua_istable(L, 4)) {
+    size_t len = lua_rawlen(L, 4);
+    for (size_t i = 1; i <= len; ++i) {
+      lua_rawgeti(L, 4, i); // Push rule string
+      if (lua_isstring(L, -1)) {
+        bossRules.push_back(lua_tostring(L, -1));
+      }
+      lua_pop(L, 1);
+    }
+  }
+
   // Evaluate and score
   HandEvaluator::HandResult handResult =
       HandEvaluator::Evaluate(hand, *cutCard);
   ScoringEngine::ScoreResult scoreResult =
-      ScoringEngine::CalculateScore(handResult, tempMult, permMult);
+      ScoringEngine::CalculateScore(handResult, tempMult, permMult, bossRules);
 
   // Return score result as table
   lua_newtable(L);

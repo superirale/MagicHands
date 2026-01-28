@@ -1,6 +1,8 @@
 #pragma once
 
 #include "HandEvaluator.h"
+#include <string>
+#include <vector>
 
 namespace gameplay {
 
@@ -32,9 +34,10 @@ public:
   /// @param tempMult Temporary multiplier (capped at 10x)
   /// @param permMult Permanent multiplier (capped at 5x)
   /// @return Complete score breakdown
-  static ScoreResult CalculateScore(const HandEvaluator::HandResult &handResult,
-                                    float tempMult = 0.0f,
-                                    float permMult = 0.0f);
+  static ScoreResult
+  CalculateScore(const HandEvaluator::HandResult &handResult,
+                 float tempMult = 0.0f, float permMult = 0.0f,
+                 const std::vector<std::string> &bossRules = {});
 
 private:
   /// @brief Apply diminishing returns for repeated category triggers

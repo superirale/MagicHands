@@ -20,7 +20,18 @@ function BossManager:loadBoss(bossId)
     -- Actually we can probably just use standard io if allowed, or hardcode simple loading
     -- Let's try to load via strict mapping first if JSON isn't available
 
-    -- For now, manual loading until JSON binding
+    -- Actually we can probably just use standard io if allowed, or hardcode simple loading
+    -- Let's try to load via strict mapping first if JSON isn't available
+
+    if files and files.loadJSON then
+        local data = files.loadJSON(path)
+        if data then
+            return data
+        end
+        print("ERROR: Failed to load boss JSON: " .. path)
+    end
+
+    -- Fallback for tests if filesystem not ready
     local boss = nil
     if bossId == "the_counter" then
         boss = { id = "the_counter", name = "The Counter", description = "Fifteens score 0", effects = { "fifteens_disabled" } }
@@ -49,49 +60,30 @@ function BossManager:selectBossForAct(act)
     end
 
     local selectedId = candidates[math.random(#candidates)]
-    self.activeBoss = self:loadBoss(selectedId)
+    self:activateBoss(selectedId)
     return self.activeBoss
 end
 
 function BossManager:activateBoss(bossId)
     self.activeBoss = self:loadBoss(bossId)
+    if self.activeBoss then
+        print("Activated Boss: " .. self.activeBoss.name)
+    end
 end
 
 function BossManager:clearBoss()
     self.activeBoss = nil
 end
 
+function BossManager:getEffects()
+    if self.activeBoss and self.activeBoss.effects then
+        return self.activeBoss.effects
+    end
+    return {}
+end
+
+-- Deprecated: C++ handles this now
 function BossManager:applyRules(scoreResult, context)
-    if not self.activeBoss then return scoreResult end
-
-    for _, effect in ipairs(self.activeBoss.effects) do
-        if effect == "fifteens_disabled" then
-            scoreResult.fifteenChips = 0
-        elseif effect == "disable_mult" then
-            scoreResult.tempMultiplier = 0
-            scoreResult.permMultiplier = 0
-        elseif effect == "only_pairs_runs" then
-            scoreResult.fifteenChips = 0
-            scoreResult.flushChips = 0
-            scoreResult.nobsChips = 0
-        end
-    end
-
-    -- Recalculate base chips
-    scoreResult.baseChips = (scoreResult.fifteenChips or 0) +
-        (scoreResult.pairChips or 0) +
-        (scoreResult.runChips or 0) +
-        (scoreResult.flushChips or 0) +
-        (scoreResult.nobsChips or 0)
-
-    -- Handle The Drain (Discard Penalty handled in discard flow, not scoring flow)
-    -- But we need to support it if context is 'discard'
-    if context == "discard" and effect == "gold_penalty" then
-        local Economy = require("criblage/Economy")
-        Economy:spend(rule.value)
-        -- We won't block discard here, but player loses gold
-    end
-
     return scoreResult
 end
 

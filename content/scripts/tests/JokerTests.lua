@@ -122,6 +122,27 @@ function tests.run()
     -- Expect +5 Mult
     assertEq("Blackjack Mult", res8.addedTempMult, 5.0)
 
+    -- Test 9: Boss "The Counter" (15s disabled)
+    -- Hand: 7, 8 (15).
+    local hand9 = {
+        Card.new("7", "Hearts"),
+        Card.new("8", "Spades"),
+        Card.new("A", "Clubs"),
+        Card.new("2", "Diamonds"),
+        Card.new("3", "Spades")
+    }
+    local bossRules = { "fifteens_disabled" }
+    -- Use 0 mults
+    local score9 = cribbage.score(hand9, 0, 0, bossRules)
+    assertEq("Boss 15s Should be 0", score9.fifteenChips, 0)
+    -- Verify 15s WOULD exist otherwise (7+8=15)
+    local score9_normal = cribbage.score(hand9, 0, 0, {})
+    assertEq("Normal 15s Should be 10", score9_normal.fifteenChips, 10) -- 10 chips per 15
+    -- Formula: 15s score 2 POINTS. In my engine:
+    -- GDD: "Fifteens: 10 chips per combination".
+    -- So 7+8 is ONE combination. 10 chips.
+    assertEq("Normal 15s Chips", score9_normal.fifteenChips, 10)
+
     print("=== TESTS COMPLETE: " .. pass .. " PASSED, " .. fail .. " FAILED ===")
 end
 

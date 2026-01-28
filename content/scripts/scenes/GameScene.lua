@@ -376,6 +376,10 @@ function GameScene:update(dt)
         local success, msg = JokerManager:addJoker("lucky_seven")
         print("DEBUG: " .. msg)
     end
+    if input.isPressed("b") then
+        BossManager:activateBoss("the_counter")
+        print("DEBUG: Activated Boss The Counter")
+    end
 
     if input.isPressed("t") then
         package.loaded["content.scripts.tests.JokerTests"] = nil -- Force reload for iteration
@@ -420,26 +424,29 @@ function GameScene:playHand()
         end
     end
 
-    -- 1. Base Score (Hand Result)
-    local handResult = cribbage.evaluate(engineCards)
-    local score = cribbage.score(engineCards)
+    -- 1. Get Boss Rules
+    local bossRules = BossManager:getEffects()
 
-    -- 2. Resolve Card Imprints (Pillar 3)
+    -- 2. Base Score (Hand Result) with Boss Rules applied
+    local handResult = cribbage.evaluate(engineCards)
+    local score = cribbage.score(engineCards, 0, 0, bossRules) -- Pass rules here
+
+    -- 3. Resolve Card Imprints (Pillar 3)
     local imprintEffects = EnhancementManager:resolveImprints(selectedCards, "score")
 
-    -- 3. Resolve Hand Augments (Pillar 3)
+    -- 4. Resolve Hand Augments (Pillar 3)
     local augmentEffects = EnhancementManager:resolveAugments(handResult, engineCards)
 
-    -- 4. Resolve Rule Warps (Pillar 3)
+    -- 5. Resolve Rule Warps (Pillar 3)
     local warpEffects = EnhancementManager:resolveWarps()
 
-    -- 5. Resolve Jokers & Stacks (Pillar 1 & 2)
+    -- 6. Resolve Jokers & Stacks (Pillar 1 & 2)
     -- JokerManager logic now includes stacking simulation
     -- PASS engineCards (C++ objects) because applyEffects calls C++ bindings
     local jokerEffects = JokerManager:applyEffects(engineCards, "on_score")
 
-    -- 6. Apply Boss Rules (Counterplay Layer)
-    score = BossManager:applyRules(score, "score")
+
+    -- 7. Final Score Aggregation
 
 
     -- 7. Final Score Aggregation
