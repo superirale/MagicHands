@@ -9,6 +9,8 @@ function UILabel:init(layout_name, text, font, color)
     self.color = color or { r = 1, g = 1, b = 1, a = 1 }
     self.align = "left" -- Horizontal alignment: left, center, right
     self.valign = "middle" -- Vertical alignment: top, middle, bottom
+    self.wrap = true -- Enable text wrapping by default
+    self.lineSpacing = 18 -- Spacing between wrapped lines
 end
 
 function UILabel:setText(text)
@@ -25,43 +27,111 @@ function UILabel:setVerticalAlign(valign)
     self.valign = valign
 end
 
+function UILabel:setWrap(wrap, lineSpacing)
+    self.wrap = wrap
+    if lineSpacing then
+        self.lineSpacing = lineSpacing
+    end
+end
+
+-- Text wrapping helper using accurate text measurement
+function UILabel:wrapText(text, maxWidth)
+    if not text or text == "" or not self.font then return { text } end
+    if not self.wrap or maxWidth <= 0 then return { text } end
+    
+    local lines = {}
+    local words = {}
+
+    -- Safe word splitting
+    for word in string.gmatch(text, "%S+") do
+        table.insert(words, word)
+    end
+
+    if #words == 0 then return { text } end
+
+    local currentLine = ""
+
+    for _, word in ipairs(words) do
+        local testLine = currentLine == "" and word or (currentLine .. " " .. word)
+        local lineWidth = graphics.getTextSize(self.font, testLine)
+        
+        -- If adding word exceeds width, push current line and start new one
+        if lineWidth > maxWidth then
+            if currentLine ~= "" then
+                table.insert(lines, currentLine)
+                currentLine = word
+            else
+                -- Single word is too long, add it anyway to avoid infinite loop
+                table.insert(lines, word)
+                currentLine = ""
+            end
+        else
+            currentLine = testLine
+        end
+    end
+    
+    if currentLine ~= "" then
+        table.insert(lines, currentLine)
+    end
+
+    return lines
+end
+
 function UILabel:draw()
     if not self.visible or not self.font or not self.text or self.text == "" then return end
 
-    local textW, textH, baselineOffset = graphics.getTextSize(self.font, self.text)
+    -- Wrap text if enabled and width is set
+    local lines = self:wrapText(self.text, self.width)
     
-    -- Calculate x position based on alignment
-    local x = self.x
-    if self.width > 0 then
-        if self.align == "center" then
-            x = self.x + (self.width - textW) / 2
-        elseif self.align == "right" then
-            x = self.x + self.width - textW
-        end
+    -- Calculate total text height for all lines
+    local totalTextHeight = 0
+    if #lines > 1 then
+        -- Multiple lines: use line spacing
+        totalTextHeight = (#lines - 1) * self.lineSpacing
+        -- Add height of first line for baseline calculation
+        local _, firstLineH, firstLineBaseline = graphics.getTextSize(self.font, lines[1])
+        totalTextHeight = totalTextHeight + firstLineH
+    else
+        -- Single line: use actual text height
+        local _, textH = graphics.getTextSize(self.font, lines[1])
+        totalTextHeight = textH
     end
     
-    -- Calculate y position based on vertical alignment
-    local y = self.y
+    -- Calculate starting Y position based on vertical alignment
+    local startY = self.y
     if self.height > 0 then
         if self.valign == "middle" then
-            -- Center vertically within the label's height using baseline offset
-            y = self.y + (self.height - textH) / 2 + baselineOffset
+            -- Center the entire text block vertically
+            startY = self.y + (self.height - totalTextHeight) / 2
         elseif self.valign == "top" then
-            -- Align to top with baseline offset
-            y = self.y + baselineOffset
+            startY = self.y
         elseif self.valign == "bottom" then
-            -- Align to bottom
-            y = self.y + self.height - textH + baselineOffset
+            startY = self.y + self.height - totalTextHeight
         else
             -- Default to middle
-            y = self.y + (self.height - textH) / 2 + baselineOffset
+            startY = self.y + (self.height - totalTextHeight) / 2
         end
-    else
-        -- No height specified, just use baseline offset for proper vertical positioning
-        y = self.y + baselineOffset
     end
     
-    graphics.print(self.font, self.text, x, y, self.color)
+    -- Draw each line
+    for i, line in ipairs(lines) do
+        local lineW, lineH, baselineOffset = graphics.getTextSize(self.font, line)
+        
+        -- Calculate x position based on alignment
+        local x = self.x
+        if self.width > 0 then
+            if self.align == "center" then
+                x = self.x + (self.width - lineW) / 2
+            elseif self.align == "right" then
+                x = self.x + self.width - lineW
+            end
+        end
+        
+        -- Calculate y position for this line
+        local y = startY + (i - 1) * self.lineSpacing + baselineOffset
+        
+        graphics.print(self.font, line, x, y, self.color)
+    end
 end
 
 return UILabel

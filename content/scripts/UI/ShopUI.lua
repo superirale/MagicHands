@@ -43,6 +43,7 @@ ShopUI.RarityColors = {
 
 local UIButton = require("UI.elements.UIButton")
 local UICard = require("UI.elements.UICard")
+local UILabel = require("UI.elements.UILabel")
 
 function ShopUI:init(font, layout)
     self.font = font
@@ -89,6 +90,70 @@ function ShopUI:init(font, layout)
     
     self.sellMode = false
     self.sellPrice = 25  -- Default sell price (half of typical buy price)
+    self.jokerLabels = {}  -- UILabel instances for each joker slot
+end
+
+function ShopUI:updateJokerLabels()
+    -- Create/update UILabel instances for joker slots
+    self.jokerLabels = {}
+    
+    if not JokerManager or not JokerManager.slots then return end
+    
+    local winW, winH = graphics.getWindowSize()
+    local jokerW = 120
+    local jokerH = 40
+    local jokerSpacing = 10
+    local totalSlots = JokerManager.maxSlots
+    local totalWidth = totalSlots * jokerW + (totalSlots - 1) * jokerSpacing
+    local startX = (winW - totalWidth) / 2
+    local startY = 140
+    
+    -- Create labels for filled slots
+    for i, joker in ipairs(JokerManager.slots) do
+        local x = startX + (i - 1) * (jokerW + jokerSpacing)
+        local y = startY
+        
+        local jokerText = joker.id
+        if joker.stack > 1 then
+            jokerText = jokerText .. " x" .. joker.stack
+        end
+        
+        local label = UILabel(nil, jokerText, self.font, { r = 1, g = 1, b = 1, a = 1 })
+        label.x = x
+        label.y = y
+        label.width = jokerW
+        label.height = jokerH
+        label.align = "center"
+        label.valign = "middle"
+        label.lineSpacing = 14  -- Tighter line spacing for small slots
+        
+        table.insert(self.jokerLabels, {
+            label = label,
+            index = i,
+            isEmpty = false
+        })
+    end
+    
+    -- Create labels for empty slots
+    for i = #JokerManager.slots + 1, JokerManager.maxSlots do
+        local x = startX + (i - 1) * (jokerW + jokerSpacing)
+        local y = startY
+        
+        local label = UILabel(nil, "Empty", self.font, { r = 0.5, g = 0.5, b = 0.5, a = 1 })
+        label.x = x
+        label.y = y
+        label.width = jokerW
+        label.height = jokerH
+        label.align = "center"
+        label.valign = "middle"
+        label.wrap = false  -- "Empty" doesn't need wrapping
+        
+        table.insert(self.jokerLabels, {
+            label = label,
+            index = i,
+            isEmpty = true
+        })
+    end
 end
 
 function ShopUI:getMetadata(id)
@@ -133,11 +198,14 @@ end
 function ShopUI:handleJokerSellClick(mx, my)
     if not JokerManager or not JokerManager.slots then return nil end
     
-    -- Joker display area (top of screen)
+    -- Joker display area (centered at top of screen)
+    local winW, winH = graphics.getWindowSize()
     local jokerW = 120
     local jokerH = 40
     local jokerSpacing = 10
-    local startX = 50
+    local totalSlots = JokerManager.maxSlots
+    local totalWidth = totalSlots * jokerW + (totalSlots - 1) * jokerSpacing
+    local startX = (winW - totalWidth) / 2
     local startY = 140
     
     for i, joker in ipairs(JokerManager.slots) do
@@ -196,6 +264,7 @@ function ShopUI:open(reward)
     -- Initial generation
     Shop:generateJokers(CampaignState.currentAct or 1)
     self:rebuildCards()
+    self:updateJokerLabels()
 end
 
 function ShopUI:update(dt, mx, my, clicked)
@@ -307,69 +376,61 @@ function ShopUI:draw()
     local rerollTextX = rx + (rr.width - rerollTextW) / 2
     graphics.print(self.font, rerollText, rerollTextX, ry - 30, { r = 0.7, g = 0.7, b = 0.7, a = 1 })
 
-    -- Draw Player's Jokers Section (at top)
+    -- Draw Player's Jokers Section (at top, centered) using UILabels
     if JokerManager and JokerManager.slots then
+        -- Update labels to match current joker state
+        self:updateJokerLabels()
+        
         local jokerSectionY = 120
-        graphics.print(self.font, "Your Jokers:", 50, jokerSectionY, { r = 1, g = 1, b = 1, a = 1 })
-        
-        if self.sellMode then
-            graphics.print(self.font, "Click a joker to sell for " .. self.sellPrice .. "g", 200, jokerSectionY, { r = 1, g = 0.8, b = 0.2, a = 1 })
-        end
-        
-        local jokerW = 120
-        local jokerH = 40
-        local jokerSpacing = 10
-        local startX = 50
-        local startY = 140
         local mx, my = input.getMousePosition()
         
-        for i, joker in ipairs(JokerManager.slots) do
-            local x = startX + (i - 1) * (jokerW + jokerSpacing)
-            local y = startY
-            
-            -- Check hover
-            local isHovered = mx >= x and mx <= x + jokerW and my >= y and my <= y + jokerH
-            
-            -- Background color
-            local bgColor = { r = 0.2, g = 0.2, b = 0.25, a = 1 }
-            if self.sellMode and isHovered then
-                bgColor = { r = 0.8, g = 0.3, b = 0.3, a = 1 }  -- Red hover in sell mode
-            elseif isHovered then
-                bgColor = { r = 0.3, g = 0.3, b = 0.35, a = 1 }
-            end
-            
-            -- Draw joker slot
-            graphics.drawRect(x, y, jokerW, jokerH, bgColor, true)
-            graphics.drawRect(x, y, jokerW, jokerH, { r = 0.5, g = 0.5, b = 0.5, a = 1 }, true)
-            
-            -- Joker text
-            local jokerText = joker.id
-            if joker.stack > 1 then
-                jokerText = jokerText .. " x" .. joker.stack
-            end
-            
-            -- Get text size and center it
-            local textW, textH, baselineOffset = graphics.getTextSize(self.font, jokerText)
-            local textX = x + (jokerW - textW) / 2
-            local textY = y + (jokerH - textH) / 2 + baselineOffset
-            
-            graphics.print(self.font, jokerText, textX, textY, { r = 1, g = 1, b = 1, a = 1 })
+        -- Title centered above jokers
+        local titleText = "Your Jokers:"
+        local titleW = graphics.getTextSize(self.font, titleText)
+        local titleX = (winW - titleW) / 2
+        graphics.print(self.font, titleText, titleX, jokerSectionY, { r = 1, g = 1, b = 1, a = 1 })
+        
+        -- Sell mode instruction
+        if self.sellMode then
+            local instructText = "Click a joker to sell for " .. self.sellPrice .. "g"
+            local instructW = graphics.getTextSize(self.font, instructText)
+            local instructX = (winW - instructW) / 2
+            graphics.print(self.font, instructText, instructX, jokerSectionY + 20, { r = 1, g = 0.8, b = 0.2, a = 1 })
         end
         
-        -- Show empty slots
-        if #JokerManager.slots < JokerManager.maxSlots then
-            for i = #JokerManager.slots + 1, JokerManager.maxSlots do
-                local x = startX + (i - 1) * (jokerW + jokerSpacing)
-                local y = startY
-                graphics.drawRect(x, y, jokerW, jokerH, { r = 0.1, g = 0.1, b = 0.15, a = 1 }, true)
-                graphics.drawRect(x, y, jokerW, jokerH, { r = 0.3, g = 0.3, b = 0.3, a = 1 }, true)
-                
-                local emptyText = "Empty"
-                local textW, textH, baselineOffset = graphics.getTextSize(self.font, emptyText)
-                local textX = x + (jokerW - textW) / 2
-                local textY = y + (jokerH - textH) / 2 + baselineOffset
-                graphics.print(self.font, emptyText, textX, textY, { r = 0.5, g = 0.5, b = 0.5, a = 1 })
+        -- Draw joker slots with labels
+        for _, slot in ipairs(self.jokerLabels) do
+            local label = slot.label
+            local x = label.x
+            local y = label.y
+            local w = label.width
+            local h = label.height
+            
+            -- Check hover
+            local isHovered = mx >= x and mx <= x + w and my >= y and my <= y + h
+            
+            -- Background color
+            local bgColor
+            if slot.isEmpty then
+                bgColor = { r = 0.1, g = 0.1, b = 0.15, a = 1 }
+            else
+                bgColor = { r = 0.2, g = 0.2, b = 0.25, a = 1 }
+                if self.sellMode and isHovered then
+                    bgColor = { r = 0.8, g = 0.3, b = 0.3, a = 1 }  -- Red hover in sell mode
+                elseif isHovered then
+                    bgColor = { r = 0.3, g = 0.3, b = 0.35, a = 1 }
+                end
             end
+            
+            -- Draw slot background
+            graphics.drawRect(x, y, w, h, bgColor, true)
+            
+            -- Draw border
+            local borderColor = slot.isEmpty and { r = 0.3, g = 0.3, b = 0.3, a = 1 } or { r = 0.5, g = 0.5, b = 0.5, a = 1 }
+            graphics.drawRect(x, y, w, h, borderColor, true)
+            
+            -- Draw label text (centered and wrapped if needed)
+            label:draw()
         end
     end
 

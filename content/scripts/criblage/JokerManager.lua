@@ -73,14 +73,36 @@ function JokerManager:isFull()
 end
 
 function JokerManager:sellJoker(index, sellPrice)
-    -- Logic: Selling removes the entire stack? Or just one?
-    -- GDD implies slots are slots. Selling normally removes the card.
-    local success, removedId = self:removeJoker(index)
-    if success then
-        Economy:addGold(sellPrice)
-        return true, removedId
+    -- Sell one joker from the stack at a time
+    if index < 1 or index > #self.slots then
+        return false, "Invalid index"
     end
-    return false, removedId
+    
+    local joker = self.slots[index]
+    local jokerId = joker.id
+    
+    if joker.stack > 1 then
+        -- Decrease stack by 1
+        joker.stack = joker.stack - 1
+        Economy:addGold(sellPrice)
+        
+        -- Emit event
+        events.emit("joker_sold", { id = jokerId, stack = joker.stack, remaining = true })
+        
+        return true, jokerId .. " (x" .. (joker.stack + 1) .. " -> x" .. joker.stack .. ")"
+    else
+        -- Stack is 1, remove the joker entirely
+        local success, removedId = self:removeJoker(index)
+        if success then
+            Economy:addGold(sellPrice)
+            
+            -- Emit event
+            events.emit("joker_sold", { id = jokerId, stack = 0, remaining = false })
+            
+            return true, removedId
+        end
+        return false, removedId
+    end
 end
 
 function JokerManager:applyEffects(hand, trigger)
