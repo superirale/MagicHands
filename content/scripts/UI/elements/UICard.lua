@@ -112,11 +112,17 @@ function UICard:draw()
 
     -- Header (Rarity)
     graphics.drawRect(self.x, self.y, self.width, 50, rarityColor, true)
-
+    print("DEBUG: UICard:draw - Draw Title")
     -- Title
     if self.font then
-        graphics.print(self.font, self.jokerData.name, self.x + 10, self.y + 10, self.colors.shadow)
-        graphics.print(self.font, self.jokerData.name, self.x + 9, self.y + 9, self.colors.text)
+        local fontSize = 24
+        local charW = fontSize * 0.55
+        local textW = #self.jokerData.name * charW
+        local tx = self.x + (self.width - textW) / 2
+        local ty = self.y + (50 - fontSize) / 2
+
+        graphics.print(self.font, self.jokerData.name, tx + 1, ty + 1, self.colors.shadow)
+        graphics.print(self.font, self.jokerData.name, tx, ty, self.colors.text)
     end
 
     -- Description (Wrapped)
