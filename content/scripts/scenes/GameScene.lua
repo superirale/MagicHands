@@ -15,6 +15,16 @@ local EffectManager = require("visuals/EffectManager")
 local AudioManager = require("audio/AudioManager")
 local Camera = require("Camera")
 
+-- Phase 3: Meta-progression & Polish
+local MagicHandsAchievements = require("Systems/MagicHandsAchievements")
+local UnlockSystem = require("Systems/UnlockSystem")
+local UndoSystem = require("Systems/UndoSystem")
+local CollectionUI = require("UI/CollectionUI")
+local TierIndicator = require("UI/TierIndicator")
+local ScorePreview = require("UI/ScorePreview")
+local AchievementNotification = require("UI/AchievementNotification")
+local RunStatsPanel = require("UI/RunStatsPanel")
+
 local UILayout = require("UI.UILayout")
 GameScene = class()
 
@@ -74,6 +84,38 @@ function GameScene:init()
     else
         print("HUD initialized successfully")
     end
+
+    -- Phase 3: Initialize Meta-Progression & Polish Systems
+    print("Initializing Phase 3 Systems...")
+    
+    -- Achievement System (module singleton)
+    MagicHandsAchievements:init()
+    print("Achievement system initialized")
+    
+    -- Unlock System (module singleton)
+    UnlockSystem:init()
+    print("Unlock system initialized")
+    
+    -- Undo System (module singleton)
+    UndoSystem:init()
+    print("Undo system initialized")
+    
+    -- UI Systems (Classes - need instantiation)
+    self.collectionUI = CollectionUI(self.font, self.smallFont)
+    self.achievementNotification = AchievementNotification(self.font, self.smallFont)
+    self.runStatsPanel = RunStatsPanel(self.font, self.smallFont)
+    
+    -- Score preview state
+    self.scorePreviewData = nil -- Stores calculated preview data
+    
+    -- Note: ScorePreview and TierIndicator are modules with static functions
+    -- They are used directly via ScorePreview.calculate() and TierIndicator.draw()
+    
+    -- UI visibility flags
+    self.showCollection = false
+    self.showRunStats = false
+    
+    print("Phase 3 systems initialized successfully!")
 
     -- Mouse State
     self.lastMouseState = { x = 0, y = 0, left = false }
@@ -212,6 +254,33 @@ function GameScene:update(dt)
     -- Update Effects
     EffectManager:update(dt)
 
+    -- Phase 3: Update systems
+    self.achievementNotification:update(dt)
+    
+    -- Handle global keyboard shortcuts
+    if input.isPressed("c") then
+        self.showCollection = not self.showCollection
+        if self.showCollection then
+            self.collectionUI:open()
+        else
+            self.collectionUI:close()
+        end
+    end
+    
+    if input.isPressed("tab") then
+        self.showRunStats = not self.showRunStats
+    end
+    
+    if input.isPressed("z") and self.state == "PLAY" then
+        local success, action = UndoSystem:undo()
+        if success then
+            print("Undo: " .. action.type)
+            -- TODO: Actually apply the undo (restore state)
+        else
+            print("Nothing to undo")
+        end
+    end
+
     -- Input Handling (Simple click detection)
     local mx, my = input.getMousePosition()
 
@@ -220,6 +289,15 @@ function GameScene:update(dt)
 
     local clicked = mLeft
 
+
+    -- Handle Collection UI if open (takes priority)
+    if self.showCollection then
+        local action = self.collectionUI:update(dt, mx, my, clicked)
+        if action == "close" then
+            self.showCollection = false
+        end
+        return -- Don't process other input when collection is open
+    end
 
     -- Pass input to Shop if active
     if self.state == "SHOP" then
@@ -261,6 +339,21 @@ function GameScene:update(dt)
             self:startNewHand()
         end
     elseif self.state == "PLAY" then
+        -- Update Score Preview
+        local selectedCards = {}
+        for i, view in ipairs(self.cardViews) do
+            if view.selected then
+                table.insert(selectedCards, self.hand[i])
+            end
+        end
+        
+        if #selectedCards == 4 and self.cutCard then
+            -- Calculate score preview
+            self.scorePreviewData = ScorePreview.calculate(selectedCards, self.cutCard)
+        else
+            self.scorePreviewData = nil
+        end
+        
         -- Handle Dragging State
         if self.draggingView then
             -- Update Position
@@ -294,6 +387,11 @@ function GameScene:update(dt)
                     -- Normal Click/Drop Logic
                     local dist = math.abs(mx - self.dragStartX) + math.abs(my - self.dragStartY)
                     if dist < 5 then
+                        -- Track undo state before selection change
+                        UndoSystem:saveState("card_selection", {
+                            wasSelected = self.draggingView.selected
+                        })
+                        
                         self.draggingView:toggleSelected()
                         if self.draggingView.selected then
                             EffectManager:spawnSparkles(self.draggingView.x + self.draggingView.width / 2,
@@ -385,6 +483,12 @@ function GameScene:update(dt)
         package.loaded["content.scripts.tests.JokerTests"] = nil -- Force reload for iteration
         local tests = require "content.scripts.tests.JokerTests"
         tests.run()
+    end
+    
+    -- Phase 3: JSON Loading Test (press 'y')
+    if input.isPressed("y") then
+        package.loaded["content.scripts.tests.TestJSONLoading"] = nil
+        local jsonTest = require "content.scripts.tests.TestJSONLoading"
     end
 
     self.lastMouseState = { x = mx, y = my, left = mLeft }
@@ -723,6 +827,11 @@ function GameScene:draw()
     if self.hud then
         -- Draw HUD
         self.hud:draw(CampaignState)
+        
+        -- Phase 3: Draw keyboard shortcuts helper text
+        if self.state == "PLAY" then
+            graphics.print(self.smallFont, "[C] Collection  [TAB] Stats  [Z] Undo", 20, 680, { r = 0.7, g = 0.7, b = 0.7, a = 0.8 })
+        end
 
         -- Draw Cut Card
         if self.cutCardView then
@@ -751,13 +860,52 @@ function GameScene:draw()
         if self.state == "DECK_VIEW" and self.deckView then
             self.deckView:draw()
         end
+        
+        -- Phase 3: Draw Score Preview (in PLAY state)
+        if self.state == "PLAY" and self.scorePreviewData then
+            ScorePreview.draw(850, 300, self.scorePreviewData, self.font, self.smallFont)
+        end
+        
+        -- Phase 3: Draw Tier Indicators on Jokers
+        if JokerManager and JokerManager.slots then
+            for i, joker in ipairs(JokerManager.slots) do
+                if joker.stack and joker.stack > 1 then
+                    -- Draw tier indicator (x position based on joker slot)
+                    local tierX = 50 + (i - 1) * 80
+                    local tierY = 100
+                    TierIndicator.draw(tierX, tierY, joker.stack, self.smallFont, joker.stack, "small")
+                end
+            end
+        end
+        
+        -- Phase 3: Draw Run Stats Panel (TAB toggle)
+        if self.showRunStats and self.runStatsPanel then
+            self.runStatsPanel:draw()
+        end
+        
+        -- Phase 3: Draw Collection UI (C toggle)
+        if self.showCollection and self.collectionUI then
+            self.collectionUI:draw()
+        end
+        
+        -- Phase 3: Draw Achievement Notifications (always on top)
+        if self.achievementNotification then
+            self.achievementNotification:draw()
+        end
 
         -- Draw Game Over
         if self.state == "GAME_OVER" then
             graphics.print(self.font, "GAME OVER", 500, 300, { r = 1, g = 0, b = 0, a = 1 })
             graphics.print(self.smallFont, "Press R to Restart", 530, 350)
+            graphics.print(self.smallFont, "Press C to view Collection", 490, 380)
+            graphics.print(self.smallFont, "Press TAB to view Stats", 510, 410)
 
             if input.isPressed("r") then
+                -- Reset stats for new run
+                if self.runStatsPanel then
+                    self.runStatsPanel:reset()
+                end
+                
                 CampaignState:init()
                 self:startNewHand()
             end

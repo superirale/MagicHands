@@ -32,8 +32,27 @@ local stats = {
 function MagicHandsAchievements:init()
     print("MagicHandsAchievements: Initializing...")
     
+    -- Check if files module is available
+    if not files then
+        print("ERROR: 'files' global module not found!")
+        print("Achievement system cannot load without files.loadJSON")
+        return
+    end
+    
+    if not files.loadJSON then
+        print("ERROR: 'files.loadJSON' function not found!")
+        return
+    end
+    
     -- Load achievements from JSON
-    local achievementsData = loadJSON("content/data/achievements.json")
+    print("Loading achievements from: content/data/achievements.json")
+    local achievementsData = files.loadJSON("content/data/achievements.json")
+    
+    if not achievementsData then
+        print("ERROR: Failed to load achievements.json - file may not exist or is invalid")
+        return
+    end
+    
     if achievementsData and achievementsData.achievements then
         achievementDefs = achievementsData.achievements
         
@@ -140,7 +159,7 @@ function MagicHandsAchievements:registerListeners()
     -- Scoring achievements
     events.on("hand_scored", function(data)
         stats.handsPlayed = stats.handsPlayed + 1
-        local score = data.score or 0
+        local score = tonumber(data.score) or 0
         
         if score > stats.highestHandScore then
             stats.highestHandScore = score
@@ -166,7 +185,8 @@ function MagicHandsAchievements:registerListeners()
         end
         
         -- Blackjack
-        if data.handTotal == 21 then
+        local handTotal = tonumber(data.handTotal) or 0
+        if handTotal == 21 then
             self:unlock("blackjack")
         end
         
@@ -174,7 +194,8 @@ function MagicHandsAchievements:registerListeners()
         if data.categoriesScored then
             local catCount = 0
             for cat, val in pairs(data.categoriesScored) do
-                if val > 0 then
+                local numVal = tonumber(val) or 0
+                if numVal > 0 then
                     catCount = catCount + 1
                     stats.categoriesUsed[cat] = (stats.categoriesUsed[cat] or 0) + 1
                 end
@@ -188,7 +209,8 @@ function MagicHandsAchievements:registerListeners()
             end
             
             -- Nobs tracking
-            if data.categoriesScored.nobs and data.categoriesScored.nobs > 0 then
+            local nobs = tonumber(data.categoriesScored.nobs) or 0
+            if nobs > 0 then
                 stats.nobsScored = stats.nobsScored + 1
                 if stats.nobsScored >= 10 then
                     self:unlock("nobs_master")
@@ -200,9 +222,11 @@ function MagicHandsAchievements:registerListeners()
     -- Joker achievements
     events.on("joker_added", function(data)
         if data.stack then
-            stats.jokersStacked[data.id] = data.stack
+            -- Ensure stack is a number
+            local stackCount = tonumber(data.stack) or 1
+            stats.jokersStacked[data.id] = stackCount
             
-            if data.stack >= 5 then
+            if stackCount >= 5 then
                 self:unlock("tier5_master")
             end
         end
@@ -214,7 +238,7 @@ function MagicHandsAchievements:registerListeners()
     
     -- Economy achievements
     events.on("gold_changed", function(data)
-        stats.currentGold = data.amount
+        stats.currentGold = tonumber(data.amount) or 0
         
         if stats.currentGold >= 500 then
             self:unlock("rich")
@@ -239,7 +263,8 @@ function MagicHandsAchievements:registerListeners()
     
     -- Imprint achievements
     events.on("imprints_count", function(data)
-        if data.count >= 10 then
+        local count = tonumber(data.count) or 0
+        if count >= 10 then
             self:unlock("imprint_master")
         end
     end)
@@ -254,20 +279,22 @@ function MagicHandsAchievements:registerListeners()
         
         -- Update deck size
         if data.newDeckSize then
-            stats.deckSize = data.newDeckSize
+            stats.deckSize = tonumber(data.newDeckSize) or stats.deckSize
         end
     end)
     
     -- Planet achievements
     events.on("planet_count", function(data)
-        if data.unique >= 10 then
+        local unique = tonumber(data.unique) or 0
+        if unique >= 10 then
             self:unlock("planet_collector")
         end
     end)
     
     -- Warp achievements
     events.on("warp_count", function(data)
-        if data.active >= 3 then
+        local active = tonumber(data.active) or 0
+        if active >= 3 then
             self:unlock("warp_master")
         end
         

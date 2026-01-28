@@ -22,44 +22,41 @@ TierIndicator.names = {
 }
 
 -- Draw a tier badge on a joker card
-function TierIndicator.draw(x, y, tier, stack, size)
+function TierIndicator.draw(x, y, tier, font, stack, size)
     size = size or "normal" -- "small", "normal", "large"
     
     -- Clamp tier to 1-5
     tier = math.max(1, math.min(5, tier or 1))
     
-    local badgeSize = 20
-    local fontSize = 14
+    local badgeW = 40
+    local badgeH = 25
     
     if size == "small" then
-        badgeSize = 15
-        fontSize = 10
+        badgeW = 30
+        badgeH = 20
     elseif size == "large" then
-        badgeSize = 30
-        fontSize = 18
+        badgeW = 50
+        badgeH = 30
     end
     
     local color = TierIndicator.colors[tier]
     
-    -- Draw badge background
-    graphics.setColor(color.r, color.g, color.b, 0.8)
-    graphics.circle("fill", x, y, badgeSize)
+    -- Draw badge background (filled rectangle)
+    graphics.drawRect(x, y, badgeW, badgeH, color, true)
     
     -- Draw border
-    graphics.setColor(1, 1, 1, 1)
-    graphics.circle("line", x, y, badgeSize)
+    graphics.drawRect(x, y, badgeW, badgeH, { r = 1, g = 1, b = 1, a = 1 }, false)
     
     -- Draw tier number or stack indicator
-    graphics.setColor(1, 1, 1, 1)
-    local text = "x" .. tier
+    local text = "T" .. tier
     if stack and stack > 1 then
         text = "x" .. stack
     end
     
     -- Center text
-    local textX = x - (fontSize / 2)
-    local textY = y - (fontSize / 2)
-    graphics.print(text, textX, textY)
+    local textX = x + 8
+    local textY = y + 5
+    graphics.print(font, text, textX, textY, { r = 1, g = 1, b = 1, a = 1 })
 end
 
 -- Draw tier glow effect (for tier 3+)
@@ -67,11 +64,14 @@ function TierIndicator.drawGlow(x, y, w, h, tier, time)
     if tier < 3 then return end
     
     local color = TierIndicator.colors[tier]
-    local pulse = math.abs(math.sin(time * 2)) * 0.3 + 0.3
+    local pulse = math.abs(math.sin(time or 0) * 2) * 0.3 + 0.3
     
-    graphics.setColor(color.r, color.g, color.b, pulse)
-    graphics.rectangle("line", x - 2, y - 2, w + 4, h + 4, 3)
-    graphics.rectangle("line", x - 4, y - 4, w + 8, h + 8, 5)
+    -- Draw glow as multiple border rectangles
+    local glowColor = { r = color.r, g = color.g, b = color.b, a = pulse }
+    graphics.drawRect(x - 2, y - 2, w + 4, h + 4, glowColor, false)
+    
+    glowColor.a = pulse * 0.5
+    graphics.drawRect(x - 4, y - 4, w + 8, h + 8, glowColor, false)
 end
 
 -- Draw ascension aura (tier 5 only)

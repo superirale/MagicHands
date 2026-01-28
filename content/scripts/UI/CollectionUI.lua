@@ -75,7 +75,7 @@ function CollectionUI:update(dt)
     if not self.visible then return end
     
     local mx, my = input.getMousePosition()
-    local clicked = input.isMouseJustPressed(1)
+    local clicked = input.isMouseButtonPressed("left")
     
     -- Tab switching
     local tabY = 100
@@ -298,7 +298,7 @@ function CollectionUI:getItemDescription(category, itemId)
     end
     
     if path then
-        local data = loadJSON(path)
+        local data = files and files.loadJSON and files.loadJSON(path) or nil
         if data and data.description then
             return data.description
         elseif data and data.desc then

@@ -58,20 +58,15 @@ function RunStatsPanel:draw()
     local h = 400
     
     -- Background
-    graphics.setColor(0.1, 0.1, 0.15, 0.95)
-    graphics.rectangle("fill", x, y, w, h, 5)
+    graphics.drawRect(x, y, w, h, {r = 0.1, g = 0.1, b = 0.15, a = 0.95}, true)
     
     -- Border
-    graphics.setColor(0.5, 0.7, 0.9, 1)
-    graphics.rectangle("line", x, y, w, h, 5)
+    graphics.drawRect(x, y, w, h, {r = 0.5, g = 0.7, b = 0.9, a = 1}, false)
     
     -- Title
-    graphics.setFont(self.font)
-    graphics.setColor(1, 1, 1, 1)
-    graphics.print("Run Statistics", x + 10, y + 10)
+    graphics.print(self.font, "Run Statistics", x + 10, y + 10, {r = 1, g = 1, b = 1, a = 1})
     
     -- Stats list
-    graphics.setFont(self.smallFont)
     local statsY = y + 50
     local lineHeight = 25
     
@@ -91,17 +86,14 @@ function RunStatsPanel:draw()
         local value = self.stats[stat.key]
         
         -- Label
-        graphics.setColor(0.8, 0.8, 0.8, 1)
-        graphics.print(stat.label, x + 15, statsY + (i - 1) * lineHeight)
+        graphics.print(self.smallFont, stat.label, x + 15, statsY + (i - 1) * lineHeight, {r = 0.8, g = 0.8, b = 0.8, a = 1})
         
         -- Value
-        graphics.setColor(1, 1, 1, 1)
-        graphics.print(tostring(value), x + w - 60, statsY + (i - 1) * lineHeight)
+        graphics.print(self.smallFont, tostring(value), x + w - 60, statsY + (i - 1) * lineHeight, {r = 1, g = 1, b = 1, a = 1})
     end
     
     -- Close hint
-    graphics.setColor(0.6, 0.6, 0.6, 1)
-    graphics.print("Press TAB to close", x + 10, y + h - 25)
+    graphics.print(self.smallFont, "Press TAB to close", x + 10, y + h - 25, {r = 0.6, g = 0.6, b = 0.6, a = 1})
 end
 
 return RunStatsPanel

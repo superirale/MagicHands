@@ -63,36 +63,28 @@ function ScorePreview.calculate(selectedCards, cutCard)
     }
 end
 
-function ScorePreview.draw(x, y, preview, font)
+function ScorePreview.draw(x, y, preview, font, smallFont)
     if not preview then return end
     
-    graphics.setFont(font)
-    
     -- Background
-    graphics.setColor(0.1, 0.1, 0.2, 0.9)
-    graphics.rectangle("fill", x, y, 200, 120, 5)
+    graphics.drawRect(x, y, 200, 120, { r = 0.1, g = 0.1, b = 0.2, a = 0.9 }, true)
     
     -- Border
-    graphics.setColor(0.5, 0.7, 0.9, 1)
-    graphics.rectangle("line", x, y, 200, 120, 5)
+    graphics.drawRect(x, y, 200, 120, { r = 0.5, g = 0.7, b = 0.9, a = 1 }, false)
     
     -- Title
-    graphics.setColor(1, 1, 1, 1)
-    graphics.print("Score Preview", x + 10, y + 5)
+    graphics.print(smallFont or font, "Score Preview", x + 10, y + 5, { r = 1, g = 1, b = 1, a = 1 })
     
     -- Total score (large)
-    graphics.setColor(1, 0.9, 0.3, 1)
-    graphics.print(tostring(preview.total), x + 70, y + 30)
+    graphics.print(font, tostring(preview.total), x + 70, y + 30, { r = 1, g = 0.9, b = 0.3, a = 1 })
     
     -- Breakdown
-    graphics.setColor(0.8, 0.8, 0.8, 1)
     local detailY = y + 60
-    graphics.print(string.format("Chips: %d", preview.chips), x + 10, detailY)
-    graphics.print(string.format("Mult: %.2fx", preview.mult), x + 10, detailY + 20)
+    graphics.print(smallFont or font, string.format("Chips: %d", math.floor(preview.chips)), x + 10, detailY, { r = 0.8, g = 0.8, b = 0.8, a = 1 })
+    graphics.print(smallFont or font, string.format("Mult: %.2fx", preview.mult), x + 10, detailY + 20, { r = 0.8, g = 0.8, b = 0.8, a = 1 })
     
     -- Hint
-    graphics.setColor(0.6, 0.6, 0.6, 1)
-    graphics.print("(Select 4 + crib)", x + 10, detailY + 40)
+    graphics.print(smallFont or font, "(Select 4 cards)", x + 10, detailY + 40, { r = 0.6, g = 0.6, b = 0.6, a = 1 })
 end
 
 return ScorePreview

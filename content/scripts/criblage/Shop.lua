@@ -204,7 +204,7 @@ function Shop:buyJoker(index)
             if item.id == "spectral_remove" or item.id == "spectral_clone" then
                 -- Return signal to open DeckView
                 -- We verify funds first but don't charge yet
-                if not Economy:canAfford(item.price) then
+                if Economy.gold < item.price then
                     return false, "Not enough gold"
                 end
 
@@ -221,7 +221,7 @@ function Shop:buyJoker(index)
             end
         else
             -- Handle Imprint (Requires card selection)
-            if not Economy:canAfford(item.price) then
+            if Economy.gold < item.price then
                 return false, "Not enough gold"
             end
             
@@ -263,8 +263,16 @@ function Shop:applyImprint(shopIndex, cardId)
     local item = self.jokers[shopIndex]
     
     -- Verify it's an imprint item
-    if item.type ~= "enhancement" or not string.find(item.id, "inlay") and 
-       not string.find(item.id, "pips") and not string.find(item.id, "plating") then
+    -- Known imprints (all 25 from Phase 2)
+    local imprints = {
+        gold_inlay = true, lucky_pips = true, steel_plating = true, mint = true, tax = true,
+        investment = true, insurance = true, dividend = true, echo = true, cascade = true,
+        fractal = true, resonance = true, spark = true, ripple = true, pulse = true,
+        crown = true, underdog = true, clutch = true, opener = true, majority = true,
+        minority = true, wildcard_imprint = true, suit_shifter = true, mimic = true, nullifier = true
+    }
+    
+    if item.type ~= "enhancement" or not imprints[item.id] then
         return false, "Item is not an imprint"
     end
     

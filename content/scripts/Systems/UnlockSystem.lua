@@ -99,10 +99,40 @@ function UnlockSystem:unlockRandom(count)
     end
 end
 
--- Unlock specific item
+-- Unlock specific item (determines category automatically)
 function UnlockSystem:unlockSpecific(itemId)
-    -- Try each category
-    for category, _ in pairs(unlockedContent) do
+    -- Determine category from item ID pattern
+    local category = nil
+    
+    if string.find(itemId, "planet_") then
+        category = "planets"
+    elseif string.find(itemId, "spectral_") or string.find(itemId, "warp_") then
+        if string.find(itemId, "remove") or string.find(itemId, "clone") or string.find(itemId, "ascend") or
+           string.find(itemId, "collapse") or string.find(itemId, "split") or string.find(itemId, "purge") or
+           string.find(itemId, "rainbow") or string.find(itemId, "fusion") then
+            category = "sculptors"
+        else
+            category = "warps"
+        end
+    else
+        -- Check against known imprints
+        local imprints = {
+            gold_inlay = true, lucky_pips = true, steel_plating = true, mint = true, tax = true,
+            investment = true, insurance = true, dividend = true, echo = true, cascade = true,
+            fractal = true, resonance = true, spark = true, ripple = true, pulse = true,
+            crown = true, underdog = true, clutch = true, opener = true, majority = true,
+            minority = true, wildcard_imprint = true, suit_shifter = true, mimic = true, nullifier = true
+        }
+        
+        if imprints[itemId] then
+            category = "imprints"
+        else
+            -- Default to jokers
+            category = "jokers"
+        end
+    end
+    
+    if category then
         self:unlock(category, itemId)
     end
 end

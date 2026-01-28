@@ -35,10 +35,24 @@ function ShopUI:getMetadata(id)
     if self.Metadata[id] then return self.Metadata[id] end
 
     -- Try Loading from JSON
-    -- Helper to check file existence? loadJSON returns nil if failed.
+    -- Determine correct path based on item ID pattern
     local path = "content/data/jokers/" .. id .. ".json"
-    if string.find(id, "planet") or string.find(id, "spectral") then
+    
+    -- Known imprints (from Phase 2 content)
+    local imprints = {
+        gold_inlay = true, lucky_pips = true, steel_plating = true, mint = true, tax = true,
+        investment = true, insurance = true, dividend = true, echo = true, cascade = true,
+        fractal = true, resonance = true, spark = true, ripple = true, pulse = true,
+        crown = true, underdog = true, clutch = true, opener = true, majority = true,
+        minority = true, wildcard_imprint = true, suit_shifter = true, mimic = true, nullifier = true
+    }
+    
+    if string.find(id, "planet_") then
         path = "content/data/enhancements/" .. id .. ".json"
+    elseif string.find(id, "spectral_") or string.find(id, "warp_") then
+        path = "content/data/spectrals/" .. id .. ".json"
+    elseif imprints[id] then
+        path = "content/data/imprints/" .. id .. ".json"
     end
     local data = nil
 

@@ -100,7 +100,7 @@ function DeckView:update(dt)
 
     -- Mouse interaction
     local mx, my = input.getMousePosition()
-    local clicked = input.isMouseJustPressed(1) -- Left click
+    local clicked = input.isMouseButtonPressed("left")
 
     for _, item in ipairs(self.cards) do
         local view = item.view
@@ -122,8 +122,8 @@ function DeckView:update(dt)
         end
     end
 
-    -- Right click to close/back?
-    if input.isMouseJustPressed(2) or input.isKeyJustPressed("escape") then
+    -- ESC or right click to close
+    if input.isPressed("escape") or input.isMouseButtonPressed("right") then
         if self.onClose then self.onClose() end
         self:hide()
     end
@@ -133,18 +133,14 @@ function DeckView:draw()
     if not self.visible then return end
 
     -- Dim background
-    graphics.setColor(0, 0, 0, 0.8)
-    graphics.rectangle("fill", 0, 0, 1280, 720)
-    graphics.setColor(1, 1, 1, 1)
+    graphics.drawRect(0, 0, 1280, 720, {r = 0, g = 0, b = 0, a = 0.8}, true)
 
     -- Title
     local title = "Deck View"
     if self.mode == "SELECT" then title = "Select a Card" end
-    graphics.setFont(self.font)
-    graphics.print(title, 100, 50)
+    graphics.print(self.font, title, 100, 50, {r = 1, g = 1, b = 1, a = 1})
 
-    graphics.setFont(self.smallFont)
-    graphics.print("Press ESC or Right Click to close", 100, 90)
+    graphics.print(self.smallFont, "Press ESC or Right Click to close", 100, 90, {r = 1, g = 1, b = 1, a = 1})
 
     -- Draw cards
     for _, item in ipairs(self.cards) do
@@ -158,9 +154,7 @@ function DeckView:draw()
             if item.view.height then h = item.view.height end
 
             if mx >= item.view.x and mx <= item.view.x + w and my >= item.view.y and my <= item.view.y + h then
-                graphics.setColor(1, 1, 0, 0.5)
-                graphics.rectangle("line", item.view.x, item.view.y, w, h)
-                graphics.setColor(1, 1, 1, 1)
+                graphics.drawRect(item.view.x, item.view.y, w, h, {r = 1, g = 1, b = 0, a = 0.5}, false)
             end
         end
     end
