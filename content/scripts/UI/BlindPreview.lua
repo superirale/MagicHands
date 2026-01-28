@@ -28,19 +28,14 @@ function BlindPreview:init(font, smallFont, layout)
     self.btnWidth = 200
     self.btnHeight = 60
     
-    -- Register Play Button Layout
-    self.layout:register("BlindPreview_PlayButton", {
-        anchor = "center",
-        width = self.btnWidth,
-        height = self.btnHeight,
-        offsetX = 0,
-        offsetY = 200  -- Positioned near bottom of modal
-    })
-    
-    -- Create Play Button
-    self.playButton = UIButton("BlindPreview_PlayButton", "PLAY", font, function()
+    -- Create Play Button (without layout - we'll position it manually)
+    self.playButton = UIButton(nil, "PLAY", font, function()
         self.shouldStartBlind = true
     end)
+    
+    -- Set button dimensions
+    self.playButton.width = self.btnWidth
+    self.playButton.height = self.btnHeight
     
     -- Customize button colors (green theme)
     self.playButton.bgColor = { r = 0.3, g = 0.6, b = 0.3, a = 1 }
@@ -65,6 +60,13 @@ function BlindPreview:update(dt, mx, my, clicked)
 
     -- Reset the flag
     self.shouldStartBlind = false
+    
+    -- Get modal position
+    local x, y = self.layout:getPosition(self.layoutName)
+    
+    -- Position button at bottom center of modal
+    self.playButton.x = x + (self.width - self.btnWidth) / 2
+    self.playButton.y = y + self.height - self.btnHeight - 40
     
     -- Update the play button
     self.playButton:update(dt, mx, my, clicked)
@@ -154,10 +156,9 @@ function BlindPreview:draw()
     self.playButton:draw()
 
     -- Draw hint text below button
-    local btnX, btnY = self.layout:getPosition("BlindPreview_PlayButton")
     local hintText = "[Enter]"
     local hintW = graphics.getTextSize(self.smallFont, hintText)
-    graphics.print(self.smallFont, hintText, cx - hintW / 2, btnY + self.btnHeight + 10,
+    graphics.print(self.smallFont, hintText, cx - hintW / 2, self.playButton.y + self.btnHeight + 10,
         { r = 0.5, g = 0.5, b = 0.5, a = 1 })
 end
 
