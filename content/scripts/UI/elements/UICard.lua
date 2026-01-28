@@ -30,6 +30,33 @@ function UICard:init(layout_name, jokerData, font, onClick)
         enhancement = { r = 0.5, g = 0.4, b = 0.8, a = 1 },
         default     = { r = 0.5, g = 0.5, b = 0.5, a = 1 }
     }
+    
+    -- Padding configuration for description section
+    self.padding = {
+        top = 20,      -- Space from header to description
+        left = 10,     -- Left padding for description text
+        right = 10,    -- Right padding for description text
+        bottom = 10,   -- Space from description to footer
+        lineSpacing = 20  -- Space between description lines
+    }
+end
+
+-- Set padding for description section
+function UICard:setPadding(top, left, right, bottom, lineSpacing)
+    if top then self.padding.top = top end
+    if left then self.padding.left = left end
+    if right then self.padding.right = right end
+    if bottom then self.padding.bottom = bottom end
+    if lineSpacing then self.padding.lineSpacing = lineSpacing end
+end
+
+-- Get the available content area for description (accounting for header, footer, and padding)
+function UICard:getContentArea()
+    local headerHeight = 50
+    local footerHeight = 40
+    local contentHeight = self.height - headerHeight - footerHeight - self.padding.top - self.padding.bottom
+    local contentWidth = self.width - self.padding.left - self.padding.right
+    return contentWidth, contentHeight
 end
 
 -- Text wrapping helper using accurate text measurement
@@ -127,11 +154,14 @@ function UICard:draw()
         graphics.print(self.font, self.jokerData.name, tx, ty, self.colors.text)
     end
 
-    -- Description (Wrapped)
-    local descY = self.y + 70
-    local descLines = self:wrapText(self.jokerData.desc, self.width - 20, self.font)
+    -- Description (Wrapped with padding)
+    local descY = self.y + headerHeight + self.padding.top
+    local descX = self.x + self.padding.left
+    local availableWidth = self.width - self.padding.left - self.padding.right
+    
+    local descLines = self:wrapText(self.jokerData.desc, availableWidth, self.font)
     for i, line in ipairs(descLines) do
-        graphics.print(self.font, line, self.x + 10, descY + (i - 1) * 20, self.colors.desc)
+        graphics.print(self.font, line, descX, descY + (i - 1) * self.padding.lineSpacing, self.colors.desc)
     end
 
     -- Footer / Price
