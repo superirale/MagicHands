@@ -301,6 +301,8 @@ function CollectionUI:getItemDescription(category, itemId)
         local data = loadJSON(path)
         if data and data.description then
             return data.description
+        elseif data and data.desc then
+            return data.desc
         end
     end
     
