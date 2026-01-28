@@ -17,32 +17,32 @@
 -- Before
 if data.stack >= 5 then
 
--- After
+// After
 local stackCount = tonumber(data.stack) or 1
 if stackCount >= 5 then
 ```
 
 ---
 
-### Issue #2: Graphics API Mismatch
+### Issue #2: Invalid Graphics API Calls
 **Error**: `attempt to call a nil value (field 'setFont')`
 
-**Cause**: ScorePreview and TierIndicator were using Love2D graphics API, but Magic Hands uses a different API.
+**Cause**: ScorePreview and TierIndicator were using graphics function calls that don't exist in the Magic Hands engine's Lua bindings.
 
 ---
 
 ## Graphics API Comparison
 
-### Love2D API (Wrong)
+### Invalid API (Doesn't Exist)
 ```lua
-graphics.setFont(font)
-graphics.setColor(r, g, b, a)
-graphics.rectangle("fill", x, y, w, h)
-graphics.circle("fill", x, y, radius)
-graphics.print("text", x, y)
+graphics.setFont(font)              -- ❌ Not bound in C++
+graphics.setColor(r, g, b, a)       -- ❌ Not bound in C++
+graphics.rectangle("fill", ...)     -- ❌ Not bound in C++
+graphics.circle("fill", ...)        -- ❌ Not bound in C++
+graphics.print("text", x, y)        -- ❌ Wrong signature
 ```
 
-### Magic Hands API (Correct)
+### Correct Magic Hands API (Exists)
 ```lua
 graphics.drawRect(x, y, w, h, {r, g, b, a}, filled)
 graphics.print(font, "text", x, y, {r, g, b, a})
@@ -67,7 +67,7 @@ end
 ```
 
 ### 2. ScorePreview.lua (Lines 66-96)
-**Before** (Love2D):
+**Before** (Invalid API):
 ```lua
 graphics.setFont(font)
 graphics.setColor(0.1, 0.1, 0.2, 0.9)
@@ -75,14 +75,14 @@ graphics.rectangle("fill", x, y, 200, 120, 5)
 graphics.print("Score Preview", x + 10, y + 5)
 ```
 
-**After** (Magic Hands):
+**After** (Correct API):
 ```lua
 graphics.drawRect(x, y, 200, 120, {r=0.1, g=0.1, b=0.2, a=0.9}, true)
 graphics.print(font, "Score Preview", x + 10, y + 5, {r=1, g=1, b=1, a=1})
 ```
 
 ### 3. TierIndicator.lua (Lines 25-63)
-**Before** (Love2D circles):
+**Before** (Invalid API - circles don't exist):
 ```lua
 graphics.setColor(color.r, color.g, color.b, 0.8)
 graphics.circle("fill", x, y, badgeSize)
@@ -90,7 +90,7 @@ graphics.circle("line", x, y, badgeSize)
 graphics.print(text, textX, textY)
 ```
 
-**After** (Magic Hands rectangles):
+**After** (Correct API - using rectangles):  
 ```lua
 graphics.drawRect(x, y, badgeW, badgeH, color, true)
 graphics.drawRect(x, y, badgeW, badgeH, {r=1, g=1, b=1, a=1}, false)

@@ -1,7 +1,13 @@
-# Phase 3 - Remaining Love2D Graphics Calls
+# Phase 3 - Remaining Graphics API Fixes
 
 **Date**: January 28, 2026  
 **Status**: ⚠️ **PARTIALLY FIXED**
+
+---
+
+## What Happened
+
+Phase 3 UI files were initially written using graphics function calls that **don't exist** in the Magic Hands engine's Lua bindings.
 
 ---
 
@@ -14,28 +20,46 @@
 
 ---
 
-## Files Still Using Love2D API
+## Files Still Using Invalid Graphics API
 
 ### CollectionUI.lua
 **Lines**: 109-278 (many instances)  
-**Used**: `setColor()`, `rectangle()`, `setFont()`  
+**Invalid Calls**: `setColor()`, `rectangle()`, `setFont()`  
 **Impact**: Medium - Only shows when pressing C
 
 ### AchievementNotification.lua  
 **Lines**: 65-93 (many instances)  
-**Used**: `setColor()`, `rectangle()`, `setFont()`  
+**Invalid Calls**: `setColor()`, `rectangle()`, `setFont()`  
 **Impact**: High - Shows during gameplay
 
 ### TierIndicator.lua (partial)
 **Line**: 88 (gold particle effect)  
-**Used**: `setColor()` in drawGlow()  
+**Invalid Calls**: `setColor()` in drawGlow()  
 **Impact**: Low - Only for tier 5 glow
+
+---
+
+## The Problem: Invalid Function Calls
+
+### What Doesn't Exist in Magic Hands Engine
+```lua
+graphics.setColor(r, g, b, a)      -- ❌ Not bound in C++
+graphics.rectangle("fill", ...)     -- ❌ Not bound in C++
+graphics.setFont(font)              -- ❌ Not bound in C++
+graphics.circle("fill", ...)        -- ❌ Not bound in C++
+```
+
+### What Actually Exists (Correct Magic Hands API)
+```lua
+graphics.drawRect(x, y, w, h, {r, g, b, a}, filled)  -- ✅ Defined in C++
+graphics.print(font, text, x, y, {r, g, b, a})       -- ✅ Defined in C++
+```
 
 ---
 
 ## Conversion Pattern
 
-### Love2D → Magic Hands
+### Invalid API → Correct API
 
 ```lua
 // Background fill
@@ -68,18 +92,14 @@ graphics.print(font, text, x, y, {r, g, b, a})
 
 ---
 
-## Quick Fix Script
+## Why This Happened
 
-For each file, find and replace:
+When creating Phase 3 files, I mistakenly used graphics function patterns that aren't defined in the Magic Hands engine's C++ Lua bindings. The correct API is clearly defined in existing files like:
+- `HUD.lua`
+- `ShopUI.lua`
+- `BlindPreview.lua`
 
-1. Find `graphics.setColor(r, g, b, a)` followed by `graphics.rectangle("fill", ...)`
-   - Replace with: `graphics.drawRect(x, y, w, h, {r, g, b, a}, true)`
-
-2. Find `graphics.setColor(r, g, b, a)` followed by `graphics.rectangle("line", ...)`
-   - Replace with: `graphics.drawRect(x, y, w, h, {r, g, b, a}, false)`
-
-3. Find `graphics.setFont(font)` followed by `graphics.print(...)`
-   - Replace with: `graphics.print(font, text, x, y, {r, g, b, a})`
+These existing files all use `graphics.drawRect()` and `graphics.print()` correctly.
 
 ---
 
@@ -97,7 +117,7 @@ After converting each file:
 
 ## Current Status
 
-**Fixed**: 4/7 UI files with Love2D calls  
+**Fixed**: 4/7 UI files with invalid graphics calls  
 **Remaining**: 3 files  
 **Build**: ✅ Compiles successfully  
 **Game**: Playable (remaining files only error when accessed)
