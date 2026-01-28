@@ -1,6 +1,3 @@
--- ShopUI.lua
--- Visual shop interface
-
 ShopUI = class()
 
 -- Metadata cache (lazy loaded)
@@ -14,18 +11,8 @@ ShopUI.RarityColors = {
     enhancement = { r = 0.5, g = 0.4, b = 0.8, a = 1 }, -- Purple
 }
 
-ShopUI = class()
-
--- Metadata cache (lazy loaded)
-ShopUI.Metadata = {}
-
-ShopUI.RarityColors = {
-    common      = { r = 0.4, g = 0.6, b = 0.8, a = 1 }, -- Blueish
-    uncommon    = { r = 0.2, g = 0.7, b = 0.4, a = 1 }, -- Greenish
-    rare        = { r = 0.8, g = 0.3, b = 0.3, a = 1 }, -- Red
-    legendary   = { r = 0.9, g = 0.8, b = 0.2, a = 1 }, -- Gold
-    enhancement = { r = 0.5, g = 0.4, b = 0.8, a = 1 }, -- Purple
-}
+local UIButton = require("UI.elements.UIButton")
+local UICard = require("UI.elements.UICard")
 
 function ShopUI:init(font, layout)
     self.font = font
@@ -34,15 +21,29 @@ function ShopUI:init(font, layout)
     self.reward = 0
     -- Hover state
     self.hoveredIndex = -1
-    self.hoveredButton = nil -- "next", "reroll"
+
+    self.cards = {}
 
     -- Register Layout Regions
     self.layout:register("Shop_Title", { anchor = "top-center", width = 100, height = 40, offsetX = 0, offsetY = 40 })
     self.layout:register("Shop_Gold", { anchor = "top-center", width = 100, height = 30, offsetX = 0, offsetY = 90 })
-    self.layout:register("Shop_Reroll",
-        { anchor = "bottom-left", width = 200, height = 60, offsetX = 50, offsetY = 40 })
-    self.layout:register("Shop_Next",
-        { anchor = "bottom-right", width = 200, height = 60, offsetX = 30, offsetY = 40 })
+    self.layout:register("Shop_Reroll", { anchor = "bottom-left", width = 200, height = 60, offsetX = 50, offsetY = 40 })
+    self.layout:register("Shop_Next", { anchor = "bottom-right", width = 200, height = 60, offsetX = 30, offsetY = 40 })
+
+    -- Initialize Buttons
+    self.nextButton = UIButton("Shop_Next", "Next Round >", self.font, function()
+        self.shouldClose = true
+    end)
+    -- Custom colors for Next button
+    self.nextButton.bgColor = { r = 0.8, g = 0.2, b = 0.2, a = 1 }
+    self.nextButton.hoverColor = { r = 0.9, g = 0.3, b = 0.3, a = 1 }
+
+    self.rerollButton = UIButton("Shop_Reroll", "Reroll", self.font, function()
+        Shop:reroll()
+        self:rebuildCards()
+    end)
+    self.rerollButton.bgColor = { r = 0.3, g = 0.3, b = 0.8, a = 1 }
+    self.rerollButton.hoverColor = { r = 0.4, g = 0.4, b = 0.9, a = 1 }
 end
 
 function ShopUI:getMetadata(id)
@@ -99,7 +100,7 @@ function ShopUI:getMetadata(id)
     end
 
     if data then
-        self.Metadata[id] = { name = data.name, desc = data.description }
+        self.Metadata[id] = { name = data.name or id, desc = data.description or "No description" }
     else
         -- Fallback for enhancements not yet in JSON or missing files
         self.Metadata[id] = { name = id, desc = "Effect not defined" }
@@ -108,72 +109,97 @@ function ShopUI:getMetadata(id)
     return self.Metadata[id]
 end
 
+function ShopUI:rebuildCards()
+    self.cards = {}
+    for i, joker in ipairs(Shop.jokers) do
+        local meta = self:getMetadata(joker.id)
+
+        -- Combine runtime data with metadata
+        local cardData = {
+            id = joker.id,
+            name = meta.name,
+            desc = meta.desc,
+            price = joker.price,
+            rarity = joker.rarity
+        }
+
+        local card = UICard(nil, cardData, self.font, function()
+            local result, msg = Shop:buyJoker(i)
+            if type(result) == "table" then
+                if result.action == "select_card" or result.action == "select_card_for_imprint" then
+                    self.pendingAction = result
+                end
+            end
+            -- Rebuild after attempted buy (list might change)
+            self:rebuildCards()
+        end)
+
+        table.insert(self.cards, card)
+    end
+end
+
 function ShopUI:open(reward)
     self.active = true
+    self.shouldClose = false
+    self.pendingAction = nil
     self.reward = reward
     -- Initial generation
     Shop:generateJokers(CampaignState.currentAct or 1)
+    self:rebuildCards()
 end
 
 function ShopUI:update(dt, mx, my, clicked)
     if not self.active then return false end
+    if self.shouldClose then
+        self.shouldClose = false
+        return { action = "close" }
+    end
+
+    if self.pendingAction then
+        local res = self.pendingAction
+        self.pendingAction = nil
+        return res
+    end
+
+    -- Check if card list needs sync (e.g. external modification)
+    if #self.cards ~= #Shop.jokers then
+        self:rebuildCards()
+    end
 
     -- Layout Constants
     local winW, winH = graphics.getWindowSize()
+
+    -- Update Buttons Position & State
+    local nx, ny = self.layout:getPosition("Shop_Next")
+    local nr = self.layout.regions["Shop_Next"]
+
+    self.nextButton:setPos(nx, ny)
+    self.nextButton:setSize(nr.width, nr.height)
+    self.nextButton:update(dt, mx, my, clicked)
+
+    local rx, ry = self.layout:getPosition("Shop_Reroll")
+    local rr = self.layout.regions["Shop_Reroll"]
+
+    self.rerollButton:setPos(rx, ry)
+    self.rerollButton:setSize(rr.width, rr.height)
+    self.rerollButton:update(dt, mx, my, clicked)
 
     -- Dynamic Card Layout
     local cardW = 220
     local cardH = 300
     local spacing = 240
-    local numCards = #Shop.jokers
-    local totalWidth = (numCards * cardW) + ((numCards - 1) * (spacing - cardW)) -- Spacing includes gap?
-    -- Logic: x = start + (i-1)*spacing.
-    -- Max X = start + (n-1)*spacing. Right edge = Max X + cardW.
-    -- Width = (n-1)*spacing + cardW.
+    local numCards = #self.cards
     local contentWidth = math.max(0, (numCards - 1) * spacing + cardW)
     local startX = (winW - contentWidth) / 2
-    local startY = (winH - cardH) / 2          -- Center vertically too? Or fixed Y? Original 250.
-    startY = math.max(150, (winH - cardH) / 2) -- Center but keep space for title
+    local startY = math.max(150, (winH - cardH) / 2)
 
-    self.hoveredIndex = -1
-    self.hoveredButton = nil
-
-    -- Check Jokers
-    for i, joker in ipairs(Shop.jokers) do
+    -- Update Cards
+    for i, card in ipairs(self.cards) do
         local x = startX + (i - 1) * spacing
         local y = startY
-
-        if mx >= x and mx <= x + cardW and my >= y and my <= y + cardH then
-            self.hoveredIndex = i
-            if clicked then
-                local result, msg = Shop:buyJoker(i)
-                if type(result) == "table" then
-                    if result.action == "select_card" or result.action == "select_card_for_imprint" then
-                        return result
-                    end
-                end
-            end
-        end
-    end
-
-    -- Next Round Button
-    local nx, ny = self.layout:getPosition("Shop_Next")
-    local regionNext = self.layout.regions["Shop_Next"]
-    if regionNext and mx >= nx and mx <= nx + regionNext.width and my >= ny and my <= ny + regionNext.height then
-        self.hoveredButton = "next"
-        if clicked then
-            return { action = "close" }
-        end
-    end
-
-    -- Reroll Button
-    local rx, ry = self.layout:getPosition("Shop_Reroll")
-    local regionReroll = self.layout.regions["Shop_Reroll"]
-    if regionReroll and mx >= rx and mx <= rx + regionReroll.width and my >= ry and my <= ry + regionReroll.height then
-        self.hoveredButton = "reroll"
-        if clicked then
-            Shop:reroll()
-        end
+        card:setPos(x, y)
+        -- Pass input to card
+        card:update(dt, mx, my, clicked)
     end
 
     return false
@@ -201,68 +227,14 @@ function ShopUI:draw()
     graphics.print(self.font, "Reroll: " .. Shop.shopRerollCost .. "g", rx + 50, ry - 30,
         { r = 0.7, g = 0.7, b = 0.7 })
 
-    -- Render Jokers
-    local cardW = 220
-    local cardH = 300
-    local spacing = 240
-    local numCards = #Shop.jokers
-    local contentWidth = math.max(0, (numCards - 1) * spacing + cardW)
-    local startX = (winW - contentWidth) / 2
-    local startY = math.max(150, (winH - cardH) / 2)
+    -- Buttons
+    self.nextButton:draw()
+    self.rerollButton:draw()
 
-    for i, joker in ipairs(Shop.jokers) do
-        local x = startX + (i - 1) * spacing
-        local y = startY
-        local meta = self:getMetadata(joker.id)
-        local rarityColor = self.RarityColors[joker.rarity] or { r = 0.5, g = 0.5, b = 0.5, a = 1 }
-
-        -- Card Body (Base)
-        local baseColor = { r = 0.15, g = 0.15, b = 0.18, a = 1 }
-        if self.hoveredIndex == i then
-            baseColor = { r = 0.2, g = 0.2, b = 0.23, a = 1 }
-            -- Highlight Border
-            graphics.drawRect(x - 2, y - 2, cardW + 4, cardH + 4, rarityColor, true)
-        end
-        graphics.drawRect(x, y, cardW, cardH, baseColor, true)
-
-        -- Header (Rarity Color)
-        graphics.drawRect(x, y, cardW, 50, rarityColor, true)
-
-        -- Name (White, Shadowed)
-        graphics.print(self.font, meta.name, x + 10, y + 10, { r = 0, g = 0, b = 0, a = 0.5 }) -- Shadow
-        graphics.print(self.font, meta.name, x + 9, y + 9, { r = 1, g = 1, b = 1, a = 1 })
-
-        -- Description
-        graphics.print(self.font, meta.desc, x + 10, y + 70, { r = 0.9, g = 0.9, b = 0.9, a = 1 })
-
-        -- Price Tag
-        local priceY = y + cardH - 40
-        graphics.drawRect(x, priceY, cardW, 40, { r = 0, g = 0, b = 0, a = 0.3 }, true)
-        local priceColor = { r = 1, g = 0.8, b = 0.2, a = 1 }
-        if Economy.gold < joker.price then priceColor = { r = 0.8, g = 0.2, b = 0.2, a = 1 } end
-        graphics.print(self.font, joker.price .. "g", x + 15, priceY + 8, priceColor)
-
-        -- Buy Label
-        if self.hoveredIndex == i then
-            graphics.print(self.font, "BUY", x + 150, priceY + 8, { r = 0.4, g = 1, b = 0.4 })
-        end
+    -- Render Cards
+    for _, card in ipairs(self.cards) do
+        card:draw()
     end
-
-    -- Next Round Button
-    local nx, ny = self.layout:getPosition("Shop_Next")
-    local regionNext = self.layout.regions["Shop_Next"]
-    local nextColor = { r = 0.8, g = 0.2, b = 0.2, a = 1 }
-    if self.hoveredButton == "next" then nextColor = { r = 0.9, g = 0.3, b = 0.3, a = 1 } end
-    -- regionNext.width/height is available
-    graphics.drawRect(nx, ny, regionNext.width, regionNext.height, nextColor, true)
-    graphics.print(self.font, "Next Round >", nx + 30, ny + 15)
-
-    -- Reroll Button
-    local regionReroll = self.layout.regions["Shop_Reroll"]
-    local rerollColor = { r = 0.3, g = 0.3, b = 0.8, a = 1 }
-    if self.hoveredButton == "reroll" then rerollColor = { r = 0.4, g = 0.4, b = 0.9, a = 1 } end
-    graphics.drawRect(rx, ry, regionReroll.width, regionReroll.height, rerollColor, true)
-    graphics.print(self.font, "Reroll", rx + 50, ry + 15)
 end
 
 return ShopUI

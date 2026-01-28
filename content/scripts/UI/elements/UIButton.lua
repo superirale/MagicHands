@@ -13,32 +13,29 @@ function UIButton:init(layout_name, text, font, onClick)
     self.textColor = { r = 1, g = 1, b = 1, a = 1 }
 end
 
-function UIButton:update(dt)
+function UIButton:update(dt, mx, my, isPressed)
     if not self.visible then return end
 
-    local mx, my, mLeft = input.getMousePosition() -- Assuming global input
-    -- Or pass inputs via update, but global input is standard in this engine so far
-    -- Wait, GameScene passes inputs? No, GameScene calls update(dt).
-    -- But BlindPreview accessed global `input`.
+    -- Use passed input or fallback to global
+    local x, y = mx, my
+    local pressed = isPressed
+
+    if not x or not y then
+        x, y = input.getMousePosition()
+        pressed = input.isPressed("mouse_left")
+    end
 
     -- Check Hover
-    self.isHoveredState = self:isHovered(mx, my)
+    self.isHoveredState = self:isHovered(x, y)
 
-    -- Check Click
-    if self.isHoveredState and input.isJustPressed("return") then -- Just placeholder, usually mouse click
-        -- The user mentioned "mouse click" in BlindPreview: "clicked and hover"
-        -- I will assume the parent passes 'clicked' state or checking global mouse
-        if mLeft and not self.wasClicked then
-            self.wasClicked = true
-            if self.onClick then self.onClick() end
-        elseif not mLeft then
-            self.wasClicked = false
-        end
+    -- Check Click ("mouse_left")
+    if self.isHoveredState and pressed and not self.wasClicked then
+        self.wasClicked = true
+        if self.onClick then self.onClick() end
+    elseif not pressed then
+        self.wasClicked = false
     end
 end
-
--- Ideally update(...) should take input state or access global input wrapper
--- For now, relying on global 'input' as seen in other files
 
 function UIButton:draw()
     if not self.visible then return end
@@ -52,13 +49,8 @@ function UIButton:draw()
     graphics.drawRect(self.x, self.y, self.width, self.height, { r = 1, g = 1, b = 1, a = 0.5 }, false)
 
     -- Draw Text (Centered)
-    local textW = #self.text * 12 -- Approx
-    -- Assuming we have an estimateWidth or similar helper, or just center roughly
     if self.font then
         graphics.print(self.font, self.text, self.x + 10, self.y + 10, self.textColor)
-        -- Real centering requires text width measurement which is missing/approximated
-    else
-        -- fallback ?
     end
 end
 

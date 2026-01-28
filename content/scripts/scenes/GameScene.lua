@@ -219,9 +219,9 @@ function GameScene:update(dt)
         end
 
         -- Update UI Layout
-        if UILayout then
+        if self.uiLayout then
             print("DEBUG GameScene: Updating UILayout size")
-            UILayout.setScreenSize(winW, winH)
+            self.uiLayout:updateScreenSize(winW, winH)
         end
     end
 
