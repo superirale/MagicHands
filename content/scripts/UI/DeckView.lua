@@ -29,7 +29,36 @@ function DeckView:show(deckList, mode, onCardSelected, onClose)
     local spacingY = 110
     local cols = 13
 
-    for i, cardData in ipairs(deckList) do
+    -- Sort deckList by Rank then Suit
+    local toShow = {}
+    for _, card in ipairs(deckList) do
+        table.insert(toShow, card)
+    end
+
+    table.sort(toShow, function(a, b)
+        local function getRankVal(rStr)
+            if rStr == "A" then return 1 end
+            if rStr == "J" then return 11 end
+            if rStr == "Q" then return 12 end
+            if rStr == "K" then return 13 end
+            return tonumber(rStr) or 0
+        end
+        local function getSuitVal(sStr)
+            if sStr == "S" then return 4 end
+            if sStr == "H" then return 3 end
+            if sStr == "C" then return 2 end
+            if sStr == "D" then return 1 end
+            return 0
+        end
+
+        local ra, rb = getRankVal(a.rank), getRankVal(b.rank)
+        local sa, sb = getSuitVal(a.suit), getSuitVal(b.suit)
+
+        if sa ~= sb then return sa > sb end -- Group by Suit (S, H, C, D)
+        return ra < rb                      -- Then by Rank (A..K)
+    end)
+
+    for i, cardData in ipairs(toShow) do
         local row = math.floor((i - 1) / cols)
         local col = (i - 1) % cols
 
@@ -37,10 +66,27 @@ function DeckView:show(deckList, mode, onCardSelected, onClose)
         local y = startY + row * spacingY
 
         local view = CardView(cardData, x, y, self.cardAtlas, self.smallFont)
-        -- We might want to scale them down if 52 cards take too much space
-        -- For MVP, standard size or slightly smaller? CardView default is usually OK for 1080p but tight on 720p.
-        -- Let's assume CardView handles rendering.
-        table.insert(self.cards, { view = view, data = cardData, index = i })
+        -- Keep index proportional to ORIGINAL list?
+        -- Problem: If we sort, the index 'i' here is the sorted index.
+        -- If user sorts and selects index 5, it matches sorted list index 5.
+        -- When we pass callback(index), the caller (GameScene) expects index in MASTER DECK?
+        -- CampaignState:removeCard(index) removes by index.
+        -- If we display sorted, we need to know the ORIGINAL index.
+        -- We should store original index in 'toShow'.
+
+        -- Re-map: Find original index of this cardData object in deckList
+        -- Assuming cardData table ref is unique/stable or we scan.
+        -- deckList passed in is CampaignState.masterDeck.
+        -- Let's find it.
+        local originalIndex = 0
+        for k, v in ipairs(deckList) do
+            if v == cardData then -- Object identity check
+                originalIndex = k
+                break
+            end
+        end
+
+        table.insert(self.cards, { view = view, data = cardData, index = originalIndex })
     end
 end
 

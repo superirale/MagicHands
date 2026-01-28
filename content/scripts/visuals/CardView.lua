@@ -80,10 +80,37 @@ function CardView:draw()
 
 
     -- Visual selection highlight (Screen Space)
+    -- Visual selection highlight (Screen Space)
     if self.selected then
         graphics.drawRect(self.currentX - 2, self.currentY - 2, self.width + 4, self.height + 4,
             { r = 1, g = 1, b = 0.2, a = 0.5 },
             true)
+    end
+
+    -- Draw Enhancement Label
+    if self.card.enhancement then
+        local label = ""
+        local color = { r = 1, g = 1, b = 1, a = 1 }
+
+        if self.card.enhancement == "planet_gold" then
+            label = "GOLD"
+            color = { r = 1, g = 0.8, b = 0, a = 1 }
+        elseif self.card.enhancement == "planet_mult" then
+            label = "MULT"
+            color = { r = 1, g = 0.2, b = 0.2, a = 1 }
+        elseif self.card.enhancement == "planet_steel" then
+            label = "STEEL"
+            color = { r = 0.7, g = 0.7, b = 0.8, a = 1 }
+        elseif self.card.enhancement == "planet_stone" then
+            label = "STONE"
+            color = { r = 0.5, g = 0.5, b = 0.5, a = 1 }
+        else
+            label = "ENH" -- Fallback
+        end
+
+        local textW = 40 -- approx
+        graphics.print(self.smallFont, label, self.currentX + (self.width - textW) / 2, self.currentY + self.height - 20,
+            color)
     end
 end
 
