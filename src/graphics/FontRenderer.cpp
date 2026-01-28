@@ -107,6 +107,52 @@ void FontRenderer::DrawText(int fontId, const char *text, float x, float y,
   }
 }
 
+void FontRenderer::GetTextSize(int fontId, const char *text, float *width,
+                               float *height, float *baselineOffset) {
+  if (fontId < 0 || fontId >= s_Fonts.size()) {
+    if (width)
+      *width = 0.0f;
+    if (height)
+      *height = 0.0f;
+    if (baselineOffset)
+      *baselineOffset = 0.0f;
+    return;
+  }
+
+  FontData &font = s_Fonts[fontId];
+
+  float x = 0.0f;
+  float y = 0.0f;
+  float minY = 0.0f;
+  float maxY = 0.0f;
+
+  // Iterate string to measure bounds
+  while (*text) {
+    unsigned char c = (unsigned char)*text;
+    if (c >= 32 && c < 128) {
+      stbtt_aligned_quad q;
+      stbtt_GetBakedQuad(font.cdata, font.width, font.height, c - 32, &x, &y,
+                         &q, 0);
+
+      // Track vertical bounds
+      if (q.y0 < minY)
+        minY = q.y0;
+      if (q.y1 > maxY)
+        maxY = q.y1;
+    }
+    text++;
+  }
+
+  if (width)
+    *width = x;
+  if (height)
+    *height = maxY - minY;
+  // Baseline offset is the distance from top of bounding box to baseline (y=0)
+  // Since minY is typically negative, -minY gives us the offset from top to baseline
+  if (baselineOffset)
+    *baselineOffset = -minY;
+}
+
 int FontRenderer::Lua_LoadFont(lua_State *L) {
   const char *path = luaL_checkstring(L, 1);
   float size = (float)luaL_checknumber(L, 2);
@@ -143,6 +189,21 @@ int FontRenderer::Lua_DrawText(lua_State *L) {
   return 0;
 }
 
+int FontRenderer::Lua_GetTextSize(lua_State *L) {
+  int id = (int)luaL_checkinteger(L, 1);
+  const char *text = luaL_checkstring(L, 2);
+
+  float width = 0.0f;
+  float height = 0.0f;
+  float baselineOffset = 0.0f;
+  GetTextSize(id, text, &width, &height, &baselineOffset);
+
+  lua_pushnumber(L, width);
+  lua_pushnumber(L, height);
+  lua_pushnumber(L, baselineOffset);
+  return 3;
+}
+
 void FontRenderer::RegisterLua(lua_State *L) {
   // We can add to existing graphics table or new font table?
   // Let's add 'loadFont' and 'print' to 'graphics' table in main.cpp logic or
@@ -155,6 +216,8 @@ void FontRenderer::RegisterLua(lua_State *L) {
     lua_setfield(L, -2, "loadFont");
     lua_pushcfunction(L, Lua_DrawText);
     lua_setfield(L, -2, "print");
+    lua_pushcfunction(L, Lua_GetTextSize);
+    lua_setfield(L, -2, "getTextSize");
   }
   lua_pop(L, 1);
 }

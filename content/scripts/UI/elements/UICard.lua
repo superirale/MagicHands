@@ -32,9 +32,11 @@ function UICard:init(layout_name, jokerData, font, onClick)
     }
 end
 
--- Text wrapping helper
-function UICard:wrapText(text, maxWidth, fontSize)
+-- Text wrapping helper using accurate text measurement
+function UICard:wrapText(text, maxWidth, fontId)
     if not text or text == "" then return {} end
+    if not fontId then return { text } end
+    
     local lines = {}
     local words = {}
 
@@ -45,28 +47,27 @@ function UICard:wrapText(text, maxWidth, fontSize)
 
     if #words == 0 then return { text } end
 
-    -- Estimation: average char width approx 0.6 * fontSize
-    local charWidth = fontSize * 0.6
-
     local currentLine = ""
-    local currentLen = 0
 
     for _, word in ipairs(words) do
-        local wordLen = #word * charWidth
-        -- If adding word exceeds width, push current line
-        if currentLen + wordLen + charWidth > maxWidth then
-            table.insert(lines, currentLine)
-            currentLine = word
-            currentLen = wordLen
-        else
-            if currentLine == "" then
+        local testLine = currentLine == "" and word or (currentLine .. " " .. word)
+        local lineWidth = graphics.getTextSize(fontId, testLine) -- Only need width (first return value)
+        
+        -- If adding word exceeds width, push current line and start new one
+        if lineWidth > maxWidth then
+            if currentLine ~= "" then
+                table.insert(lines, currentLine)
                 currentLine = word
             else
-                currentLine = currentLine .. " " .. word
+                -- Single word is too long, add it anyway to avoid infinite loop
+                table.insert(lines, word)
+                currentLine = ""
             end
-            currentLen = currentLen + wordLen + charWidth -- add space
+        else
+            currentLine = testLine
         end
     end
+    
     if currentLine ~= "" then
         table.insert(lines, currentLine)
     end
@@ -111,23 +112,24 @@ function UICard:draw()
     graphics.drawRect(self.x, self.y, self.width, self.height, bgColor, true)
 
     -- Header (Rarity)
-    graphics.drawRect(self.x, self.y, self.width, 50, rarityColor, true)
-    print("DEBUG: UICard:draw - Draw Title")
-    -- Title
+    local headerHeight = 50
+    graphics.drawRect(self.x, self.y, self.width, headerHeight, rarityColor, true)
+    
+    -- Title (Properly Centered)
     if self.font then
-        local fontSize = 16
-        local charW = fontSize * 0.55
-        local textW = #self.jokerData.name * charW
+        local textW, textH, baselineOffset = graphics.getTextSize(self.font, self.jokerData.name)
         local tx = self.x + (self.width - textW) / 2
-        local ty = self.y + (50 - fontSize) / 2
+        -- Center the text vertically: position the baseline so the visual center of text is in center of header
+        local ty = self.y + (headerHeight - textH) / 2 + baselineOffset
 
+        -- Shadow for depth
         graphics.print(self.font, self.jokerData.name, tx + 1, ty + 1, self.colors.shadow)
         graphics.print(self.font, self.jokerData.name, tx, ty, self.colors.text)
     end
 
     -- Description (Wrapped)
     local descY = self.y + 70
-    local descLines = self:wrapText(self.jokerData.desc, self.width - 20, 16)
+    local descLines = self:wrapText(self.jokerData.desc, self.width - 20, self.font)
     for i, line in ipairs(descLines) do
         graphics.print(self.font, line, self.x + 10, descY + (i - 1) * 20, self.colors.desc)
     end

@@ -22,9 +22,15 @@ public:
   static void DrawText(int fontId, const char *text, float x, float y,
                        const Color &color = Color::White);
 
+  // Get the width, height, and baseline offset of rendered text
+  // baselineOffset is the distance from the top of the bounding box to the baseline
+  static void GetTextSize(int fontId, const char *text, float *width,
+                          float *height, float *baselineOffset = nullptr);
+
   // Lua Bindings
   static int Lua_LoadFont(lua_State *L);
   static int Lua_DrawText(lua_State *L);
+  static int Lua_GetTextSize(lua_State *L);
   static void RegisterLua(lua_State *L);
 
 private:

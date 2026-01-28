@@ -69,14 +69,37 @@ Load a TrueType font.
 local font = graphics.loadFont("content/fonts/font.ttf", 24)
 ```
 
-### `graphics.print(fontId, text, x, y)`
+### `graphics.print(fontId, text, x, y, color)`
 Draw text.
 - **Parameters**:
   - `fontId` (number)
   - `text` (string)
   - `x, y` (number) - Screen position
+  - `color` (table, optional) - Color table `{r, g, b, a}` (default: white)
 ```lua
 graphics.print(font, "Health: 100", 20, 20)
+graphics.print(font, "Error!", 10, 10, {r=1, g=0, b=0, a=1})
+```
+
+### `graphics.getTextSize(fontId, text)`
+Get the dimensions of rendered text and baseline offset.
+- **Parameters**:
+  - `fontId` (number)
+  - `text` (string)
+- **Returns**: `width, height, baselineOffset` (number, number, number)
+  - `width` - Text width in pixels
+  - `height` - Text height in pixels (full vertical extent)
+  - `baselineOffset` - Distance from top of bounding box to baseline
+```lua
+local w, h, baseline = graphics.getTextSize(font, "Hello World")
+
+-- Center text horizontally
+local x = (screenWidth - w) / 2
+
+-- Center text vertically (accounting for baseline positioning)
+local y = (screenHeight - h) / 2 + baseline
+
+graphics.print(font, "Hello World", x, y)
 ```
 
 ### Post-Processing Shaders
