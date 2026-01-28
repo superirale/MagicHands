@@ -3,9 +3,10 @@
 
 local CollectionUI = class()
 
-function CollectionUI:init(font, smallFont)
+function CollectionUI:init(font, smallFont, layout)
     self.font = font
     self.smallFont = smallFont
+    self.layout = layout -- Store layout instance
     self.visible = false
 
     -- Tabs

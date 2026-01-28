@@ -1,7 +1,6 @@
 -- BlindPreview.lua
 -- UI Screen shown before a blind starts
 
-local UILayout = require("UI.UILayout")
 local BlindPreview = class()
 
 -- Helper to estimate text width since API lacks measurement
@@ -12,9 +11,10 @@ end
 
 
 
-function BlindPreview:init(font, smallFont)
+function BlindPreview:init(font, smallFont, layout)
     self.font = font
     self.smallFont = smallFont
+    self.layout = layout -- Store layout instance
     self.active = false
     self.blindData = nil
     self.reward = 0
@@ -24,7 +24,7 @@ function BlindPreview:init(font, smallFont)
     self.width = 600
     self.height = 520
 
-    UILayout.register(self.layoutName, {
+    self.layout:register(self.layoutName, {
         anchor = "center",
         width = self.width,
         height = self.height
@@ -49,7 +49,7 @@ function BlindPreview:update(dt, mx, my, clicked)
     if not self.active then return false end
 
     -- Get dynamic position
-    local x, y = UILayout.getPosition(self.layoutName)
+    local x, y = self.layout:getPosition(self.layoutName)
 
     -- Calculate Button Position (Centered at bottom of modal)
     local btnX = x + (self.width - self.btnWidth) / 2
@@ -69,11 +69,11 @@ end
 function BlindPreview:draw()
     if not self.active or not self.blindData then return end
 
-    local x, y = UILayout.getPosition(self.layoutName)
+    local x, y = self.layout:getPosition(self.layoutName)
     local w, h = self.width, self.height
 
     -- 1. Full Screen Dim Overlay
-    graphics.drawRect(0, 0, UILayout.screenWidth, UILayout.screenHeight, { r = 0, g = 0, b = 0, a = 0.85 }, true)
+    graphics.drawRect(0, 0, self.layout.screenWidth, self.layout.screenHeight, { r = 0, g = 0, b = 0, a = 0.85 }, true)
 
     -- 2. Modal Window Background
     -- Theme colors based on blind type

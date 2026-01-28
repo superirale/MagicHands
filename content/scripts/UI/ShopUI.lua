@@ -14,10 +14,22 @@ ShopUI.RarityColors = {
     enhancement = { r = 0.5, g = 0.4, b = 0.8, a = 1 }, -- Purple
 }
 
-local UILayout = require("UI.UILayout")
+ShopUI = class()
 
-function ShopUI:init(font)
+-- Metadata cache (lazy loaded)
+ShopUI.Metadata = {}
+
+ShopUI.RarityColors = {
+    common      = { r = 0.4, g = 0.6, b = 0.8, a = 1 }, -- Blueish
+    uncommon    = { r = 0.2, g = 0.7, b = 0.4, a = 1 }, -- Greenish
+    rare        = { r = 0.8, g = 0.3, b = 0.3, a = 1 }, -- Red
+    legendary   = { r = 0.9, g = 0.8, b = 0.2, a = 1 }, -- Gold
+    enhancement = { r = 0.5, g = 0.4, b = 0.8, a = 1 }, -- Purple
+}
+
+function ShopUI:init(font, layout)
     self.font = font
+    self.layout = layout
     self.active = false
     self.reward = 0
     -- Hover state
@@ -25,10 +37,12 @@ function ShopUI:init(font)
     self.hoveredButton = nil -- "next", "reroll"
 
     -- Register Layout Regions
-    UILayout.register("Shop_Title", { anchor = "top-center", width = 100, height = 40, offsetX = 0, offsetY = 40 })
-    UILayout.register("Shop_Gold", { anchor = "top-center", width = 100, height = 30, offsetX = 0, offsetY = 90 })
-    UILayout.register("Shop_Reroll", { anchor = "bottom-left", width = 200, height = 60, offsetX = 50, offsetY = 40 })
-    UILayout.register("Shop_Next", { anchor = "bottom-right", width = 200, height = 60, offsetX = 30, offsetY = 40 })
+    self.layout:register("Shop_Title", { anchor = "top-center", width = 100, height = 40, offsetX = 0, offsetY = 40 })
+    self.layout:register("Shop_Gold", { anchor = "top-center", width = 100, height = 30, offsetX = 0, offsetY = 90 })
+    self.layout:register("Shop_Reroll",
+        { anchor = "bottom-left", width = 200, height = 60, offsetX = 50, offsetY = 40 })
+    self.layout:register("Shop_Next",
+        { anchor = "bottom-right", width = 200, height = 60, offsetX = 30, offsetY = 40 })
 end
 
 function ShopUI:getMetadata(id)
@@ -143,8 +157,8 @@ function ShopUI:update(dt, mx, my, clicked)
     end
 
     -- Next Round Button
-    local nx, ny = UILayout.getPosition("Shop_Next")
-    local regionNext = UILayout.get("Shop_Next")
+    local nx, ny = self.layout:getPosition("Shop_Next")
+    local regionNext = self.layout.regions["Shop_Next"]
     if regionNext and mx >= nx and mx <= nx + regionNext.width and my >= ny and my <= ny + regionNext.height then
         self.hoveredButton = "next"
         if clicked then
@@ -153,8 +167,8 @@ function ShopUI:update(dt, mx, my, clicked)
     end
 
     -- Reroll Button
-    local rx, ry = UILayout.getPosition("Shop_Reroll")
-    local regionReroll = UILayout.get("Shop_Reroll")
+    local rx, ry = self.layout:getPosition("Shop_Reroll")
+    local regionReroll = self.layout.regions["Shop_Reroll"]
     if regionReroll and mx >= rx and mx <= rx + regionReroll.width and my >= ry and my <= ry + regionReroll.height then
         self.hoveredButton = "reroll"
         if clicked then
@@ -174,17 +188,18 @@ function ShopUI:draw()
     graphics.drawRect(0, 0, winW, winH, { r = 0.05, g = 0.05, b = 0.08, a = 0.95 }, true)
 
     -- Header
-    local tx, ty = UILayout.getPosition("Shop_Title")
+    local tx, ty = self.layout:getPosition("Shop_Title")
     graphics.print(self.font, "SHOP", tx, ty, { r = 1, g = 1, b = 1, a = 1 })
 
     -- Gold Display
-    local gx, gy = UILayout.getPosition("Shop_Gold")
+    local gx, gy = self.layout:getPosition("Shop_Gold")
     local goldColor = { r = 1, g = 0.8, b = 0.2, a = 1 }
     graphics.print(self.font, "Gold: " .. Economy.gold, gx, gy, goldColor)
 
     -- Reroll info (Near Reroll Button)
-    local rx, ry = UILayout.getPosition("Shop_Reroll")
-    graphics.print(self.font, "Reroll: " .. Shop.shopRerollCost .. "g", rx + 50, ry - 30, { r = 0.7, g = 0.7, b = 0.7 })
+    local rx, ry = self.layout:getPosition("Shop_Reroll")
+    graphics.print(self.font, "Reroll: " .. Shop.shopRerollCost .. "g", rx + 50, ry - 30,
+        { r = 0.7, g = 0.7, b = 0.7 })
 
     -- Render Jokers
     local cardW = 220
@@ -234,8 +249,8 @@ function ShopUI:draw()
     end
 
     -- Next Round Button
-    local nx, ny = UILayout.getPosition("Shop_Next")
-    local regionNext = UILayout.get("Shop_Next")
+    local nx, ny = self.layout:getPosition("Shop_Next")
+    local regionNext = self.layout.regions["Shop_Next"]
     local nextColor = { r = 0.8, g = 0.2, b = 0.2, a = 1 }
     if self.hoveredButton == "next" then nextColor = { r = 0.9, g = 0.3, b = 0.3, a = 1 } end
     -- regionNext.width/height is available
@@ -243,7 +258,7 @@ function ShopUI:draw()
     graphics.print(self.font, "Next Round >", nx + 30, ny + 15)
 
     -- Reroll Button
-    local regionReroll = UILayout.get("Shop_Reroll")
+    local regionReroll = self.layout.regions["Shop_Reroll"]
     local rerollColor = { r = 0.3, g = 0.3, b = 0.8, a = 1 }
     if self.hoveredButton == "reroll" then rerollColor = { r = 0.4, g = 0.4, b = 0.9, a = 1 } end
     graphics.drawRect(rx, ry, regionReroll.width, regionReroll.height, rerollColor, true)

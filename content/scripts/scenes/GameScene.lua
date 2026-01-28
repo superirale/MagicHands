@@ -72,36 +72,20 @@ function GameScene:init()
     self.pendingShopItem = nil -- For spectral actions
 
     -- Visual Components
+    -- Initialize UI Layout (Instance)
+    self.uiLayout = UILayout(1280, 720)
+
+    -- Visual Components
     self.cardViews = {}
     self.cutCardView = nil
-    self.shopUI = ShopUI(self.font)
-    self.blindPreview = BlindPreview(self.font, self.smallFont)
-    self.deckView = DeckView(self.font, self.smallFont, self.cardAtlas)
-    self.hud = HUD(self.font, self.smallFont)
+    -- Pass layout to UIs
+    self.shopUI = ShopUI(self.font, self.uiLayout)
+    self.blindPreview = BlindPreview(self.font, self.smallFont, self.uiLayout)
+    self.deckView = DeckView(self.font, self.smallFont, self.cardAtlas, self.uiLayout)
+    self.hud = HUD(self.font, self.smallFont, self.uiLayout)
 
-    if not self.hud then
-        print("ERROR: HUD failed to initialize!")
-    else
-        print("HUD initialized successfully")
-    end
-
-    -- Phase 3: Initialize Meta-Progression & Polish Systems
-    print("Initializing Phase 3 Systems...")
-
-    -- Achievement System (module singleton)
-    MagicHandsAchievements:init()
-    print("Achievement system initialized")
-
-    -- Unlock System (module singleton)
-    UnlockSystem:init()
-    print("Unlock system initialized")
-
-    -- Undo System (module singleton)
-    UndoSystem:init()
-    print("Undo system initialized")
-
-    -- UI Systems (Classes - need instantiation)
-    self.collectionUI = CollectionUI(self.font, self.smallFont)
+    -- Phase 3 UIs
+    self.collectionUI = CollectionUI(self.font, self.smallFont, self.uiLayout)
     self.achievementNotification = AchievementNotification(self.font, self.smallFont)
     self.runStatsPanel = RunStatsPanel(self.font, self.smallFont)
 
