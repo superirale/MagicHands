@@ -115,7 +115,7 @@ function UICard:draw()
     print("DEBUG: UICard:draw - Draw Title")
     -- Title
     if self.font then
-        local fontSize = 24
+        local fontSize = 16
         local charW = fontSize * 0.55
         local textW = #self.jokerData.name * charW
         local tx = self.x + (self.width - textW) / 2
