@@ -1,0 +1,11 @@
+{
+    "id": "warp_greed",
+    "name": "Greed",
+    "type": "warp",
+    "description": "10% of score converted to gold (slower progression)",
+    "trigger": "on_score",
+    "effect": {
+        "type": "score_to_gold",
+        "value": 1.0
+    }
+}

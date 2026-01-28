@@ -1,0 +1,7 @@
+{
+    "id": "spectral_ascend",
+    "name": "Rank Ascension",
+    "type": "sculptor",
+    "description": "Upgrade all cards of one rank (+1 value)",
+    "action": "ascend_rank"
+}

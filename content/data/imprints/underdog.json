@@ -1,0 +1,10 @@
+{
+    "id": "underdog",
+    "name": "Underdog",
+    "type": "imprint",
+    "description": "+30 chips if lowest card",
+    "trigger": "on_score",
+    "effect": {
+        "chips": 30
+    }
+}

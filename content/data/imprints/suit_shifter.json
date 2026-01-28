@@ -1,0 +1,10 @@
+{
+    "id": "suit_shifter",
+    "name": "Suit Shifter",
+    "type": "imprint",
+    "description": "Counts as any suit for flushes",
+    "trigger": "on_score",
+    "effect": {
+        "chips": 40
+    }
+}

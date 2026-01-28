@@ -1,0 +1,21 @@
+{
+    "id": "the_polymath",
+    "name": "The Polymath",
+    "description": "+15 chips per unique scoring category",
+    "rarity": "uncommon",
+    "type": "utility",
+    "stackable": false,
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "unique_categories > 1"
+    ],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 50
+        }
+    ],
+    "ignores_caps": false
+}

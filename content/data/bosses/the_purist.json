@@ -1,0 +1,10 @@
+{
+    "id": "the_purist",
+    "name": "The Purist",
+    "type": "boss",
+    "description": "Disables all Rule Warps",
+    "act": 3,
+    "effect": {
+        "disable_warps": true
+    }
+}

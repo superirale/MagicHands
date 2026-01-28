@@ -1,0 +1,11 @@
+{
+    "id": "warp_chaos",
+    "name": "Chaos",
+    "type": "warp",
+    "description": "Reshuffle after every discard",
+    "trigger": "on_score",
+    "effect": {
+        "type": "chaos_shuffle",
+        "value": 1.0
+    }
+}

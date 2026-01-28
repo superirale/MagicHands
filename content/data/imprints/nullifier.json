@@ -1,0 +1,10 @@
+{
+    "id": "nullifier",
+    "name": "Nullifier",
+    "type": "imprint",
+    "description": "Disables boss effects for this card",
+    "trigger": "on_score",
+    "effect": {
+        "x_mult": 1.25
+    }
+}

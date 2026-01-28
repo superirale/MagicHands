@@ -1,0 +1,11 @@
+{
+    "id": "fractal",
+    "name": "Fractal",
+    "type": "imprint",
+    "description": "Duplicate for scoring (50% chance)",
+    "trigger": "on_score",
+    "effect": {
+        "mult": 10
+    },
+    "chance": 0.5
+}

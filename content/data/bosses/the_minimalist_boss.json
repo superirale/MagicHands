@@ -1,0 +1,10 @@
+{
+    "id": "the_minimalist_boss",
+    "name": "The Minimalist",
+    "type": "boss",
+    "description": "Only highest scoring combo counts",
+    "act": 3,
+    "effect": {
+        "single_category": true
+    }
+}

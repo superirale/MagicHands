@@ -1,0 +1,10 @@
+{
+    "id": "investment",
+    "name": "Investment",
+    "type": "imprint",
+    "description": "Gains +1 mult per round",
+    "trigger": "on_score",
+    "effect": {
+        "mult": 1
+    }
+}

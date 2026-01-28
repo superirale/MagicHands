@@ -1,0 +1,11 @@
+{
+    "id": "warp_ascension",
+    "name": "Ascension",
+    "type": "warp",
+    "description": "Double all mult (lose 1 hand per blind)",
+    "trigger": "on_score",
+    "effect": {
+        "type": "double_mult",
+        "value": 1.0
+    }
+}

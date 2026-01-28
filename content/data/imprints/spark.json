@@ -1,0 +1,11 @@
+{
+    "id": "spark",
+    "name": "Spark",
+    "type": "imprint",
+    "description": "25% chance to trigger all effects twice",
+    "trigger": "on_score",
+    "effect": {
+        "mult": 15
+    },
+    "chance": 0.25
+}

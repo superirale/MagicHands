@@ -1,0 +1,11 @@
+{
+    "id": "warp_fortune",
+    "name": "Fortune",
+    "type": "warp",
+    "description": "Score x1.5 but costs 5g per hand",
+    "trigger": "on_score",
+    "effect": {
+        "type": "fortune",
+        "value": 1.0
+    }
+}

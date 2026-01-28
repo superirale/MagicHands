@@ -1,0 +1,11 @@
+{
+    "id": "warp_wildfire",
+    "name": "Wildfire",
+    "type": "warp",
+    "description": "All 5s become wild (+20% blind scaling)",
+    "trigger": "on_score",
+    "effect": {
+        "type": "wild_fives",
+        "value": 1.0
+    }
+}

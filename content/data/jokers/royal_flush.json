@@ -1,0 +1,20 @@
+{
+    "id": "royal_flush",
+    "name": "Royal Flush",
+    "description": "+200 chips if hand contains only face cards",
+    "rarity": "legendary",
+    "type": "category_amplifier",
+    "stackable": false,
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 100,
+            "per": "each_face"
+        }
+    ],
+    "ignores_caps": false
+}

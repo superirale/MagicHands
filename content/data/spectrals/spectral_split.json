@@ -1,0 +1,7 @@
+{
+    "id": "spectral_split",
+    "name": "Rank Splitter",
+    "type": "sculptor",
+    "description": "Split one rank into two",
+    "action": "split_rank"
+}

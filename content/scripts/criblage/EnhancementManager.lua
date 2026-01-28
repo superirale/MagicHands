@@ -41,19 +41,20 @@ function EnhancementManager:resolveAugments(handResult, engineCards)
 
     if #self.augments == 0 then return effects end
 
-    -- Build list of paths
+    -- Build list of paths and counts (planets are stackable)
     local paths = {}
+    local stackCounts = {}
+    
     for _, aug in ipairs(self.augments) do
-        for i = 1, aug.count do
-            table.insert(paths, self.basePath .. aug.id .. ".json")
-        end
+        table.insert(paths, self.basePath .. aug.id .. ".json")
+        table.insert(stackCounts, aug.count)
     end
 
-    -- Using the binding to evaluate effects
+    -- Using the binding to evaluate effects with stack counts
     -- We pass "on_score" as trigger
     if #paths > 0 and engineCards then
         -- Note: joker.applyEffects returns { addedChips, addedTempMult, addedPermMult, ignoresCaps }
-        local result = joker.applyEffects(paths, engineCards, "on_score")
+        local result = joker.applyEffects(paths, engineCards, "on_score", stackCounts)
 
         if result then
             effects.chips = result.addedChips
@@ -85,9 +86,65 @@ function EnhancementManager:resolveWarps()
 end
 
 -- Resolve Imprints (Card specific)
+-- @param cards: Array of card objects with .id and .imprints array
+-- @param trigger: Event trigger (e.g., "on_score", "on_held")
+-- @return effects table with chips, mult, x_mult, gold
 function EnhancementManager:resolveImprints(cards, trigger)
-    local effects = { chips = 0, mult = 0, x_mult = 1, gold = 0 }
-    -- Stub for Phase 3
+    local effects = { chips = 0, mult = 0, x_mult = 1.0, gold = 0 }
+    
+    if not cards then
+        return effects
+    end
+    
+    -- Track loaded imprint definitions (cache)
+    local imprintCache = {}
+    
+    -- For each card, check its imprints
+    for _, card in ipairs(cards) do
+        if card.imprints and #card.imprints > 0 then
+            for _, imprintId in ipairs(card.imprints) do
+                -- Load imprint definition if not cached
+                if not imprintCache[imprintId] then
+                    local path = "content/data/imprints/" .. imprintId .. ".json"
+                    local data = loadJSON(path)
+                    if data then
+                        imprintCache[imprintId] = data
+                    else
+                        LOG_WARN("Failed to load imprint: " .. imprintId)
+                    end
+                end
+                
+                -- Apply imprint effect if trigger matches
+                local imprint = imprintCache[imprintId]
+                if imprint and imprint.trigger == trigger then
+                    local effect = imprint.effect
+                    
+                    -- Check chance (for lucky_pips type effects)
+                    local shouldApply = true
+                    if imprint.chance then
+                        shouldApply = (math.random() < imprint.chance)
+                    end
+                    
+                    if shouldApply and effect then
+                        -- Apply effects
+                        if effect.chips then
+                            effects.chips = effects.chips + effect.chips
+                        end
+                        if effect.mult then
+                            effects.mult = effects.mult + effect.mult
+                        end
+                        if effect.x_mult then
+                            effects.x_mult = effects.x_mult * effect.x_mult
+                        end
+                        if effect.gold then
+                            effects.gold = effects.gold + effect.gold
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
     return effects
 end
 

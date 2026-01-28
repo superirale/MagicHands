@@ -1,0 +1,17 @@
+{
+    "id": "the_dealer",
+    "name": "The Dealer",
+    "description": "Crib hands gain +50% score",
+    "rarity": "rare",
+    "type": "category_amplifier",
+    "stackable": false,
+    "triggers": ["on_score"],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_permanent_multiplier",
+            "value": 0.5
+        }
+    ],
+    "ignores_caps": false
+}

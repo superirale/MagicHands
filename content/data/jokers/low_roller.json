@@ -1,0 +1,19 @@
+{
+    "id": "low_roller",
+    "name": "Low Roller",
+    "description": "+30 chips per card with value \u2264 5",
+    "rarity": "common",
+    "type": "utility",
+    "stackable": false,
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 30
+        }
+    ],
+    "ignores_caps": false
+}

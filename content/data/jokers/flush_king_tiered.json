@@ -1,0 +1,87 @@
+{
+    "id": "flush_king_tiered",
+    "name": "Flush King",
+    "description": "Stackable joker for flush hands",
+    "rarity": "rare",
+    "type": "category_amplifier",
+    "stackable": true,
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "flush_count >= 4"
+    ],
+    "tiers": [
+        {
+            "level": 1,
+            "name": "Base",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 40
+                }
+            ]
+        },
+        {
+            "level": 2,
+            "name": "Amplified",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 70
+                }
+            ]
+        },
+        {
+            "level": 3,
+            "name": "Synergy",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 100
+                },
+                {
+                    "type": "add_multiplier",
+                    "value": 1
+                }
+            ]
+        },
+        {
+            "level": 4,
+            "name": "Rule Bend",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 150
+                },
+                {
+                    "type": "add_multiplier",
+                    "value": 2
+                },
+                {
+                    "type": "add_permanent_multiplier",
+                    "value": 0.25
+                }
+            ]
+        },
+        {
+            "level": 5,
+            "name": "Ascension",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 300
+                },
+                {
+                    "type": "add_multiplier",
+                    "value": 5
+                },
+                {
+                    "type": "add_permanent_multiplier",
+                    "value": 0.75
+                }
+            ]
+        }
+    ],
+    "ignores_caps": false
+}

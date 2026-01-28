@@ -1,0 +1,10 @@
+{
+    "id": "minority",
+    "name": "Minority",
+    "type": "imprint",
+    "description": "+30 chips if suit is least common",
+    "trigger": "on_score",
+    "effect": {
+        "chips": 30
+    }
+}

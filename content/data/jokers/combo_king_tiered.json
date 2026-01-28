@@ -1,0 +1,87 @@
+{
+    "id": "combo_king_tiered",
+    "name": "Combo King",
+    "description": "Stackable joker for multiple categories",
+    "rarity": "rare",
+    "type": "utility",
+    "stackable": true,
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "unique_categories >= 2"
+    ],
+    "tiers": [
+        {
+            "level": 1,
+            "name": "Base",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 2
+                }
+            ]
+        },
+        {
+            "level": 2,
+            "name": "Amplified",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 3.5
+                }
+            ]
+        },
+        {
+            "level": 3,
+            "name": "Synergy",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 5
+                },
+                {
+                    "type": "add_chips",
+                    "value": 50
+                }
+            ]
+        },
+        {
+            "level": 4,
+            "name": "Rule Bend",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 7
+                },
+                {
+                    "type": "add_chips",
+                    "value": 100
+                },
+                {
+                    "type": "add_permanent_multiplier",
+                    "value": 0.5
+                }
+            ]
+        },
+        {
+            "level": 5,
+            "name": "Ascension",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 15
+                },
+                {
+                    "type": "add_chips",
+                    "value": 250
+                },
+                {
+                    "type": "add_permanent_multiplier",
+                    "value": 1.5
+                }
+            ]
+        }
+    ],
+    "ignores_caps": false
+}

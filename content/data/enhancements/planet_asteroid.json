@@ -1,0 +1,17 @@
+{
+    "id": "planet_asteroid",
+    "name": "Asteroid",
+    "type": "planet",
+    "description": "Face cards gain +30 chips",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 30,
+            "per": "each_face"
+        }
+    ]
+}

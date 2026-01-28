@@ -11,11 +11,13 @@ end
 
 function Economy:addGold(amount)
     self.gold = self.gold + amount
+    events.emit("gold_changed", { amount = self.gold, delta = amount })
 end
 
 function Economy:spend(amount)
     if self.gold >= amount then
         self.gold = self.gold - amount
+        events.emit("gold_changed", { amount = self.gold, delta = -amount })
         return true
     end
     return false

@@ -97,8 +97,10 @@ function ShopUI:update(dt, mx, my, clicked)
             self.hoveredIndex = i
             if clicked then
                 local result, msg = Shop:buyJoker(i)
-                if type(result) == "table" and result.action == "select_card" then
-                    return result
+                if type(result) == "table" then
+                    if result.action == "select_card" or result.action == "select_card_for_imprint" then
+                        return result
+                    end
                 end
             end
         end

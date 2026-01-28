@@ -1,0 +1,10 @@
+{
+    "id": "the_tyrant",
+    "name": "The Tyrant",
+    "type": "boss",
+    "description": "Must score with exactly 4 cards",
+    "act": 3,
+    "effect": {
+        "exact_cards": 4
+    }
+}

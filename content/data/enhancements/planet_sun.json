@@ -1,0 +1,16 @@
+{
+    "id": "planet_sun",
+    "name": "Sun",
+    "type": "planet",
+    "description": "All hands gain +1 mult",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_multiplier",
+            "value": 1
+        }
+    ]
+}

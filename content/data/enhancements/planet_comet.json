@@ -1,0 +1,16 @@
+{
+    "id": "planet_comet",
+    "name": "Comet",
+    "type": "planet",
+    "description": "Unique categories gain +20 chips each",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 20
+        }
+    ]
+}

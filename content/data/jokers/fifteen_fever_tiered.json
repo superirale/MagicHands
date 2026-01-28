@@ -1,0 +1,96 @@
+{
+    "id": "fifteen_fever_tiered",
+    "name": "Fifteen Fever (Tiered)",
+    "description": "Stackable joker focusing on 15s",
+    "rarity": "common",
+    "type": "category_amplifier",
+    "stackable": true,
+    "triggers": ["on_score"],
+    "conditions": ["count_15s > 0"],
+    "tiers": [
+        {
+            "level": 1,
+            "name": "Base",
+            "description": "+15 chips per 15",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 15,
+                    "per": "each_15"
+                }
+            ]
+        },
+        {
+            "level": 2,
+            "name": "Amplified",
+            "description": "+25 chips per 15",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 25,
+                    "per": "each_15"
+                }
+            ]
+        },
+        {
+            "level": 3,
+            "name": "Synergy",
+            "description": "+35 chips and +1 mult per 15",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 35,
+                    "per": "each_15"
+                },
+                {
+                    "type": "add_multiplier",
+                    "value": 1,
+                    "per": "each_15"
+                }
+            ]
+        },
+        {
+            "level": 4,
+            "name": "Rule Bend",
+            "description": "+50 chips, +2 mult per 15, permanent mult boost",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 50,
+                    "per": "each_15"
+                },
+                {
+                    "type": "add_multiplier",
+                    "value": 2,
+                    "per": "each_15"
+                },
+                {
+                    "type": "add_permanent_multiplier",
+                    "value": 0.2
+                }
+            ]
+        },
+        {
+            "level": 5,
+            "name": "Ascension",
+            "description": "Massive 15s bonus, all 5s and 10s count double",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 100,
+                    "per": "each_15"
+                },
+                {
+                    "type": "add_multiplier",
+                    "value": 5,
+                    "per": "each_15"
+                },
+                {
+                    "type": "add_permanent_multiplier",
+                    "value": 0.5
+                }
+            ]
+        }
+    ],
+    "ignores_caps": false
+}

@@ -1,0 +1,11 @@
+{
+    "id": "warp_time",
+    "name": "Time Warp",
+    "type": "warp",
+    "description": "Score crib before hand",
+    "trigger": "on_score",
+    "effect": {
+        "type": "crib_first",
+        "value": 1.0
+    }
+}

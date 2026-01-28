@@ -1,0 +1,7 @@
+{
+    "id": "spectral_fusion",
+    "name": "Suit Fusion",
+    "type": "sculptor",
+    "description": "Merge two suits into one",
+    "action": "merge_suits"
+}

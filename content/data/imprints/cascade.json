@@ -1,0 +1,10 @@
+{
+    "id": "cascade",
+    "name": "Cascade",
+    "type": "imprint",
+    "description": "Score adjacent cards again",
+    "trigger": "on_score",
+    "effect": {
+        "mult": 3
+    }
+}

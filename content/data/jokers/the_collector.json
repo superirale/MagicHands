@@ -1,0 +1,20 @@
+{
+    "id": "the_collector",
+    "name": "The Collector",
+    "description": "+10 chips per unique rank in hand",
+    "rarity": "uncommon",
+    "type": "utility",
+    "stackable": false,
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 10,
+            "per": "card_count"
+        }
+    ],
+    "ignores_caps": false
+}

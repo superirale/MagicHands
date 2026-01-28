@@ -1,0 +1,98 @@
+{
+    "id": "run_master_tiered",
+    "name": "Run Master",
+    "description": "Stackable joker focusing on runs",
+    "rarity": "uncommon",
+    "type": "category_amplifier",
+    "stackable": true,
+    "triggers": ["on_score"],
+    "conditions": ["count_runs > 0"],
+    "tiers": [
+        {
+            "level": 1,
+            "name": "Base",
+            "description": "+10 chips per card in runs",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 10,
+                    "per": "cards_in_runs"
+                }
+            ]
+        },
+        {
+            "level": 2,
+            "name": "Amplified",
+            "description": "+18 chips per card in runs",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 18,
+                    "per": "cards_in_runs"
+                }
+            ]
+        },
+        {
+            "level": 3,
+            "name": "Synergy",
+            "description": "+25 chips and +0.5 mult per card in runs",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 25,
+                    "per": "cards_in_runs"
+                },
+                {
+                    "type": "add_multiplier",
+                    "value": 0.5,
+                    "per": "cards_in_runs"
+                }
+            ]
+        },
+        {
+            "level": 4,
+            "name": "Rule Bend",
+            "description": "+40 chips, +1 mult per card, runs count twice",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 40,
+                    "per": "cards_in_runs"
+                },
+                {
+                    "type": "add_multiplier",
+                    "value": 1,
+                    "per": "cards_in_runs"
+                },
+                {
+                    "type": "add_permanent_multiplier",
+                    "value": 0.25,
+                    "per": "each_run"
+                }
+            ]
+        },
+        {
+            "level": 5,
+            "name": "Ascension",
+            "description": "Runs of 3+ gain massive bonuses",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 80,
+                    "per": "cards_in_runs"
+                },
+                {
+                    "type": "add_multiplier",
+                    "value": 3,
+                    "per": "cards_in_runs"
+                },
+                {
+                    "type": "add_permanent_multiplier",
+                    "value": 0.5,
+                    "per": "each_run"
+                }
+            ]
+        }
+    ],
+    "ignores_caps": false
+}

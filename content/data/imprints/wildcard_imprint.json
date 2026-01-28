@@ -1,0 +1,10 @@
+{
+    "id": "wildcard_imprint",
+    "name": "Wild Card",
+    "type": "imprint",
+    "description": "Counts as any rank",
+    "trigger": "on_score",
+    "effect": {
+        "mult": 5
+    }
+}

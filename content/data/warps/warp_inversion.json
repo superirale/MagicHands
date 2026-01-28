@@ -1,0 +1,11 @@
+{
+    "id": "warp_inversion",
+    "name": "Inversion",
+    "type": "warp",
+    "description": "Low cards score as high cards",
+    "trigger": "on_score",
+    "effect": {
+        "type": "invert_values",
+        "value": 1.0
+    }
+}

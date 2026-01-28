@@ -1,0 +1,10 @@
+{
+    "id": "pulse",
+    "name": "Pulse",
+    "type": "imprint",
+    "description": "Gains +2 mult each time scored this blind",
+    "trigger": "on_score",
+    "effect": {
+        "mult": 2
+    }
+}

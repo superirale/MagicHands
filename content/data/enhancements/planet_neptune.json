@@ -1,0 +1,17 @@
+{
+    "id": "planet_neptune",
+    "name": "Neptune",
+    "type": "planet",
+    "description": "15s gain +1.5 mult each",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_multiplier",
+            "value": 1.5,
+            "per": "each_15"
+        }
+    ]
+}

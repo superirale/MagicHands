@@ -1,0 +1,11 @@
+{
+    "id": "warp_gambit",
+    "name": "Gambit",
+    "type": "warp",
+    "description": "50% chance for 3x score or 0.5x",
+    "trigger": "on_score",
+    "effect": {
+        "type": "gambit",
+        "value": 1.0
+    }
+}

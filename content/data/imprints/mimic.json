@@ -1,0 +1,10 @@
+{
+    "id": "mimic",
+    "name": "Mimic",
+    "type": "imprint",
+    "description": "Copies adjacent card's rank",
+    "trigger": "on_score",
+    "effect": {
+        "mult": 4
+    }
+}

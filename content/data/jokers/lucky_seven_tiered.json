@@ -1,0 +1,95 @@
+{
+    "id": "lucky_seven_tiered",
+    "name": "Lucky Seven (Tiered)",
+    "description": "Stacking joker that gets stronger per tier",
+    "rarity": "common",
+    "type": "utility",
+    "stackable": true,
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "tiers": [
+        {
+            "level": 1,
+            "name": "Base",
+            "description": "+7 Mult per 7",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 7,
+                    "per": "each_7"
+                }
+            ]
+        },
+        {
+            "level": 2,
+            "name": "Amplified",
+            "description": "+12 Mult per 7",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 12,
+                    "per": "each_7"
+                }
+            ]
+        },
+        {
+            "level": 3,
+            "name": "Synergy",
+            "description": "+15 Mult per 7, triggers on 15s containing 7s",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 15,
+                    "per": "each_7"
+                },
+                {
+                    "type": "add_chips",
+                    "value": 50,
+                    "per": "each_15"
+                }
+            ]
+        },
+        {
+            "level": 4,
+            "name": "Rule Bend",
+            "description": "+20 Mult per 7, all 7s count as wild for runs",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 20,
+                    "per": "each_7"
+                },
+                {
+                    "type": "add_permanent_multiplier",
+                    "value": 0.5,
+                    "per": "each_7"
+                }
+            ]
+        },
+        {
+            "level": 5,
+            "name": "Ascension",
+            "description": "All 7s become 21s for scoring, +50 Mult per 7",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 50,
+                    "per": "each_7"
+                },
+                {
+                    "type": "add_permanent_multiplier",
+                    "value": 2.0,
+                    "per": "each_7"
+                },
+                {
+                    "type": "add_chips",
+                    "value": 100,
+                    "per": "each_7"
+                }
+            ]
+        }
+    ],
+    "ignores_caps": false
+}

@@ -1,0 +1,16 @@
+{
+    "id": "planet_mercury",
+    "name": "Mercury",
+    "type": "planet",
+    "description": "First hand of blind gains +50% score",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_permanent_multiplier",
+            "value": 0.5
+        }
+    ]
+}

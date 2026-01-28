@@ -1,0 +1,16 @@
+{
+    "id": "planet_nebula",
+    "name": "Nebula",
+    "type": "planet",
+    "description": "Random bonus +10-50 chips",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 30
+        }
+    ]
+}

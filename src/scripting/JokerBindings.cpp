@@ -47,20 +47,33 @@ static int Lua_JokerLoad(lua_State *L) {
 
 static int Lua_JokerApplyEffects(lua_State *L) {
   // Args: jokerPaths (table), hand (table of 5 cards), trigger (string)
+  // Optional 4th arg: stackCounts (table) - if provided, use tier system
   luaL_checktype(L, 1, LUA_TTABLE);
   luaL_checktype(L, 2, LUA_TTABLE);
   const char *trigger = luaL_checkstring(L, 3);
+  
+  bool hasStackCounts = lua_istable(L, 4);
 
   // Load all jokers from paths
-  std::vector<Joker> jokers;
+  std::vector<std::pair<Joker, int>> jokersWithStacks;
   int jokerCount = lua_rawlen(L, 1);
   for (int i = 1; i <= jokerCount; ++i) {
     lua_rawgeti(L, 1, i);
     const char *path = lua_tostring(L, -1);
     lua_pop(L, 1);
 
+    int stackCount = 1;
+    if (hasStackCounts) {
+      lua_rawgeti(L, 4, i);
+      stackCount = lua_tointeger(L, -1);
+      lua_pop(L, 1);
+      if (stackCount < 1) stackCount = 1;
+      if (stackCount > 5) stackCount = 5; // GDD: max 5 stacks
+    }
+
     try {
-      jokers.push_back(Joker::FromJSON(path));
+      Joker joker = Joker::FromJSON(path);
+      jokersWithStacks.push_back({joker, stackCount});
     } catch (...) {
       // Skip invalid jokers
     }
@@ -84,9 +97,9 @@ static int Lua_JokerApplyEffects(lua_State *L) {
   HandEvaluator::HandResult handResult =
       HandEvaluator::Evaluate(hand, *cutCard);
 
-  // Apply joker effects
+  // Apply joker effects with stack counts
   JokerEffectSystem::EffectResult effects =
-      JokerEffectSystem::ApplyJokers(jokers, handResult, trigger);
+      JokerEffectSystem::ApplyJokersWithStacks(jokersWithStacks, handResult, trigger);
 
   // Return effect result as table
   lua_newtable(L);

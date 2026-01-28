@@ -1,0 +1,7 @@
+{
+    "id": "spectral_rainbow",
+    "name": "Rainbow Deck",
+    "type": "sculptor",
+    "description": "Convert deck to equal suits",
+    "action": "equalize_suits"
+}

@@ -1,0 +1,21 @@
+{
+    "id": "starter_card",
+    "name": "Starter Card",
+    "description": "Cut card counts for all scoring combinations",
+    "rarity": "rare",
+    "type": "rule_bender",
+    "stackable": false,
+    "triggers": ["on_score"],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 30
+        },
+        {
+            "type": "add_multiplier",
+            "value": 1.5
+        }
+    ],
+    "ignores_caps": false
+}

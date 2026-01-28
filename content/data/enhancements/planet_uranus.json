@@ -1,0 +1,16 @@
+{
+    "id": "planet_uranus",
+    "name": "Uranus",
+    "type": "planet",
+    "description": "+10% to random category each hand",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_multiplier",
+            "value": 1.5
+        }
+    ]
+}

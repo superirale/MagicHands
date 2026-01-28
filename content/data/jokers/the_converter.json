@@ -1,0 +1,17 @@
+{
+    "id": "the_converter",
+    "name": "The Converter",
+    "description": "Convert 10% of chips to mult",
+    "rarity": "rare",
+    "type": "rule_bender",
+    "stackable": false,
+    "triggers": ["on_score"],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_permanent_multiplier",
+            "value": 0.75
+        }
+    ],
+    "ignores_caps": false
+}

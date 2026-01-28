@@ -1,0 +1,10 @@
+{
+    "id": "clutch",
+    "name": "Clutch",
+    "type": "imprint",
+    "description": "+100 chips on final hand",
+    "trigger": "on_score",
+    "effect": {
+        "chips": 100
+    }
+}

@@ -1,0 +1,18 @@
+{
+    "id": "planet_venus",
+    "name": "Venus",
+    "type": "planet",
+    "description": "Flushes gain x1.5 mult",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "flush_count >= 4"
+    ],
+    "effects": [
+        {
+            "type": "add_permanent_multiplier",
+            "value": 0.5
+        }
+    ]
+}

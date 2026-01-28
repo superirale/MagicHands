@@ -1,0 +1,18 @@
+{
+    "id": "planet_moon",
+    "name": "Moon",
+    "type": "planet",
+    "description": "Nobs gains +100 chips",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "has_nobs"
+    ],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 100
+        }
+    ]
+}

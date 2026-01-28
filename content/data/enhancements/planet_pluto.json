@@ -1,0 +1,16 @@
+{
+    "id": "planet_pluto",
+    "name": "Pluto",
+    "type": "planet",
+    "description": "Cards 2-5 gain +25 chips",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 25
+        }
+    ]
+}

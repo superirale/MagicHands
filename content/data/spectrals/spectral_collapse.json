@@ -1,0 +1,7 @@
+{
+    "id": "spectral_collapse",
+    "name": "Rank Collapse",
+    "type": "sculptor",
+    "description": "Merge two ranks into one",
+    "action": "merge_ranks"
+}

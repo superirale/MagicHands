@@ -1,0 +1,11 @@
+{
+    "id": "echo",
+    "name": "Echo",
+    "type": "imprint",
+    "description": "Retrigger this card's effects",
+    "trigger": "on_score",
+    "effect": {
+        "mult": 5,
+        "chips": 20
+    }
+}

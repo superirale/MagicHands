@@ -1,0 +1,10 @@
+{
+    "id": "mint",
+    "name": "Mint",
+    "type": "imprint",
+    "description": "Earn +5 gold when discarded",
+    "trigger": "on_discard",
+    "effect": {
+        "gold": 5
+    }
+}

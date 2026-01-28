@@ -1,0 +1,21 @@
+{
+    "id": "the_minimalist",
+    "name": "The Minimalist",
+    "description": "+50% mult if hand has exactly 1 scoring category",
+    "rarity": "rare",
+    "type": "rule_bender",
+    "stackable": false,
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "unique_categories == 1"
+    ],
+    "effects": [
+        {
+            "type": "add_permanent_multiplier",
+            "value": 0.5
+        }
+    ],
+    "ignores_caps": false
+}

@@ -1,0 +1,11 @@
+{
+    "id": "warp_phantom",
+    "name": "Phantom",
+    "type": "warp",
+    "description": "Discarded cards still count for scoring",
+    "trigger": "on_score",
+    "effect": {
+        "type": "phantom",
+        "value": 1.0
+    }
+}

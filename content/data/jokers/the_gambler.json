@@ -1,0 +1,17 @@
+{
+    "id": "the_gambler",
+    "name": "The Gambler",
+    "description": "50% chance for 3x mult, 50% chance for 0.5x mult",
+    "rarity": "legendary",
+    "type": "risk_reward",
+    "stackable": false,
+    "triggers": ["on_score"],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_multiplier",
+            "value": 2.5
+        }
+    ],
+    "ignores_caps": false
+}

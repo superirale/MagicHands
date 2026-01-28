@@ -1,0 +1,19 @@
+{
+    "id": "wild_card",
+    "name": "Wild Card",
+    "description": "Random effect each hand: +20-200 chips OR +0.5-5x mult",
+    "rarity": "legendary",
+    "type": "chaos",
+    "stackable": false,
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_multiplier",
+            "value": 2
+        }
+    ],
+    "ignores_caps": true
+}

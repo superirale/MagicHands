@@ -1,0 +1,16 @@
+{
+    "id": "planet_earth",
+    "name": "Earth",
+    "type": "planet",
+    "description": "All categories gain +10 chips",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 10
+        }
+    ]
+}

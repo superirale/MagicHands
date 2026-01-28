@@ -46,6 +46,13 @@ public:
 
   /// Effects to apply when triggered and conditions met
   std::vector<JokerEffect> effects;
+  
+  /// Tier-based effects (5 tiers: 1=Base, 2=Amplified, 3=Synergy, 4=Rule Bend, 5=Ascension)
+  /// If empty, uses legacy single effect system
+  std::map<int, std::vector<JokerEffect>> tieredEffects;
+  
+  /// Whether this joker is stackable (supports tier progression)
+  bool stackable = false;
 
   /// Whether this joker ignores global multiplier caps
   bool ignoresCaps = false;

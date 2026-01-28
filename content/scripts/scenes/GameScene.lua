@@ -244,7 +244,7 @@ function GameScene:update(dt)
             if nextBlind.type == "boss" then rewardBase = 100 end
 
             self.blindPreview:show(nextBlind, rewardBase)
-        elseif action == "select_card" then
+        elseif action == "select_card" or action == "select_card_for_imprint" then
             -- Enter DeckView mode
             self.state = "DECK_VIEW"
             self.pendingShopItem = result
@@ -507,20 +507,59 @@ function GameScene:playHand()
         EffectManager:shake(5, 0.5)
     end
 
+    -- Emit hand scored event for achievements
+    events.emit("hand_scored", {
+        score = finalScore,
+        handTotal = self:calculateHandTotal(selectedCards),
+        categoriesScored = {
+            fifteens = score.baseChips > 0 and handResult.fifteens and #handResult.fifteens or 0,
+            pairs = score.baseChips > 0 and handResult.pairs and #handResult.pairs or 0,
+            runs = score.baseChips > 0 and handResult.runs and #handResult.runs or 0,
+            flushes = score.baseChips > 0 and handResult.flushCount or 0,
+            nobs = score.baseChips > 0 and handResult.hasNobs and 1 or 0
+        }
+    })
+
     -- Check campaign result
     local result, reward = CampaignState:playHand(finalScore)
 
     if result == "win" then
         print("Blind Cleared! entering shop...")
+        
+        -- Emit blind won event for achievements
+        local currentBlind = CampaignState:getCurrentBlind()
+        events.emit("blind_won", {
+            blindType = currentBlind.type or "small",
+            act = CampaignState.currentAct,
+            bossId = BossManager.activeBoss and BossManager.activeBoss.id or nil,
+            score = finalScore
+        })
+        
         self.state = "SHOP"
         self.shopUI:open(reward)
     elseif result == "loss" then
         print("GAME OVER")
         self.state = "GAME_OVER"
+        
+        -- Emit run complete event
+        events.emit("run_complete", { won = false })
     else
         -- High enough for demo to just refresh hand
         self:startNewHand()
     end
+end
+
+function GameScene:calculateHandTotal(cards)
+    local total = 0
+    for _, card in ipairs(cards) do
+        local val = 0
+        if card.rank == "A" then val = 1
+        elseif card.rank == "J" or card.rank == "Q" or card.rank == "K" then val = 10
+        else val = tonumber(card.rank) or 0
+        end
+        total = total + val
+    end
+    return total
 end
 
 function GameScene:sortHand(criteria)
@@ -579,26 +618,35 @@ function GameScene:onDeckCardSelected(index, cardData)
     if not self.pendingShopItem then return end
 
     local item = self.pendingShopItem
-    local action = item.action -- "select_card"
+    local action = item.action
     local itemId = item.itemId
-
-    -- Apply Effect
-    if itemId == "spectral_remove" then
-        CampaignState:removeCard(index)
-        print("Removed card at index " .. index)
-    elseif itemId == "spectral_clone" then
-        CampaignState:duplicateCard(index)
-        print("Duplicated card at index " .. index)
-    end
-
-    -- Finalize Purchase (Manual)
-    -- We need to find the item in shop again (by index) or trust the index is valid
     local shopIndex = item.itemIndex
-    local shopItem = Shop.jokers[shopIndex]
 
-    if shopItem and shopItem.id == itemId then
-        Economy:spend(shopItem.price)
-        table.remove(Shop.jokers, shopIndex)
+    -- Handle different types of card selection
+    if action == "select_card" then
+        -- Deck Sculptor: Remove or Clone card
+        local success, msg = Shop:applySculptor(shopIndex, index, itemId)
+        if success then
+            print(msg)
+            -- Payment is handled in applySculptor
+        else
+            print("Failed: " .. msg)
+        end
+    elseif action == "select_card_for_imprint" then
+        -- Card Imprint: Apply imprint to card
+        if not cardData or not cardData.id then
+            print("Invalid card data")
+            self.state = "SHOP"
+            return
+        end
+
+        local success, msg = Shop:applyImprint(shopIndex, cardData.id)
+        if success then
+            print("Imprinted " .. cardData.id .. " with " .. itemId)
+            -- Payment is handled in applyImprint
+        else
+            print("Failed to imprint: " .. msg)
+        end
     end
 
     -- Clear state

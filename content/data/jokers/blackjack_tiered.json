@@ -1,0 +1,87 @@
+{
+    "id": "blackjack_tiered",
+    "name": "Blackjack",
+    "description": "Stackable joker when hand totals 21",
+    "rarity": "rare",
+    "type": "utility",
+    "stackable": true,
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "hand_total == 21"
+    ],
+    "tiers": [
+        {
+            "level": 1,
+            "name": "Base",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 5
+                }
+            ]
+        },
+        {
+            "level": 2,
+            "name": "Amplified",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 8
+                }
+            ]
+        },
+        {
+            "level": 3,
+            "name": "Synergy",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 12
+                },
+                {
+                    "type": "add_chips",
+                    "value": 100
+                }
+            ]
+        },
+        {
+            "level": 4,
+            "name": "Rule Bend",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 18
+                },
+                {
+                    "type": "add_chips",
+                    "value": 200
+                },
+                {
+                    "type": "add_permanent_multiplier",
+                    "value": 0.75
+                }
+            ]
+        },
+        {
+            "level": 5,
+            "name": "Ascension",
+            "effects": [
+                {
+                    "type": "add_multiplier",
+                    "value": 30
+                },
+                {
+                    "type": "add_chips",
+                    "value": 500
+                },
+                {
+                    "type": "add_permanent_multiplier",
+                    "value": 2.0
+                }
+            ]
+        }
+    ],
+    "ignores_caps": true
+}

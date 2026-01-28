@@ -1,0 +1,10 @@
+{
+    "id": "tax",
+    "name": "Tax",
+    "type": "imprint",
+    "description": "Boss loses 10 score requirement",
+    "trigger": "on_score",
+    "effect": {
+        "chips": 20
+    }
+}

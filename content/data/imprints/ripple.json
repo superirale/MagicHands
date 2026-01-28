@@ -1,0 +1,10 @@
+{
+    "id": "ripple",
+    "name": "Ripple",
+    "type": "imprint",
+    "description": "+5 mult if scored with another imprinted card",
+    "trigger": "on_score",
+    "effect": {
+        "mult": 5
+    }
+}

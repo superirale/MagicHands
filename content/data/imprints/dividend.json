@@ -1,0 +1,10 @@
+{
+    "id": "dividend",
+    "name": "Dividend",
+    "type": "imprint",
+    "description": "Earn 1g per 50 chips contributed",
+    "trigger": "on_score",
+    "effect": {
+        "gold": 2
+    }
+}

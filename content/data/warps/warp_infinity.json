@@ -1,0 +1,11 @@
+{
+    "id": "warp_infinity",
+    "name": "Infinity",
+    "type": "warp",
+    "description": "No hand size limit (+50% blind requirements)",
+    "trigger": "on_score",
+    "effect": {
+        "type": "no_limit",
+        "value": 1.0
+    }
+}

@@ -8,9 +8,20 @@ JokerEffectSystem::EffectResult
 JokerEffectSystem::ApplyJokers(const std::vector<Joker> &jokers,
                                const HandEvaluator::HandResult &handResult,
                                const std::string &trigger) {
+  // Default stack count of 1 for each joker
+  std::vector<std::pair<Joker, int>> jokersWithStacks;
+  for (const auto &joker : jokers) {
+    jokersWithStacks.push_back({joker, 1});
+  }
+  return ApplyJokersWithStacks(jokersWithStacks, handResult, trigger);
+}
+
+JokerEffectSystem::EffectResult JokerEffectSystem::ApplyJokersWithStacks(
+    const std::vector<std::pair<Joker, int>> &jokersWithStacks,
+    const HandEvaluator::HandResult &handResult, const std::string &trigger) {
   EffectResult result;
 
-  for (const auto &joker : jokers) {
+  for (const auto &[joker, stackCount] : jokersWithStacks) {
     // Check if this joker triggers on this event
     bool shouldTrigger = false;
     for (const auto &jokTrigger : joker.triggers) {
@@ -37,12 +48,39 @@ JokerEffectSystem::ApplyJokers(const std::vector<Joker> &jokers,
       continue;
     }
 
+    // Determine which effects to use: tiered or legacy
+    std::vector<JokerEffect> effectsToApply;
+    
+    if (!joker.tieredEffects.empty() && stackCount > 0) {
+      // Use tier system (GDD tiers: 1-5)
+      int tierLevel = std::min(stackCount, 5);
+      
+      // Get effects for this tier level
+      auto tierIt = joker.tieredEffects.find(tierLevel);
+      if (tierIt != joker.tieredEffects.end()) {
+        effectsToApply = tierIt->second;
+      } else {
+        // Fallback to tier 1 if specific tier not defined
+        auto tier1It = joker.tieredEffects.find(1);
+        if (tier1It != joker.tieredEffects.end()) {
+          effectsToApply = tier1It->second;
+        }
+      }
+    } else {
+      // Legacy system: multiply effects by stack count
+      effectsToApply = joker.effects;
+    }
+
     // Apply all effects
-    for (const auto &effect : joker.effects) {
+    for (const auto &effect : effectsToApply) {
       EffectResult effectResult = ApplyEffect(effect, handResult);
-      result.addedChips += effectResult.addedChips;
-      result.addedTempMult += effectResult.addedTempMult;
-      result.addedPermMult += effectResult.addedPermMult;
+      
+      // For legacy system (no tiers), multiply by stack count
+      int multiplier = joker.tieredEffects.empty() ? stackCount : 1;
+      
+      result.addedChips += effectResult.addedChips * multiplier;
+      result.addedTempMult += effectResult.addedTempMult * multiplier;
+      result.addedPermMult += effectResult.addedPermMult * multiplier;
     }
 
     // Track if any joker ignores caps

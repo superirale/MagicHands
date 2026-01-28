@@ -1,0 +1,89 @@
+{
+    "id": "even_stevens_tiered",
+    "name": "Even Stevens",
+    "description": "Stackable joker for even cards",
+    "rarity": "common",
+    "type": "utility",
+    "stackable": true,
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "tiers": [
+        {
+            "level": 1,
+            "name": "Base",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 15,
+                    "per": "each_even"
+                }
+            ]
+        },
+        {
+            "level": 2,
+            "name": "Amplified",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 25,
+                    "per": "each_even"
+                }
+            ]
+        },
+        {
+            "level": 3,
+            "name": "Synergy",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 35,
+                    "per": "each_even"
+                },
+                {
+                    "type": "add_multiplier",
+                    "value": 1,
+                    "per": "each_even"
+                }
+            ]
+        },
+        {
+            "level": 4,
+            "name": "Rule Bend",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 50,
+                    "per": "each_even"
+                },
+                {
+                    "type": "add_multiplier",
+                    "value": 2,
+                    "per": "each_even"
+                }
+            ]
+        },
+        {
+            "level": 5,
+            "name": "Ascension",
+            "effects": [
+                {
+                    "type": "add_chips",
+                    "value": 100,
+                    "per": "each_even"
+                },
+                {
+                    "type": "add_multiplier",
+                    "value": 5,
+                    "per": "each_even"
+                },
+                {
+                    "type": "add_permanent_multiplier",
+                    "value": 0.75
+                }
+            ]
+        }
+    ],
+    "ignores_caps": false
+}

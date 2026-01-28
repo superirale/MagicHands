@@ -1,0 +1,7 @@
+{
+    "id": "spectral_purge",
+    "name": "Suit Purge",
+    "type": "sculptor",
+    "description": "Remove all cards of one suit",
+    "action": "purge_suit"
+}

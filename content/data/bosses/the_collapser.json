@@ -1,0 +1,10 @@
+{
+    "id": "the_collapser",
+    "name": "The Collapser",
+    "type": "boss",
+    "description": "Duplicate jokers increase blind scaling +10% each",
+    "act": 3,
+    "effect": {
+        "stack_penalty": 0.1
+    }
+}

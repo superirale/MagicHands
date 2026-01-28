@@ -1,0 +1,19 @@
+{
+    "id": "the_doubler",
+    "name": "The Doubler",
+    "description": "First scoring category triggers twice",
+    "rarity": "legendary",
+    "type": "rule_bender",
+    "stackable": false,
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_permanent_multiplier",
+            "value": 1.0
+        }
+    ],
+    "ignores_caps": false
+}

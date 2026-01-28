@@ -1,0 +1,10 @@
+{
+    "id": "the_breaker",
+    "name": "The Breaker",
+    "type": "boss",
+    "description": "20% chance imprinted cards shatter",
+    "act": 3,
+    "effect": {
+        "shatter_chance": 0.2
+    }
+}

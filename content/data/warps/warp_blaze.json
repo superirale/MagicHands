@@ -1,0 +1,11 @@
+{
+    "id": "warp_blaze",
+    "name": "Blaze",
+    "type": "warp",
+    "description": "First category scores triple, others score nothing",
+    "trigger": "on_score",
+    "effect": {
+        "type": "blaze",
+        "value": 1.0
+    }
+}

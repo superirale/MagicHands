@@ -1,0 +1,18 @@
+{
+    "id": "planet_mars",
+    "name": "Mars",
+    "type": "planet",
+    "description": "Pairs gain +2 mult",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [
+        "count_pairs > 0"
+    ],
+    "effects": [
+        {
+            "type": "add_multiplier",
+            "value": 2
+        }
+    ]
+}

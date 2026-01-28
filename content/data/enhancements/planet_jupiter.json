@@ -1,0 +1,16 @@
+{
+    "id": "planet_jupiter",
+    "name": "Jupiter",
+    "type": "planet",
+    "description": "+30 chips to base hand",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 30
+        }
+    ]
+}

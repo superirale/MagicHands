@@ -1,0 +1,332 @@
+{
+    "achievements": [
+        {
+            "id": "first_win",
+            "name": "First Victory",
+            "description": "Win your first blind",
+            "category": "progression",
+            "reward": "unlock_5_random",
+            "hidden": false
+        },
+        {
+            "id": "act1_complete",
+            "name": "Act 1 Master",
+            "description": "Complete Act 1 (defeat the boss blind)",
+            "category": "progression",
+            "reward": "unlock_10_random",
+            "hidden": false
+        },
+        {
+            "id": "act2_complete",
+            "name": "Act 2 Conqueror",
+            "description": "Complete Act 2",
+            "category": "progression",
+            "reward": "unlock_15_random",
+            "hidden": false
+        },
+        {
+            "id": "act3_complete",
+            "name": "Act 3 Champion",
+            "description": "Complete Act 3 and win the game",
+            "category": "progression",
+            "reward": "unlock_endless_mode",
+            "hidden": false
+        },
+        {
+            "id": "high_scorer",
+            "name": "High Scorer",
+            "description": "Score 5,000 points in a single hand",
+            "category": "scoring",
+            "reward": "unlock_golden_ratio",
+            "hidden": false
+        },
+        {
+            "id": "mega_scorer",
+            "name": "Mega Scorer",
+            "description": "Score 10,000 points in a single hand",
+            "category": "scoring",
+            "reward": "unlock_wild_card",
+            "hidden": false
+        },
+        {
+            "id": "ultra_scorer",
+            "name": "Ultra Scorer",
+            "description": "Score 25,000 points in a single hand",
+            "category": "scoring",
+            "reward": "unlock_the_doubler",
+            "hidden": false
+        },
+        {
+            "id": "tier5_master",
+            "name": "Ascension Master",
+            "description": "Stack a joker to tier 5",
+            "category": "jokers",
+            "reward": "unlock_all_tiered_jokers",
+            "hidden": false
+        },
+        {
+            "id": "joker_collector",
+            "name": "Joker Collector",
+            "description": "Own all 5 joker slots at once",
+            "category": "jokers",
+            "reward": "unlock_joker_slot_upgrade",
+            "hidden": false
+        },
+        {
+            "id": "fifteen_master",
+            "name": "Fifteen Fever",
+            "description": "Win a blind using only 15s",
+            "category": "categories",
+            "reward": "unlock_fifteen_fever_tiered",
+            "hidden": false
+        },
+        {
+            "id": "pair_master",
+            "name": "Pair Power",
+            "description": "Win a blind using only pairs",
+            "category": "categories",
+            "reward": "unlock_pair_power_tiered",
+            "hidden": false
+        },
+        {
+            "id": "run_master",
+            "name": "Run Master",
+            "description": "Win a blind using only runs",
+            "category": "categories",
+            "reward": "unlock_run_master_tiered",
+            "hidden": false
+        },
+        {
+            "id": "flush_master",
+            "name": "Flush King",
+            "description": "Win a blind using only flushes",
+            "category": "categories",
+            "reward": "unlock_flush_king_tiered",
+            "hidden": false
+        },
+        {
+            "id": "nobs_master",
+            "name": "Nobs Hunter",
+            "description": "Score nobs 10 times in a single run",
+            "category": "categories",
+            "reward": "unlock_nobs_hunter_tiered",
+            "hidden": false
+        },
+        {
+            "id": "rich",
+            "name": "Wealthy",
+            "description": "Reach 500 gold in a single run",
+            "category": "economy",
+            "reward": "start_bonus_50g",
+            "hidden": false
+        },
+        {
+            "id": "shopaholic",
+            "name": "Shopaholic",
+            "description": "Buy 50 items from the shop (across all runs)",
+            "category": "economy",
+            "reward": "unlock_shop_slot_4",
+            "hidden": false
+        },
+        {
+            "id": "reroll_master",
+            "name": "Reroll Master",
+            "description": "Reroll the shop 20 times in a single run",
+            "category": "economy",
+            "reward": "reduce_reroll_cost",
+            "hidden": false
+        },
+        {
+            "id": "boss_hunter",
+            "name": "Boss Hunter",
+            "description": "Defeat all 12 bosses",
+            "category": "bosses",
+            "reward": "unlock_boss_rush_mode",
+            "hidden": false
+        },
+        {
+            "id": "the_purist_defeated",
+            "name": "Purified",
+            "description": "Defeat The Purist",
+            "category": "bosses",
+            "reward": "unlock_warp_wildfire",
+            "hidden": false
+        },
+        {
+            "id": "the_breaker_defeated",
+            "name": "Unbreakable",
+            "description": "Defeat The Breaker without losing any imprints",
+            "category": "bosses",
+            "reward": "unlock_nullifier_imprint",
+            "hidden": false
+        },
+        {
+            "id": "imprint_master",
+            "name": "Imprint Master",
+            "description": "Have 10 cards with imprints at once",
+            "category": "imprints",
+            "reward": "unlock_all_imprints",
+            "hidden": false
+        },
+        {
+            "id": "sculptor",
+            "name": "Sculptor",
+            "description": "Use 5 deck sculptor cards in a single run",
+            "category": "sculptors",
+            "reward": "unlock_all_sculptors",
+            "hidden": false
+        },
+        {
+            "id": "minimalist",
+            "name": "Minimalist",
+            "description": "Win with a deck of 40 cards or less",
+            "category": "sculptors",
+            "reward": "unlock_spectral_purge",
+            "hidden": false
+        },
+        {
+            "id": "maximalist",
+            "name": "Maximalist",
+            "description": "Win with a deck of 65 cards or more",
+            "category": "sculptors",
+            "reward": "unlock_spectral_rainbow",
+            "hidden": false
+        },
+        {
+            "id": "planet_collector",
+            "name": "Planet Collector",
+            "description": "Own 10 different planet cards at once",
+            "category": "planets",
+            "reward": "unlock_all_planets",
+            "hidden": false
+        },
+        {
+            "id": "warp_master",
+            "name": "Warp Master",
+            "description": "Have 3 rule warps active at once",
+            "category": "warps",
+            "reward": "unlock_all_warps",
+            "hidden": false
+        },
+        {
+            "id": "risky_business",
+            "name": "Risky Business",
+            "description": "Win with warp_gambit active",
+            "category": "warps",
+            "reward": "unlock_the_gambler",
+            "hidden": false
+        },
+        {
+            "id": "combo_master",
+            "name": "Combo Master",
+            "description": "Score 3 different categories in a single hand",
+            "category": "scoring",
+            "reward": "unlock_combo_king_tiered",
+            "hidden": false
+        },
+        {
+            "id": "perfect_hand",
+            "name": "Perfect Hand",
+            "description": "Score all 5 categories in a single hand",
+            "category": "scoring",
+            "reward": "unlock_the_polymath",
+            "hidden": true
+        },
+        {
+            "id": "blackjack",
+            "name": "Blackjack!",
+            "description": "Score with a hand totaling exactly 21",
+            "category": "scoring",
+            "reward": "unlock_blackjack_tiered",
+            "hidden": false
+        },
+        {
+            "id": "lucky_seven",
+            "name": "Lucky Number",
+            "description": "Score 777 points in a single hand",
+            "category": "scoring",
+            "reward": "unlock_lucky_seven_tiered",
+            "hidden": true
+        },
+        {
+            "id": "no_discards",
+            "name": "Perfect Vision",
+            "description": "Win a blind without using any discards",
+            "category": "challenge",
+            "reward": "start_bonus_extra_hand",
+            "hidden": false
+        },
+        {
+            "id": "one_hand",
+            "name": "One Shot",
+            "description": "Win a blind in a single hand",
+            "category": "challenge",
+            "reward": "unlock_the_streaker",
+            "hidden": false
+        },
+        {
+            "id": "no_jokers",
+            "name": "Purist",
+            "description": "Win Act 1 without buying any jokers",
+            "category": "challenge",
+            "reward": "unlock_starter_card",
+            "hidden": false
+        },
+        {
+            "id": "all_planets",
+            "name": "Solar System",
+            "description": "Discover all 21 planet cards",
+            "category": "collection",
+            "reward": "start_with_planet",
+            "hidden": false
+        },
+        {
+            "id": "all_jokers",
+            "name": "Joker Master",
+            "description": "Discover all 40 jokers",
+            "category": "collection",
+            "reward": "unlock_custom_mode",
+            "hidden": false
+        },
+        {
+            "id": "completionist",
+            "name": "Completionist",
+            "description": "Discover all 121 cards",
+            "category": "collection",
+            "reward": "unlock_rainbow_card_back",
+            "hidden": false
+        },
+        {
+            "id": "win_streak_3",
+            "name": "Win Streak",
+            "description": "Win 3 runs in a row",
+            "category": "challenge",
+            "reward": "start_bonus_joker",
+            "hidden": false
+        },
+        {
+            "id": "win_streak_10",
+            "name": "Unstoppable",
+            "description": "Win 10 runs in a row",
+            "category": "challenge",
+            "reward": "unlock_prestige_mode",
+            "hidden": true
+        },
+        {
+            "id": "speedrunner",
+            "name": "Speedrunner",
+            "description": "Win Act 1 in under 10 minutes",
+            "category": "challenge",
+            "reward": "unlock_timer_display",
+            "hidden": false
+        },
+        {
+            "id": "the_architect",
+            "name": "The Architect",
+            "description": "Craft a perfect build and score 50,000+ in one blind",
+            "category": "challenge",
+            "reward": "unlock_legendary_jokers",
+            "hidden": true
+        }
+    ]
+}

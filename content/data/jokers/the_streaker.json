@@ -1,0 +1,19 @@
+{
+    "id": "the_streaker",
+    "name": "The Streaker",
+    "description": "+5 mult per consecutive blind won (max +50)",
+    "rarity": "rare",
+    "type": "economy",
+    "stackable": false,
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_multiplier",
+            "value": 1.5
+        }
+    ],
+    "ignores_caps": false
+}

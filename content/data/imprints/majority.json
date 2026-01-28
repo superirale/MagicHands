@@ -1,0 +1,10 @@
+{
+    "id": "majority",
+    "name": "Majority",
+    "type": "imprint",
+    "description": "+20 chips if suit is most common",
+    "trigger": "on_score",
+    "effect": {
+        "chips": 20
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "id": "crown",
+    "name": "Crown",
+    "type": "imprint",
+    "description": "+50 chips if highest card in hand",
+    "trigger": "on_score",
+    "effect": {
+        "chips": 50
+    }
+}

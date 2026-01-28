@@ -16,6 +16,10 @@ function JokerManager:addJoker(jokerId)
             -- For MVP, assume all are stackable to max 5, or check data
             if joker.stack < 5 then
                 joker.stack = joker.stack + 1
+                
+                -- Emit joker stacked event
+                events.emit("joker_added", { id = jokerId, stack = joker.stack })
+                
                 return true, "Stacked " .. jokerId .. " (x" .. joker.stack .. ")"
             else
                 return false, "Max stack reached for " .. jokerId
@@ -29,6 +33,15 @@ function JokerManager:addJoker(jokerId)
 
     -- Add new joker instance
     table.insert(self.slots, { id = jokerId, stack = 1 })
+    
+    -- Emit joker added event
+    events.emit("joker_added", { id = jokerId, stack = 1 })
+    
+    -- Check if slots are full
+    if #self.slots >= self.maxSlots then
+        events.emit("joker_slots_full", { count = self.maxSlots })
+    end
+    
     return true, "Added " .. jokerId
 end
 
@@ -80,37 +93,17 @@ function JokerManager:applyEffects(hand, trigger)
 
     if #self.slots == 0 then return result end
 
-    -- In a real engine, we'd load the JSON data here to check for stack_bonuses
-    -- For this MVP refactor, we will rely on the binded C++ or Lua logic to handle specific joker IDs
-    -- BUT, the current system relies on "joker.applyEffects(paths...)"
-
-    -- We need to construct a robust list of effects based on stacks
-    -- This is tricky because the C++ binding expects file paths.
-    -- Option: We interpret the stack in Lua and pass multiplied values to C++?
-    -- Or we pass a list of identical paths?
-
-    -- GDD Strategy: "Resolve Jokers -> Resolve Stacks"
-    -- Simulating stacks by passing the file multiple times is the easiest way to get xN effects for now,
-    -- UNLESS the joker has specific tier bonuses.
-
+    -- Build paths and stack counts for tier system
     local jokerPaths = {}
+    local stackCounts = {}
+    
     for _, jokerObj in ipairs(self.slots) do
-        -- For MVP: Simply treat stack xN as N copies of the joker
-        -- The GDD specifies tier bonuses (Amplified, Synergy, etc)
-        -- To support that properly requires parsing the JSON here or updating the C++ engine.
-        -- Given constraints, we will replicate the base effect N times.
-
-        for k = 1, jokerObj.stack do
-            table.insert(jokerPaths, "content/data/jokers/" .. jokerObj.id .. ".json")
-        end
+        table.insert(jokerPaths, "content/data/jokers/" .. jokerObj.id .. ".json")
+        table.insert(stackCounts, jokerObj.stack)
     end
 
-    for _, p in ipairs(jokerPaths) do
-        print("DEBUG: Applying Joker Path: " .. p)
-    end
-    print("DEBUG: Hand size sent to Jokers: " .. #(hand.cards or hand))
-
-    return joker.applyEffects(jokerPaths, hand, trigger)
+    -- Pass stack counts to C++ for tier-based effect resolution
+    return joker.applyEffects(jokerPaths, hand, trigger, stackCounts)
 end
 
 function JokerManager:getPaths()

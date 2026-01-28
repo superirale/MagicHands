@@ -1,0 +1,11 @@
+{
+    "id": "warp_mirror",
+    "name": "Mirror",
+    "type": "warp",
+    "description": "Pairs count as runs, runs count as pairs",
+    "trigger": "on_score",
+    "effect": {
+        "type": "mirror_categories",
+        "value": 1.0
+    }
+}

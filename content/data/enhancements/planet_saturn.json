@@ -1,0 +1,17 @@
+{
+    "id": "planet_saturn",
+    "name": "Saturn",
+    "type": "planet",
+    "description": "Runs gain +15 chips per card",
+    "triggers": [
+        "on_score"
+    ],
+    "conditions": [],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 15,
+            "per": "cards_in_runs"
+        }
+    ]
+}

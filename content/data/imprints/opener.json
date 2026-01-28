@@ -1,0 +1,10 @@
+{
+    "id": "opener",
+    "name": "Opener",
+    "type": "imprint",
+    "description": "+50 chips on first hand",
+    "trigger": "on_score",
+    "effect": {
+        "chips": 50
+    }
+}

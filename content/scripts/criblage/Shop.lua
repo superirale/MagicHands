@@ -7,22 +7,54 @@ Shop = {
     jokerSlots = 3,
     shopRerollCost = 10,
 
-    -- Available joker pool (would be expanded)
+    -- Available joker pool (expanded with Phase 2 content)
     jokerPool = {
-        common = { "fifteen_fever", "lucky_seven", "big_hand", "face_card_fan", "even_stevens" },
-        uncommon = { "pair_power", "run_master", "nobs_hunter", "ace_in_hole", "the_trio" },
-        rare = { "the_multiplier", "flush_king", "combo_king", "blackjack" },
-        legendary = { "golden_ratio" }
+        common = {
+            "fifteen_fever", "lucky_seven", "big_hand", "face_card_fan", "even_stevens",
+            "low_roller", "fifteen_fever_tiered", "lucky_seven_tiered", "even_stevens_tiered",
+            "ace_power_tiered"
+        },
+        uncommon = {
+            "pair_power", "run_master", "nobs_hunter", "ace_in_hole", "the_trio",
+            "his_nobs", "the_collector", "the_economist", "the_polymath", "high_roller",
+            "pair_power_tiered", "run_master_tiered", "nobs_hunter_tiered"
+        },
+        rare = {
+            "the_multiplier", "flush_king", "combo_king", "blackjack",
+            "the_dealer", "starter_card", "the_converter", "the_streaker",
+            "the_minimalist", "royal_flush", "flush_king_tiered", "combo_king_tiered",
+            "blackjack_tiered"
+        },
+        legendary = {
+            "golden_ratio", "the_gambler", "wild_card", "the_doubler"
+        }
     },
 
-    -- Enhancement Pool (Planets, Imprints, Warps, Spectrals)
+    -- Enhancement Pool (Planets, Imprints, Warps, Spectrals - Phase 2 expanded)
     enhancementPool = {
+        -- Planets (20 total)
         "planet_pair", "planet_run", "planet_fifteen", "planet_flush",
-        "planet_noble", "planet_triad",
-        --"gold_inlay", "lucky_pips", "steel_plating",
-        --"spectral_ghost", "spectral_echo", "spectral_void",
-        --"spectral_remove", "spectral_clone"
-        "spectral_echo"
+        "planet_noble", "planet_triad", "planet_jupiter", "planet_mars",
+        "planet_venus", "planet_saturn", "planet_neptune", "planet_uranus",
+        "planet_mercury", "planet_pluto", "planet_earth", "planet_moon",
+        "planet_sun", "planet_comet", "planet_asteroid", "planet_nebula",
+        
+        -- Imprints (25 total)
+        "gold_inlay", "lucky_pips", "steel_plating", "mint", "tax",
+        "investment", "insurance", "dividend", "echo", "cascade",
+        "fractal", "resonance", "spark", "ripple", "pulse",
+        "crown", "underdog", "clutch", "opener", "majority",
+        "minority", "wildcard_imprint", "suit_shifter", "mimic", "nullifier",
+        
+        -- Warps (15 total)
+        "spectral_ghost", "spectral_echo", "spectral_void",
+        "warp_wildfire", "warp_ascension", "warp_greed", "warp_gambit",
+        "warp_time", "warp_infinity", "warp_chaos", "warp_inversion",
+        "warp_mirror", "warp_fortune", "warp_blaze", "warp_phantom",
+        
+        -- Sculptors (8 total)
+        "spectral_remove", "spectral_clone", "spectral_ascend", "spectral_collapse",
+        "spectral_split", "spectral_purge", "spectral_rainbow", "spectral_fusion"
     }
 }
 
@@ -151,6 +183,9 @@ function Shop:buyJoker(index)
     if not Economy:spend(item.price) then
         return false, "Not enough gold (" .. item.price .. "g needed)"
     end
+    
+    -- Emit shop purchase event
+    events.emit("shop_purchase", { id = item.id, type = item.type, price = item.price })
 
     if item.type == "enhancement" then
         local EnhancementManager = require("criblage/EnhancementManager")
@@ -185,18 +220,13 @@ function Shop:buyJoker(index)
                 return true, msg
             end
         else
-            -- Handle Imprint (Apply to random card for MVP)
-            -- For MVP: Pick a random card stub to simulate imprinting
-            local ranks = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" }
-            local suits = { "H", "D", "S", "C" }
-            local r = ranks[math.random(#ranks)]
-            local s = suits[math.random(#suits)]
-            local cardStub = { rank = r, suit = s } -- Mock card
-
-            local success, msg = EnhancementManager:imprintCard(cardStub, item.id)
-
-            table.remove(self.jokers, index)
-            return true, "Imprinted " .. r .. s .. " with " .. item.id
+            -- Handle Imprint (Requires card selection)
+            if not Economy:canAfford(item.price) then
+                return false, "Not enough gold"
+            end
+            
+            -- Return signal to open card selection for imprinting
+            return { action = "select_card_for_imprint", itemId = item.id, itemIndex = index }, "Select card to imprint"
         end
     else
         -- Handle Joker
@@ -216,9 +246,91 @@ function Shop:reroll()
         return false, "Not enough gold for reroll"
     end
 
+    -- Emit reroll event
+    events.emit("shop_reroll", { cost = self.shopRerollCost })
+
     -- Regenerate with current act
     self:generateJokers(CampaignState.currentAct or 1)
     return true, "Shop rerolled"
+end
+
+-- Complete imprint purchase after card selection
+function Shop:applyImprint(shopIndex, cardId)
+    if shopIndex < 1 or shopIndex > #self.jokers then
+        return false, "Invalid shop index"
+    end
+    
+    local item = self.jokers[shopIndex]
+    
+    -- Verify it's an imprint item
+    if item.type ~= "enhancement" or not string.find(item.id, "inlay") and 
+       not string.find(item.id, "pips") and not string.find(item.id, "plating") then
+        return false, "Item is not an imprint"
+    end
+    
+    -- Charge player
+    if not Economy:spend(item.price) then
+        return false, "Not enough gold"
+    end
+    
+    -- Apply imprint to card via CampaignState
+    local success, msg = CampaignState:addImprintToCard(cardId, item.id)
+    
+    if not success then
+        -- Refund on failure
+        Economy:addGold(item.price)
+        return false, msg
+    end
+    
+    -- Remove from shop
+    table.remove(self.jokers, shopIndex)
+    return true, "Imprinted with " .. item.id
+end
+
+-- Complete deck sculptor action after card selection
+function Shop:applySculptor(shopIndex, cardIndex, action)
+    if shopIndex < 1 or shopIndex > #self.jokers then
+        return false, "Invalid shop index"
+    end
+    
+    local item = self.jokers[shopIndex]
+    
+    -- Verify it's a sculptor item
+    if item.id ~= "spectral_remove" and item.id ~= "spectral_clone" then
+        return false, "Item is not a deck sculptor"
+    end
+    
+    -- Charge player
+    if not Economy:spend(item.price) then
+        return false, "Not enough gold"
+    end
+    
+    local success = false
+    local msg = ""
+    
+    if item.id == "spectral_remove" then
+        success = CampaignState:removeCard(cardIndex)
+        msg = success and "Card removed from deck" or "Failed to remove card"
+    elseif item.id == "spectral_clone" then
+        success = CampaignState:duplicateCard(cardIndex)
+        msg = success and "Card duplicated" or "Failed to duplicate card"
+    end
+    
+    if success then
+        -- Emit sculptor used event
+        events.emit("sculptor_used", {
+            id = item.id,
+            newDeckSize = #CampaignState.masterDeck
+        })
+        
+        -- Remove from shop
+        table.remove(self.jokers, shopIndex)
+    else
+        -- Refund on failure
+        Economy:addGold(item.price)
+    end
+    
+    return success, msg
 end
 
 return Shop

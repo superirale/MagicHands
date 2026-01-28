@@ -1,0 +1,10 @@
+{
+    "id": "insurance",
+    "name": "Insurance",
+    "type": "imprint",
+    "description": "Refund 5g if not scored",
+    "trigger": "on_held",
+    "effect": {
+        "gold": 5
+    }
+}

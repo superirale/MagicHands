@@ -1,0 +1,21 @@
+{
+    "id": "his_nobs",
+    "name": "His Nobs",
+    "description": "+100 chips when Nobs is scored",
+    "rarity": "uncommon",
+    "type": "category_amplifier",
+    "stackable": false,
+    "triggers": ["on_score"],
+    "conditions": ["has_nobs"],
+    "effects": [
+        {
+            "type": "add_chips",
+            "value": 100
+        },
+        {
+            "type": "add_multiplier",
+            "value": 2
+        }
+    ],
+    "ignores_caps": false
+}

@@ -1,0 +1,10 @@
+{
+    "id": "the_auditor",
+    "name": "The Auditor",
+    "type": "boss",
+    "description": "Halves all Hand Augments",
+    "act": 3,
+    "effect": {
+        "halve_augments": true
+    }
+}

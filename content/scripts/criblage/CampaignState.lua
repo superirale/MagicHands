@@ -38,17 +38,22 @@ end
 
 function CampaignState:initDeck()
     self.masterDeck = {}
+    self.cardImprints = {} -- Track imprints: { [cardId] = { imprint1_id, imprint2_id } }
+    
     local ranks = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" }
     local suits = { "H", "D", "S", "C" }
 
     -- Standard 52 card deck
     for _, s in ipairs(suits) do
         for _, r in ipairs(ranks) do
+            local cardId = r .. "_" .. s
             table.insert(self.masterDeck, {
                 rank = r,
                 suit = s,
-                id = r .. "_" .. s -- Initial ID
+                id = cardId
             })
+            -- Initialize empty imprint array for this card
+            self.cardImprints[cardId] = {}
         end
     end
 end
@@ -58,17 +63,32 @@ function CampaignState:getDeck()
     local deckCopy = {}
     for _, card in ipairs(self.masterDeck) do
         -- Deep copy card to prevent reference issues if hand modifies it temporarily
-        table.insert(deckCopy, {
+        local cardCopy = {
             rank = card.rank,
             suit = card.suit,
-            id = card.id
-        })
+            id = card.id,
+            imprints = {} -- Copy imprints for this card
+        }
+        
+        -- Copy imprints array
+        if self.cardImprints[card.id] then
+            for _, imprintId in ipairs(self.cardImprints[card.id]) do
+                table.insert(cardCopy.imprints, imprintId)
+            end
+        end
+        
+        table.insert(deckCopy, cardCopy)
     end
     return deckCopy
 end
 
 function CampaignState:removeCard(idx)
     if idx > 0 and idx <= #self.masterDeck then
+        local card = self.masterDeck[idx]
+        -- Remove imprints when card is removed (per GDD: "Destroyed if card is removed")
+        if card and self.cardImprints[card.id] then
+            self.cardImprints[card.id] = nil
+        end
         table.remove(self.masterDeck, idx)
         return true
     end
@@ -78,15 +98,77 @@ end
 function CampaignState:duplicateCard(idx)
     if idx > 0 and idx <= #self.masterDeck then
         local original = self.masterDeck[idx]
+        local copyId = original.id .. "_copy" .. os.time()
         local copy = {
             rank = original.rank,
             suit = original.suit,
-            id = original.id .. "_copy" .. os.time() -- Unique ID for the copy
+            id = copyId
         }
         table.insert(self.masterDeck, copy)
+        
+        -- Copy imprints to the duplicated card
+        self.cardImprints[copyId] = {}
+        if self.cardImprints[original.id] then
+            for _, imprintId in ipairs(self.cardImprints[original.id]) do
+                table.insert(self.cardImprints[copyId], imprintId)
+            end
+        end
+        
         return true
     end
     return false
+end
+
+-- Add imprint to a specific card (max 2 per card)
+function CampaignState:addImprintToCard(cardId, imprintId)
+    if not self.cardImprints then
+        self.cardImprints = {}
+    end
+    
+    if not self.cardImprints[cardId] then
+        self.cardImprints[cardId] = {}
+    end
+    
+    local imprints = self.cardImprints[cardId]
+    
+    -- Check if already has this imprint
+    for _, existing in ipairs(imprints) do
+        if existing == imprintId then
+            return false, "Card already has this imprint"
+        end
+    end
+    
+    -- GDD: Max 2 imprints per card
+    if #imprints >= 2 then
+        return false, "Card already has maximum imprints (2)"
+    end
+    
+    table.insert(imprints, imprintId)
+    return true, "Imprint applied successfully"
+end
+
+-- Get imprints for a specific card
+function CampaignState:getCardImprints(cardId)
+    if not self.cardImprints or not self.cardImprints[cardId] then
+        return {}
+    end
+    return self.cardImprints[cardId]
+end
+
+-- Get all cards that can be imprinted (have less than 2 imprints)
+function CampaignState:getImprintableCards()
+    local result = {}
+    for i, card in ipairs(self.masterDeck) do
+        local imprintCount = #self:getCardImprints(card.id)
+        if imprintCount < 2 then
+            table.insert(result, {
+                index = i,
+                card = card,
+                currentImprints = imprintCount
+            })
+        end
+    end
+    return result
 end
 
 function CampaignState:getCurrentBlind()
@@ -186,6 +268,7 @@ end
 function CampaignState:useDiscard()
     if self.discardsRemaining > 0 then
         self.discardsRemaining = self.discardsRemaining - 1
+        events.emit("discard_used", { remaining = self.discardsRemaining })
         return true
     end
     return false

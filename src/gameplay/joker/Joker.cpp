@@ -56,7 +56,7 @@ Joker Joker::FromJSONString(const std::string &jsonString) {
       }
     }
 
-    // Effects
+    // Effects (legacy single-tier effects)
     if (j.contains("effects")) {
       for (const auto &effectJson : j["effects"]) {
         JokerEffect effect;
@@ -69,6 +69,37 @@ Joker Joker::FromJSONString(const std::string &jsonString) {
 
         joker.effects.push_back(effect);
       }
+    }
+    
+    // Tiered Effects (new tier system)
+    if (j.contains("tiers")) {
+      joker.stackable = true; // If tiers exist, joker is stackable
+      
+      for (const auto &tierJson : j["tiers"]) {
+        int tierLevel = tierJson.at("level").get<int>();
+        std::vector<JokerEffect> tierEffects;
+        
+        if (tierJson.contains("effects")) {
+          for (const auto &effectJson : tierJson["effects"]) {
+            JokerEffect effect;
+            effect.type = effectJson.at("type").get<std::string>();
+            effect.value = effectJson.at("value").get<float>();
+            
+            if (effectJson.contains("per")) {
+              effect.per = effectJson["per"].get<std::string>();
+            }
+            
+            tierEffects.push_back(effect);
+          }
+        }
+        
+        joker.tieredEffects[tierLevel] = tierEffects;
+      }
+    }
+    
+    // Stackable flag (can be explicit or implied by tiers)
+    if (j.contains("stackable")) {
+      joker.stackable = j["stackable"].get<bool>();
     }
 
     // Caps

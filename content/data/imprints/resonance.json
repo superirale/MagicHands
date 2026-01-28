@@ -1,0 +1,10 @@
+{
+    "id": "resonance",
+    "name": "Resonance",
+    "type": "imprint",
+    "description": "Trigger other imprints twice",
+    "trigger": "on_score",
+    "effect": {
+        "x_mult": 1.5
+    }
+}
