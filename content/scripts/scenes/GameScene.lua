@@ -65,10 +65,10 @@ function GameScene:init()
     self.time = 0
 
     -- Game State
-    self.state = "DEAL"        -- DEAL, PLAY, SCORE, SHOP, BLIND_PREVIEW, DECK_VIEW
-    self.state = "DEAL"        -- DEAL, PLAY, SCORE, SHOP, BLIND_PREVIEW, DECK_VIEW
+    self.state = "DEAL" -- DEAL, PLAY, SCORE, SHOP, BLIND_PREVIEW, DECK_VIEW
+    self.state = "DEAL" -- DEAL, PLAY, SCORE, SHOP, BLIND_PREVIEW, DECK_VIEW
     self.hand = {}
-    self.crib = {}             -- New Crib Data
+    -- Crib is now tracked in CampaignState for persistence
     self.cutCard = nil
     self.pendingShopItem = nil -- For spectral actions
 
@@ -121,7 +121,7 @@ function GameScene:init()
     self.addToCribButton.height = 50
     self.addToCribButton.bgColor = { r = 0.2, g = 0.6, b = 0.3, a = 1 }
     self.addToCribButton.hoverColor = { r = 0.3, g = 0.8, b = 0.4, a = 1 }
-    self.addToCribButton.visible = false  -- Only show during DEAL state
+    self.addToCribButton.visible = false -- Only show during DEAL state
 
     print("Game Scene initialized!")
 end
@@ -138,11 +138,11 @@ end
 
 function GameScene:addSelectedCardsToCrib()
     -- Add selected cards to crib (max 2, cannot replace)
-    if #self.crib >= 2 then
+    if #CampaignState.crib >= 2 then
         log.warn("Crib is full (max 2 cards)")
         return
     end
-    
+
     -- Find selected cards
     local selectedCards = {}
     for i, view in ipairs(self.cardViews) do
@@ -150,40 +150,41 @@ function GameScene:addSelectedCardsToCrib()
             table.insert(selectedCards, { view = view, index = i })
         end
     end
-    
+
     -- Check how many we can add
-    local spaceLeft = 2 - #self.crib
+    local spaceLeft = 2 - #CampaignState.crib
     if #selectedCards == 0 then
         log.warn("No cards selected")
         return
     end
-    
+
     if #selectedCards > spaceLeft then
         log.warn("Too many cards selected. Can only add " .. spaceLeft .. " more card(s) to crib")
         return
     end
-    
+
     -- Count how many cards we're adding
     local numCardsToAdd = #selectedCards
-    
+
     -- Check if deck has enough cards
     if not self.deckList or #self.deckList < numCardsToAdd then
-        log.warn("Not enough cards in deck to replace (" .. #self.deckList .. " available, " .. numCardsToAdd .. " needed)")
+        log.warn("Not enough cards in deck to replace (" ..
+            #self.deckList .. " available, " .. numCardsToAdd .. " needed)")
         return
     end
-    
+
     -- Add selected cards to crib
     for _, cardInfo in ipairs(selectedCards) do
         local card = cardInfo.view.card
-        table.insert(self.crib, card)
+        table.insert(CampaignState.crib, card)
     end
-    
+
     -- Remove from hand (iterate backwards to avoid index issues)
     for i = #selectedCards, 1, -1 do
         local cardInfo = selectedCards[i]
         table.remove(self.hand, cardInfo.index)
     end
-    
+
     -- Deal replacement cards from deck
     for i = 1, numCardsToAdd do
         local newCard = table.remove(self.deckList)
@@ -191,11 +192,11 @@ function GameScene:addSelectedCardsToCrib()
             table.insert(self.hand, newCard)
         end
     end
-    
+
     -- Rebuild views
     self:rebuildHandViews()
     self:rebuildCribViews()
-    
+
     log.info("Added " .. numCardsToAdd .. " card(s) to crib and dealt " .. numCardsToAdd .. " replacement(s)")
 end
 
@@ -244,7 +245,8 @@ function GameScene:startNewHand()
 
     -- Create visual cards
     self.cardViews = {}
-    self.cribViews = {} -- New Crib Views
+    -- Rebuild crib views from CampaignState (don't reset crib - it persists!)
+    self:rebuildCribViews()
     local startX = 200
     local startY = 500
     local spacing = 110
@@ -268,7 +270,7 @@ function GameScene:rebuildCribViews()
     local spacing = 120 -- Spacing for 2 slots (980, 1100)
 
     local CardView = require("visuals/CardView")
-    for i, card in ipairs(self.crib) do
+    for i, card in ipairs(CampaignState.crib) do
         local view = CardView(card, startX + (i - 1) * spacing, startY, self.cardAtlas, self.smallFont)
         table.insert(self.cribViews, view)
     end
@@ -350,14 +352,14 @@ function GameScene:update(dt)
     local mLeft = input.isMouseButtonPressed("left")
 
     local clicked = mLeft
-    
+
     -- Update Add to Crib button (only visible when crib is not full and has cards in hand)
-    if #self.hand > 0 and #self.crib < 2 then
+    if #self.hand > 0 and #CampaignState.crib < 2 then
         self.addToCribButton.visible = true
         self.addToCribButton:update(dt, mx, my, clicked)
-        
+
         -- Update button text to show progress
-        self.addToCribButton.text = "Add to Crib (" .. #self.crib .. "/2)"
+        self.addToCribButton.text = "Add to Crib (" .. #CampaignState.crib .. "/2)"
     else
         self.addToCribButton.visible = false
     end
@@ -436,7 +438,7 @@ function GameScene:update(dt)
             -- Release Drag
             if not mLeft then
                 -- Check Drop in Crib (980, 480, 240x160 approx for entire visual area)
-                if mx > 980 and mx < 1220 and my > 480 and my < 640 and #self.crib < 2 then
+                if mx > 980 and mx < 1220 and my > 480 and my < 640 and #CampaignState.crib < 2 then
                     -- Move Card to Crib
                     local card = self.draggingView.card
 
@@ -449,7 +451,7 @@ function GameScene:update(dt)
                     end
 
                     -- Add to Crib
-                    table.insert(self.crib, card)
+                    table.insert(CampaignState.crib, card)
 
                     -- Rebuild Views
                     self:rebuildHandViews()
@@ -669,6 +671,112 @@ function GameScene:playHand()
     if imprintEffects.gold > 0 then
         Economy:addGold(imprintEffects.gold)
         print("Earned " .. imprintEffects.gold .. "g from Imprints")
+    end
+
+    -- NEW: Score the crib on the last hand only
+    local cribScore = 0
+    if CampaignState:isLastHand() and #CampaignState.crib == 2 then
+        -- Build crib cards for scoring (2 player cards + 2 random + cut = 5 cards)
+        local cribCards = {}
+
+        print("DEBUG: Building crib hand for scoring")
+        print("DEBUG: Crib has " .. #CampaignState.crib .. " player-selected cards")
+
+        for i, c in ipairs(CampaignState.crib) do
+            print("DEBUG: Crib card " .. i .. " type: " .. type(c))
+            if type(c) == "table" then
+                if c.rank and c.suit then
+                    print("DEBUG: Converting table card: " .. c.rank .. " of " .. c.suit)
+                    local card = Card.new(c.rank, c.suit)
+                    print("DEBUG: Card.new returned type: " .. type(card))
+                    if card then
+                        table.insert(cribCards, card)
+                    else
+                        print("ERROR: Card.new returned nil for " .. c.rank .. " of " .. c.suit)
+                    end
+                else
+                    print("ERROR: Crib card is table but missing rank or suit")
+                end
+            else
+                -- Card is already a userdata Card object
+                print("DEBUG: Using existing Card object")
+                table.insert(cribCards, c)
+            end
+        end
+
+        -- Add 2 random cards from the deck to fill the crib
+        print("DEBUG: Adding 2 random cards from deck to crib")
+        print("DEBUG: Deck size: " .. #self.deckList)
+        local availableCards = {}
+        for _, card in ipairs(self.deckList) do
+            if card then
+                table.insert(availableCards, card)
+            end
+        end
+        print("DEBUG: Available cards after filtering: " .. #availableCards)
+
+        -- Randomly select 2 cards
+        for i = 1, 2 do
+            if #availableCards > 0 then
+                local randomIndex = math.random(1, #availableCards)
+                local randomCard = table.remove(availableCards, randomIndex)
+
+                if randomCard then
+                    if type(randomCard) == "table" then
+                        if randomCard.rank and randomCard.suit then
+                            print("DEBUG: Adding random card: " .. randomCard.rank .. " of " .. randomCard.suit)
+                            local card = Card.new(randomCard.rank, randomCard.suit)
+                            if card then
+                                table.insert(cribCards, card)
+                            end
+                        end
+                    else
+                        table.insert(cribCards, randomCard)
+                    end
+                else
+                    print("ERROR: Random card is nil")
+                end
+            end
+        end
+
+        -- Add cut card to make it a proper hand
+        print("DEBUG: Cut card type: " .. type(self.cutCard))
+        if type(self.cutCard) == "table" then
+            if self.cutCard.rank and self.cutCard.suit then
+                print("DEBUG: Converting cut card: " .. self.cutCard.rank .. " of " .. self.cutCard.suit)
+                local cutCard = Card.new(self.cutCard.rank, self.cutCard.suit)
+                print("DEBUG: Cut Card.new returned type: " .. type(cutCard))
+                if cutCard then
+                    table.insert(cribCards, cutCard)
+                else
+                    print("ERROR: Card.new returned nil for cut card " ..
+                        self.cutCard.rank .. " of " .. self.cutCard.suit)
+                end
+            else
+                print("ERROR: Cut card is table but missing rank or suit")
+            end
+        else
+            print("DEBUG: Using existing cut Card object")
+            table.insert(cribCards, self.cutCard)
+        end
+
+        print("DEBUG: Total cards for crib scoring: " .. #cribCards)
+
+        -- Only score if we have exactly 5 cards (4 crib + 1 cut)
+        if #cribCards == 5 then
+            -- Score the crib using the same rules as a hand
+            local cribResult = cribbage.score(cribCards, totalTempMult, totalPermMult, bossRules)
+            cribScore = cribResult.finalScore
+
+            -- Add crib score to final score
+            finalScore = finalScore + cribScore
+
+            print("--- CRIB SCORE ---")
+            print("Crib: " .. cribScore)
+            print("------------------")
+        else
+            print("ERROR: Expected 5 cards for crib scoring but got " .. #cribCards)
+        end
     end
 
     -- Debug: Show joker effects
@@ -933,7 +1041,7 @@ function GameScene:draw()
         for _, view in ipairs(self.cribViews) do
             view:draw()
         end
-        
+
         -- Draw Add to Crib button
         self.addToCribButton:draw()
 

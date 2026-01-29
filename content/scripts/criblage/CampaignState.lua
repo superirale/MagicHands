@@ -15,7 +15,8 @@ CampaignState = {
     discardsRemaining = 3,
     currentScore = 0,
 
-    blindsCleared = 0
+    blindsCleared = 0,
+    crib = {} -- Persistent crib for the current blind
 }
 
 function CampaignState:init()
@@ -26,6 +27,7 @@ function CampaignState:init()
     self.discardsRemaining = 3
     self.currentScore = 0
     self.blindsCleared = 0
+    self.crib = {} -- Initialize empty crib
 
     -- Initialize subsystems
     Economy:init()
@@ -235,10 +237,11 @@ function CampaignState:advanceBlind()
         self.currentAct = self.currentAct + 1
     end
 
-    -- Reset hands/discards and score
+    -- Reset hands/discards, score, and crib
     self.handsRemaining = 4
     self.discardsRemaining = 3
     self.currentScore = 0
+    self.crib = {} -- Clear crib for new blind
 
     -- Generate shop
     Shop:generateJokers(self.currentAct)
@@ -274,6 +277,10 @@ function CampaignState:useDiscard()
         return true
     end
     return false
+end
+
+function CampaignState:isLastHand()
+    return self.handsRemaining == 1
 end
 
 return CampaignState

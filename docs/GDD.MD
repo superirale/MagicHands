@@ -29,13 +29,21 @@ The Crib is a persistent 2-card collection that accumulates throughout a Blind (
 - **Building the Crib**: On each hand, you may add up to 2 cards from your 6-card hand to the Crib
 - **Replacement**: Cards added to the Crib are immediately replaced from the deck, maintaining a 6-card hand
 - **Persistence**: The Crib carries over between hands within the same Blind
-- **Scoring Window**: The Crib is scored **only on the last hand of the Blind**, using the cut card from that final hand
+- **Scoring Window**: The Crib is scored **only on the last hand of the Blind**
+- **Scoring Composition**: When the Crib is scored, it consists of:
+  - Your 2 player-selected cards (chosen strategically across the Blind)
+  - 2 random cards drawn from the deck
+  - The cut card from the final hand
+  - **Total: 5 cards** (matching standard Cribbage hand scoring requirements)
 - **Score Application**: Crib score is added to the final hand's score to determine if the Blind is cleared
+- **Reset**: The Crib is cleared when advancing to a new Blind
 
 #### Strategic Implications:
 - Early hands: Build a strong Crib without sacrificing immediate scoring
 - Final hand: Maximize both hand and Crib scores to clear the Blind
-- Hand Augments like "The Crib" can amplify Crib scoring power
+- Card selection: Choose cards that have synergy potential (e.g., 5s for fifteens, pairs, sequential ranks)
+- The 2 random cards add an element of chance but don't fully determine the outcome
+- Hand Augments like "The Crib" can amplify Crib scoring power (×1.5 multiplier)
 
 ---
 
