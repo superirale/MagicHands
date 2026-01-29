@@ -22,6 +22,21 @@ Magic Hands is a **roguelike score-attack** game, not a simulation of traditiona
 - **The Discard**: Choosing 2 cards for the Crib remains the central tactical decision.
 - **The Show**: Hand and Crib are scored using standard Cribbage rules (15s, runs, pairs, flushes, nobs).
 
+### 🃏 Crib Scoring Rules
+The Crib is a persistent 2-card collection that accumulates throughout a Blind (multi-hand challenge).
+
+#### Mechanics:
+- **Building the Crib**: On each hand, you may add up to 2 cards from your 6-card hand to the Crib
+- **Replacement**: Cards added to the Crib are immediately replaced from the deck, maintaining a 6-card hand
+- **Persistence**: The Crib carries over between hands within the same Blind
+- **Scoring Window**: The Crib is scored **only on the last hand of the Blind**, using the cut card from that final hand
+- **Score Application**: Crib score is added to the final hand's score to determine if the Blind is cleared
+
+#### Strategic Implications:
+- Early hands: Build a strong Crib without sacrificing immediate scoring
+- Final hand: Maximize both hand and Crib scores to clear the Blind
+- Hand Augments like "The Crib" can amplify Crib scoring power
+
 ---
 
 ## 2. Core Progression Pillars
