@@ -44,7 +44,7 @@ function EnhancementManager:resolveAugments(handResult, engineCards)
     -- Build list of paths and counts (planets are stackable)
     local paths = {}
     local stackCounts = {}
-    
+
     for _, aug in ipairs(self.augments) do
         table.insert(paths, self.basePath .. aug.id .. ".json")
         table.insert(stackCounts, aug.count)
@@ -91,14 +91,14 @@ end
 -- @return effects table with chips, mult, x_mult, gold
 function EnhancementManager:resolveImprints(cards, trigger)
     local effects = { chips = 0, mult = 0, x_mult = 1.0, gold = 0 }
-    
+
     if not cards then
         return effects
     end
-    
+
     -- Track loaded imprint definitions (cache)
     local imprintCache = {}
-    
+
     -- For each card, check its imprints
     for _, card in ipairs(cards) do
         if card.imprints and #card.imprints > 0 then
@@ -106,25 +106,25 @@ function EnhancementManager:resolveImprints(cards, trigger)
                 -- Load imprint definition if not cached
                 if not imprintCache[imprintId] then
                     local path = "content/data/imprints/" .. imprintId .. ".json"
-                    local data = loadJSON(path)
+                    local data = files and files.loadJSON and files.loadJSON(path) or nil
                     if data then
                         imprintCache[imprintId] = data
                     else
                         LOG_WARN("Failed to load imprint: " .. imprintId)
                     end
                 end
-                
+
                 -- Apply imprint effect if trigger matches
                 local imprint = imprintCache[imprintId]
                 if imprint and imprint.trigger == trigger then
                     local effect = imprint.effect
-                    
+
                     -- Check chance (for lucky_pips type effects)
                     local shouldApply = true
                     if imprint.chance then
                         shouldApply = (math.random() < imprint.chance)
                     end
-                    
+
                     if shouldApply and effect then
                         -- Apply effects
                         if effect.chips then
@@ -144,7 +144,7 @@ function EnhancementManager:resolveImprints(cards, trigger)
             end
         end
     end
-    
+
     return effects
 end
 
