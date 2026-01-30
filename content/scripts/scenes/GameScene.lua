@@ -242,13 +242,23 @@ function GameScene:startNewHand()
 
     self.deckList = deckList -- Store as list
 
-    -- Draw 6 cards
+    -- Draw 6 cards (+ bonus for first blind only)
     self.hand = {}
     self.draggingView = nil -- Clear any stale drag state
     self.dragStartX = 0
     self.dragStartY = 0
 
-    for i = 1, 6 do
+    local baseHandSize = 6
+    local handSizeBonus = 0
+    
+    -- Apply first blind hand bonus if active
+    if CampaignState.firstBlindHandBonus and CampaignState.firstBlindHandBonus > 0 and 
+       CampaignState.currentBlind == 1 then
+        handSizeBonus = CampaignState.firstBlindHandBonus
+        print("✨ First Blind Bonus: +" .. handSizeBonus .. " cards in hand!")
+    end
+    
+    for i = 1, (baseHandSize + handSizeBonus) do
         table.insert(self.hand, table.remove(self.deckList))
     end
 

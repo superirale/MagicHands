@@ -3,6 +3,7 @@ local Economy = require("criblage/Economy")
 local JokerManager = require("criblage/JokerManager")
 local Shop = require("criblage/Shop")
 local BossManager = require("criblage/BossManager")
+local StartingAdvantage = require("criblage/StartingAdvantage")
 -- blind module is typically global or engine provided, but let's assume it's global for now or needed
 -- local blind = require("criblage/blind") -- assuming this might be needed later
 
@@ -16,7 +17,11 @@ CampaignState = {
     currentScore = 0,
 
     blindsCleared = 0,
-    crib = {} -- Persistent crib for the current blind
+    crib = {}, -- Persistent crib for the current blind
+    
+    -- Starting advantage (roguelike blessing)
+    startingAdvantage = nil,
+    firstBlindHandBonus = 0  -- Extra cards for first blind only
 }
 
 function CampaignState:init()
@@ -28,6 +33,7 @@ function CampaignState:init()
     self.currentScore = 0
     self.blindsCleared = 0
     self.crib = {} -- Initialize empty crib
+    self.firstBlindHandBonus = 0
 
     -- Initialize subsystems
     Economy:init()
@@ -36,6 +42,10 @@ function CampaignState:init()
     BossManager:init()
 
     self:initDeck()
+    
+    -- Roll and apply starting advantage
+    self.startingAdvantage = StartingAdvantage:rollAdvantage()
+    StartingAdvantage:apply(self.startingAdvantage, self)
 end
 
 function CampaignState:initDeck()
