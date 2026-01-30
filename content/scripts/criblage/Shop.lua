@@ -64,15 +64,15 @@ end
 
 function Shop:getJokerPrice(rarity)
     if rarity == "common" then
-        return 50
+        return 20
     elseif rarity == "uncommon" then
-        return 100
+        return 50
     elseif rarity == "rare" then
-        return 200
+        return 110
     elseif rarity == "legendary" then
-        return 500
+        return 200
     end
-    return 50
+    return 20
 end
 
 function Shop:selectRarity(act)
@@ -126,7 +126,7 @@ function Shop:generateJokers(act)
             table.insert(self.jokers, {
                 id = itemID,
                 type = "enhancement",
-                price = 75, -- Flat price for enhancements
+                price = 30, -- Flat price for enhancements
                 rarity = "common"
             })
         else

@@ -669,14 +669,39 @@ function GameScene:playHand()
     local totalTempMult = score.tempMultiplier + augmentEffects.mult + jokerEffects.addedTempMult + imprintEffects.mult
     local totalPermMult = score.permMultiplier + jokerEffects.addedPermMult
 
+    -- Apply Warp: Mult Multiplier (Ascension - double all mult)
+    if warpEffects.mult_multiplier > 1.0 then
+        totalTempMult = totalTempMult * warpEffects.mult_multiplier
+        totalPermMult = totalPermMult * warpEffects.mult_multiplier
+    end
+
     -- Final calculation (with XMult from Imprints)
     local finalMult = (1 + totalTempMult + totalPermMult) * imprintEffects.x_mult
 
     local finalScore = math.floor(finalChips * finalMult)
 
-    -- Apply Warp: Score Penalty (The Void)
-    if warpEffects.score_penalty ~= 1.0 then
-        finalScore = math.floor(finalScore * warpEffects.score_penalty)
+    -- Apply Warp: Score Penalty (The Void) and Score Multipliers (Fortune, Gambit, Greed)
+    local totalScoreMultiplier = warpEffects.score_penalty * warpEffects.score_multiplier
+    if totalScoreMultiplier ~= 1.0 then
+        finalScore = math.floor(finalScore * totalScoreMultiplier)
+    end
+    
+    -- Apply Warp: Score to Gold (Greed - 10% of score becomes gold)
+    if warpEffects.score_to_gold_pct > 0 then
+        local goldGain = math.floor(finalScore * warpEffects.score_to_gold_pct)
+        if goldGain > 0 then
+            Economy:addGold(goldGain)
+            print("Warp Greed: Converted " .. goldGain .. "g from score")
+        end
+    end
+    
+    -- Apply Warp: Hand Cost (Fortune - costs 5g per hand)
+    if warpEffects.hand_cost > 0 then
+        if Economy:spend(warpEffects.hand_cost) then
+            print("Warp Fortune: Paid " .. warpEffects.hand_cost .. "g for hand")
+        else
+            print("WARN: Not enough gold for Warp Fortune cost!")
+        end
     end
 
     -- Apply Warp: Retrigger (The Echo) - Simplified as 2x score for MVP
@@ -816,6 +841,30 @@ function GameScene:playHand()
             -- Apply Warp: Cut Bonus (Ghost Cut)
             if warpEffects.cut_bonus > 0 then
                 cribFinalChips = cribFinalChips + warpEffects.cut_bonus
+            end
+
+            local cribTotalTempMult = cribScore.tempMultiplier + cribAugmentEffects.mult + cribJokerEffects.addedTempMult + cribImprintEffects.mult
+            local cribTotalPermMult = cribScore.permMultiplier + cribJokerEffects.addedPermMult
+
+            -- Apply Warp: Mult Multiplier (Ascension - double all mult)
+            if warpEffects.mult_multiplier > 1.0 then
+                cribTotalTempMult = cribTotalTempMult * warpEffects.mult_multiplier
+                cribTotalPermMult = cribTotalPermMult * warpEffects.mult_multiplier
+            end
+
+            local cribFinalMult = (1 + cribTotalTempMult + cribTotalPermMult) * cribImprintEffects.x_mult
+
+            local cribFinalScore = math.floor(cribFinalChips * cribFinalMult)
+
+            -- Apply Warp: Score Penalty (The Void) and Score Multipliers (Fortune, Gambit, Greed)
+            local totalScoreMultiplier = warpEffects.score_penalty * warpEffects.score_multiplier
+            if totalScoreMultiplier ~= 1.0 then
+                cribFinalScore = math.floor(cribFinalScore * totalScoreMultiplier)
+            end
+
+            -- Apply Warp: Retrigger (The Echo) - Simplified as 2x score for MVP
+            if warpEffects.retrigger > 0 then
+                cribFinalScore = cribFinalScore * (1 + warpEffects.retrigger)
             end
             
             -- Sum multipliers

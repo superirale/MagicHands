@@ -71,14 +71,74 @@ function EnhancementManager:resolveWarps()
     local effects = {
         retrigger = 0,
         cut_bonus = 0,
-        score_penalty = 1.0
+        score_penalty = 1.0,
+        score_multiplier = 1.0,
+        mult_multiplier = 1.0,
+        free_discard = false,
+        hand_cost = 0,
+        score_to_gold_pct = 0,
+        active_warps = {}  -- Store active warp IDs for complex logic
     }
 
+    -- Load warp effects dynamically from JSON
     for _, warp in ipairs(self.warps) do
-        if warp.id == "spectral_echo" then
-            effects.retrigger = effects.retrigger + 1 -- Simple implementation
-        elseif warp.id == "spectral_void" then
-            effects.score_penalty = 0.75              -- Example
+        local path = "content/data/warps/" .. warp.id .. ".json"
+        local data = files and files.loadJSON and files.loadJSON(path)
+        
+        if data and data.effect then
+            table.insert(effects.active_warps, warp.id)
+            
+            -- Apply simple numeric effects from JSON
+            if data.effect.retrigger then
+                effects.retrigger = effects.retrigger + data.effect.retrigger
+            end
+            if data.effect.cut_bonus then
+                effects.cut_bonus = effects.cut_bonus + data.effect.cut_bonus
+            end
+            if data.effect.score_penalty then
+                effects.score_penalty = effects.score_penalty * data.effect.score_penalty
+            end
+            if data.effect.free_discard then
+                effects.free_discard = true
+            end
+            
+            -- Advanced warp effects (Lua-compatible)
+            if data.effect.type == "double_mult" then
+                -- warp_ascension: Double all mult
+                effects.mult_multiplier = effects.mult_multiplier * 2.0
+            elseif data.effect.type == "fortune" then
+                -- warp_fortune: Score x1.5 but costs 5g per hand
+                effects.score_multiplier = effects.score_multiplier * 1.5
+                effects.hand_cost = effects.hand_cost + 5
+            elseif data.effect.type == "gambit" then
+                -- warp_gambit: 50% chance for 3x or 0.5x
+                if math.random() < 0.5 then
+                    effects.score_multiplier = effects.score_multiplier * 3.0
+                else
+                    effects.score_multiplier = effects.score_multiplier * 0.5
+                end
+            elseif data.effect.type == "score_to_gold" then
+                -- warp_greed: 10% of score → gold
+                effects.score_to_gold_pct = 0.1
+                effects.score_penalty = effects.score_penalty * 0.9  -- Slower progression
+            end
+            
+            -- Complex warps that need special handling (flagged for GameScene)
+            -- These are marked in active_warps and handled in gameplay logic
+            if data.effect.type == "blaze" or 
+               data.effect.type == "chaos_shuffle" or
+               data.effect.type == "no_limit" or
+               data.effect.type == "invert_values" or
+               data.effect.type == "mirror_categories" or
+               data.effect.type == "phantom" or
+               data.effect.type == "crib_first" or
+               data.effect.type == "wild_fives" then
+                -- These warps require C++ or deep gameplay changes
+                -- They are tracked in active_warps for GameScene to handle
+            end
+        else
+            -- Fallback warning for missing JSON
+            print("WARN: Warp " .. warp.id .. " JSON not found at " .. path)
         end
     end
 
