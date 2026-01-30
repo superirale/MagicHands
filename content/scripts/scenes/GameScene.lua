@@ -608,7 +608,6 @@ function GameScene:update(dt)
 end
 
 function GameScene:playHand()
-    -- Gather selected cards
     local selectedCards = {}
     for i, view in ipairs(self.cardViews) do
         if view.selected then
@@ -616,9 +615,40 @@ function GameScene:playHand()
         end
     end
 
-    if #selectedCards ~= 4 then
-        print("Must select exactly 4 cards to play!")
+    -- Check for warp_infinity (no hand limit)
+    local warpEffects = EnhancementManager:resolveWarps()
+    local hasInfinity = false
+    local hasPhantom = false
+    
+    if warpEffects.active_warps then
+        for _, warpId in ipairs(warpEffects.active_warps) do
+            if warpId == "warp_infinity" then
+                hasInfinity = true
+            elseif warpId == "warp_phantom" then
+                hasPhantom = true
+            end
+        end
+    end
+    
+    if not hasInfinity and #selectedCards ~= 4 then
+        print("Must select exactly 4 cards")
         return
+    elseif hasInfinity and #selectedCards < 1 then
+        print("Must select at least 1 card")
+        return
+    end
+    
+    if hasInfinity and #selectedCards > 4 then
+        print("♾️ Warp Infinity: Playing " .. #selectedCards .. " cards (no limit)!")
+    end
+    
+    -- WARP: Phantom - Track discarded cards for scoring
+    local phantomCards = {}
+    if hasPhantom and self.discardedThisTurn and #self.discardedThisTurn > 0 then
+        print("👻 Warp Phantom: Discarded cards (" .. #self.discardedThisTurn .. ") count for scoring!")
+        for _, card in ipairs(self.discardedThisTurn) do
+            table.insert(phantomCards, card)
+        end
     end
 
     -- Add cut card to make 5 cards total (required by cribbage API)
@@ -959,6 +989,23 @@ function GameScene:playHand()
         }
     })
 
+    -- WARP: Time Warp - Score crib BEFORE hand
+    local hasTimeWarp = false
+    if warpEffects.active_warps then
+        for _, warpId in ipairs(warpEffects.active_warps) do
+            if warpId == "warp_time" then
+                hasTimeWarp = true
+                break
+            end
+        end
+    end
+    
+    if hasTimeWarp and cribScore > 0 then
+        print("⏰ Warp Time: Scoring crib BEFORE hand!")
+        print("Crib scored first: " .. cribScore)
+        CampaignState.currentScore = CampaignState.currentScore + cribScore
+    end
+
     -- Check campaign result
     local result, reward = CampaignState:playHand(finalScore)
 
@@ -1114,6 +1161,12 @@ function GameScene:discardSelected()
         -- Sort descending (biggest index first) so removal doesn't shift lower indices
         table.sort(indicesToRemove, function(a, b) return a > b end)
 
+        -- Track discarded cards for warp_phantom
+        self.discardedThisTurn = self.discardedThisTurn or {}
+        for _, idx in ipairs(indicesToRemove) do
+            table.insert(self.discardedThisTurn, self.hand[idx])
+        end
+
         -- 2. Remove from hand data
         for _, idx in ipairs(indicesToRemove) do
             table.remove(self.hand, idx)
@@ -1128,24 +1181,32 @@ function GameScene:discardSelected()
         while #self.hand < 6 and #self.deckList > 0 do
             table.insert(self.hand, table.remove(self.deckList))
         end
-
-        -- AudioManager:playDeal()
+        
+        -- WARP: Chaos - Reshuffle after discard
+        local warpEffects = EnhancementManager:resolveWarps()
+        if warpEffects.active_warps then
+            for _, warpId in ipairs(warpEffects.active_warps) do
+                if warpId == "warp_chaos" then
+                    print("🌀 Warp Chaos: Reshuffling deck after discard!")
+                    -- Reshuffle remaining deck
+                    for i = #self.deckList, 2, -1 do
+                        local j = math.random(i)
+                        self.deckList[i], self.deckList[j] = self.deckList[j], self.deckList[i]
+                    end
+                end
+            end
+        end
 
         -- 4. Recreate visuals (Full redraw of HAND views only, Preserving Cut Card View)
         self.cardViews = {}
-        local startX = 200
-        local startY = 500
-        local spacing = 110
-
-        -- Asset/Font ref must be available (self.cardAtlas, self.smallFont)
-        local CardView = require("visuals/CardView")
-
         for i, card in ipairs(self.hand) do
             local view = CardView(card, startX + (i - 1) * spacing, startY, self.cardAtlas, self.smallFont)
             table.insert(self.cardViews, view)
         end
 
         print("Discard used. " .. CampaignState.discardsRemaining .. " left.")
+    else
+        print("No discards remaining")
     end
 end
 
