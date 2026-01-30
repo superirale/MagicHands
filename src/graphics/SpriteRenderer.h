@@ -46,6 +46,9 @@ public:
   int GetWhiteTexture();
   void BeginFrame(SDL_GPUCommandBuffer *cmdBuf);
 
+  // Screenshot support
+  bool SaveScreenshot(const char *filepath);
+
   // Window resize handling
   void OnWindowResize(uint32_t newWidth, uint32_t newHeight);
 

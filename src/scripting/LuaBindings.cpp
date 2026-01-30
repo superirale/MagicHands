@@ -200,6 +200,13 @@ int Lua_Flush(lua_State *L) {
   return 0;
 }
 
+int Lua_SaveScreenshot(lua_State *L) {
+  const char *filepath = luaL_checkstring(L, 1);
+  bool success = g_Renderer.SaveScreenshot(filepath);
+  lua_pushboolean(L, success);
+  return 1;
+}
+
 // --- Shader Bindings ---
 
 int Lua_LoadShader(lua_State *L) {
@@ -570,8 +577,8 @@ void LuaBindings::Register(lua_State *L) {
   lua_setfield(L, -2, "reloadShader");
   lua_pushcfunction(L, Lua_Flush);
   lua_setfield(L, -2, "flush");
-  lua_pushcfunction(L, Lua_Flush);
-  lua_setfield(L, -2, "flush");
+  lua_pushcfunction(L, Lua_SaveScreenshot);
+  lua_setfield(L, -2, "saveScreenshot");
   lua_setglobal(L, "graphics");
 
   // Register FontRenderer bindings (adds to graphics table)

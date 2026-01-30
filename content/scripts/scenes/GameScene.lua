@@ -677,7 +677,8 @@ function GameScene:playHand()
     local cribScore = 0
     if CampaignState:isLastHand() and #CampaignState.crib == 2 then
         -- Build crib cards for scoring (2 player cards + 2 random + cut = 5 cards)
-        local cribCards = {}
+        local cribCards = {}          -- C++ Card objects for engine
+        local cribCardsLua = {}       -- Lua table cards for imprint resolution
 
         print("DEBUG: Building crib hand for scoring")
         print("DEBUG: Crib has " .. #CampaignState.crib .. " player-selected cards")
@@ -691,6 +692,7 @@ function GameScene:playHand()
                     print("DEBUG: Card.new returned type: " .. type(card))
                     if card then
                         table.insert(cribCards, card)
+                        table.insert(cribCardsLua, c)  -- Keep original table for imprints
                     else
                         print("ERROR: Card.new returned nil for " .. c.rank .. " of " .. c.suit)
                     end
@@ -701,6 +703,8 @@ function GameScene:playHand()
                 -- Card is already a userdata Card object
                 print("DEBUG: Using existing Card object")
                 table.insert(cribCards, c)
+                -- Try to find corresponding lua table in original crib
+                table.insert(cribCardsLua, CampaignState.crib[i])
             end
         end
 
@@ -728,10 +732,13 @@ function GameScene:playHand()
                             local card = Card.new(randomCard.rank, randomCard.suit)
                             if card then
                                 table.insert(cribCards, card)
+                                table.insert(cribCardsLua, randomCard)
                             end
                         end
                     else
                         table.insert(cribCards, randomCard)
+                        -- For userdata, create a table representation
+                        table.insert(cribCardsLua, randomCard)
                     end
                 else
                     print("ERROR: Random card is nil")
@@ -748,6 +755,7 @@ function GameScene:playHand()
                 print("DEBUG: Cut Card.new returned type: " .. type(cutCard))
                 if cutCard then
                     table.insert(cribCards, cutCard)
+                    table.insert(cribCardsLua, self.cutCard)
                 else
                     print("ERROR: Card.new returned nil for cut card " ..
                         self.cutCard.rank .. " of " .. self.cutCard.suit)
@@ -758,22 +766,81 @@ function GameScene:playHand()
         else
             print("DEBUG: Using existing cut Card object")
             table.insert(cribCards, self.cutCard)
+            table.insert(cribCardsLua, self.cutCard)
         end
 
         print("DEBUG: Total cards for crib scoring: " .. #cribCards)
 
         -- Only score if we have exactly 5 cards (4 crib + 1 cut)
         if #cribCards == 5 then
-            -- Score the crib using the same rules as a hand
-            local cribResult = cribbage.score(cribCards, totalTempMult, totalPermMult, bossRules)
-            cribScore = cribResult.finalScore
+            -- Apply FULL scoring pipeline to crib (same as main hand)
+            print("--- CRIB SCORING PIPELINE ---")
+            
+            -- 1. Base Score (with Boss Rules)
+            local cribHandResult = cribbage.evaluate(cribCards)
+            local cribBaseScore = cribbage.score(cribCards, 0, 0, bossRules)
+            
+            -- 2. Resolve Card Imprints for crib cards
+            local cribImprintEffects = EnhancementManager:resolveImprints(cribCardsLua, "score")
+            
+            -- 3. Resolve Hand Augments (Planets) for crib patterns
+            local cribAugmentEffects = EnhancementManager:resolveAugments(cribHandResult, cribCards)
+            
+            -- 4. Resolve Rule Warps (use same warp effects as main hand)
+            -- Note: Warps are global, so we reuse the same warpEffects
+            
+            -- 5. Resolve Jokers & Stacks for crib patterns
+            local cribJokerEffects = JokerManager:applyEffects(cribCards, "on_score")
+            
+            -- 6. Aggregate Crib Score (same formula as main hand)
+            local cribFinalChips = cribBaseScore.baseChips + cribAugmentEffects.chips + 
+                                   cribJokerEffects.addedChips + cribImprintEffects.chips
+            
+            -- Apply Warp: Cut Bonus (Ghost Cut)
+            if warpEffects.cut_bonus > 0 then
+                cribFinalChips = cribFinalChips + warpEffects.cut_bonus
+            end
+            
+            -- Sum multipliers
+            local cribTotalTempMult = cribBaseScore.tempMultiplier + cribAugmentEffects.mult + 
+                                      cribJokerEffects.addedTempMult + cribImprintEffects.mult
+            local cribTotalPermMult = cribBaseScore.permMultiplier + cribJokerEffects.addedPermMult
+            
+            -- Final calculation (with XMult from Imprints)
+            local cribFinalMult = (1 + cribTotalTempMult + cribTotalPermMult) * cribImprintEffects.x_mult
+            
+            cribScore = math.floor(cribFinalChips * cribFinalMult)
+            
+            -- Apply Warp: Score Penalty (The Void)
+            if warpEffects.score_penalty ~= 1.0 then
+                cribScore = math.floor(cribScore * warpEffects.score_penalty)
+            end
+            
+            -- Apply Warp: Retrigger (The Echo)
+            if warpEffects.retrigger > 0 then
+                cribScore = cribScore * (1 + warpEffects.retrigger)
+            end
+            
+            -- Handle Imprint Gold from crib cards
+            if cribImprintEffects.gold > 0 then
+                Economy:addGold(cribImprintEffects.gold)
+                print("Earned " .. cribImprintEffects.gold .. "g from Crib Imprints")
+            end
 
             -- Add crib score to final score
             finalScore = finalScore + cribScore
 
-            print("--- CRIB SCORE ---")
-            print("Crib: " .. cribScore)
-            print("------------------")
+            print("--- CRIB SCORE BREAKDOWN ---")
+            print("Crib Base: " .. cribBaseScore.baseChips .. " x " .. 
+                  (1 + cribBaseScore.tempMultiplier + cribBaseScore.permMultiplier))
+            print("Crib Augments: +" .. cribAugmentEffects.chips .. " Chips, +" .. 
+                  cribAugmentEffects.mult .. " Mult")
+            print("Crib Jokers: +" .. cribJokerEffects.addedChips .. " Chips, +" .. 
+                  (cribJokerEffects.addedTempMult + cribJokerEffects.addedPermMult) .. " Mult")
+            print("Crib Imprints: +" .. cribImprintEffects.chips .. " Chips, +" .. 
+                  cribImprintEffects.mult .. " Mult, x" .. cribImprintEffects.x_mult)
+            print("Crib Final Score: " .. cribScore)
+            print("-----------------------------")
         else
             print("ERROR: Expected 5 cards for crib scoring but got " .. #cribCards)
         end
