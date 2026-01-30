@@ -1,0 +1,2720 @@
+{
+  "logicErrors": {
+
+  },
+  "jokersStacked": {
+
+  },
+  "warpsActive": {
+    "1": "warp_greed"
+  },
+  "bossesDefeated": {
+
+  },
+  "rerollsUsed": 0,
+  "blindReached": 3,
+  "bossesEncountered": {
+
+  },
+  "planetsAcquired": {
+
+  },
+  "goldEarned": 0,
+  "jokersAcquired": {
+    "1": "face_card_fan",
+    "2": "big_hand",
+    "3": "even_stevens",
+    "4": "the_polymath"
+  },
+  "imprintsApplied": {
+
+  },
+  "minFrameTimeMs": 8.0000003799796,
+  "cribScores": {
+
+  },
+  "maxFrameTimeMs": 17.99999922514,
+  "averageHandScore": 4493.0769230769,
+  "discardsUsed": 0,
+  "jokersMaxTier": {
+
+  },
+  "goldSpent": 250,
+  "warnings": {
+
+  },
+  "strategy": "Optimal",
+  "outcome": "loss",
+  "achievementsUnlocked": {
+
+  },
+  "avgFrameTimeMs": 13.339015419743,
+  "handScores": {
+    "1": {
+      "score": 384,
+      "handNum": 1,
+      "timestamp": 1769806078,
+      "breakdown": {
+
+      }
+    },
+    "2": {
+      "score": 816,
+      "handNum": 2,
+      "timestamp": 1769806079,
+      "breakdown": {
+
+      }
+    },
+    "3": {
+      "score": 574,
+      "handNum": 3,
+      "timestamp": 1769806080,
+      "breakdown": {
+
+      }
+    },
+    "4": {
+      "score": 392,
+      "handNum": 4,
+      "timestamp": 1769806080,
+      "breakdown": {
+
+      }
+    },
+    "5": {
+      "score": 4830,
+      "handNum": 5,
+      "timestamp": 1769806081,
+      "breakdown": {
+
+      }
+    },
+    "6": {
+      "score": 16272,
+      "handNum": 6,
+      "timestamp": 1769806086,
+      "breakdown": {
+
+      }
+    },
+    "7": {
+      "score": 424,
+      "handNum": 7,
+      "timestamp": 1769806086,
+      "breakdown": {
+
+      }
+    },
+    "8": {
+      "score": 468,
+      "handNum": 8,
+      "timestamp": 1769806087,
+      "breakdown": {
+
+      }
+    },
+    "9": {
+      "score": 16294,
+      "handNum": 9,
+      "timestamp": 1769806087,
+      "breakdown": {
+
+      }
+    },
+    "10": {
+      "score": 278,
+      "handNum": 10,
+      "timestamp": 1769806090,
+      "breakdown": {
+
+      }
+    },
+    "11": {
+      "score": 380,
+      "handNum": 11,
+      "timestamp": 1769806091,
+      "breakdown": {
+
+      }
+    },
+    "12": {
+      "score": 16632,
+      "handNum": 12,
+      "timestamp": 1769806091,
+      "breakdown": {
+
+      }
+    },
+    "13": {
+      "score": 666,
+      "handNum": 13,
+      "timestamp": 1769806092,
+      "breakdown": {
+
+      }
+    }
+  },
+  "bossesFaced": {
+
+  },
+  "runId": "run_20260130_204758_008",
+  "durationSeconds": 14,
+  "startTime": 1769806078,
+  "bestHandScore": 16632,
+  "sculptorsUsed": {
+
+  },
+  "finalScore": 17956,
+  "decisions": {
+    "1": {
+      "timestamp": 1769806078,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "D",
+          "id": "10_D",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "C",
+          "id": "10_C",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "10_H",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "S",
+          "id": "5_S",
+          "rank": "5",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "H",
+          "id": "2_H",
+          "rank": "2",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "D",
+          "id": "K_D",
+          "rank": "K",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "2": {
+      "timestamp": 1769806078,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "spectral_ascend",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "pair_power_tiered",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "3": {
+      "timestamp": 1769806078,
+      "reasoning": "Nothing affordable or wanted",
+      "type": "shop_skip",
+      "options": {
+
+      }
+    },
+    "4": {
+      "timestamp": 1769806079,
+      "reasoning": "Discarded to crib",
+      "type": "crib_selection",
+      "selected": {
+        "1": 3,
+        "2": 4
+      },
+      "options": {
+        "1": {
+          "suit": "D",
+          "id": "10_D",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "C",
+          "id": "10_C",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "10_H",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "S",
+          "id": "5_S",
+          "rank": "5",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "H",
+          "id": "2_H",
+          "rank": "2",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "D",
+          "id": "K_D",
+          "rank": "K",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "5": {
+      "timestamp": 1769806079,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "D",
+          "id": "10_D",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "C",
+          "id": "10_C",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "10_H",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "S",
+          "id": "5_S",
+          "rank": "5",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "H",
+          "id": "2_H",
+          "rank": "2",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "D",
+          "id": "K_D",
+          "rank": "K",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "6": {
+      "timestamp": 1769806079,
+      "reasoning": "Bought: big_hand",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+
+      }
+    },
+    "7": {
+      "timestamp": 1769806079,
+      "reasoning": "Bought: even_stevens",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+
+      }
+    },
+    "8": {
+      "timestamp": 1769806079,
+      "reasoning": "Bought: warp_greed",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+
+      }
+    },
+    "9": {
+      "timestamp": 1769806079,
+      "reasoning": "Nothing affordable or wanted",
+      "type": "shop_skip",
+      "options": {
+
+      }
+    },
+    "10": {
+      "timestamp": 1769806080,
+      "reasoning": "Discarded to crib",
+      "type": "crib_selection",
+      "selected": {
+        "1": 4,
+        "2": 5
+      },
+      "options": {
+        "1": {
+          "suit": "D",
+          "id": "10_D",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "C",
+          "id": "10_C",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "10_H",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "S",
+          "id": "5_S",
+          "rank": "5",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "H",
+          "id": "2_H",
+          "rank": "2",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "D",
+          "id": "K_D",
+          "rank": "K",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "11": {
+      "timestamp": 1769806080,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "D",
+          "id": "10_D",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "C",
+          "id": "10_C",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "10_H",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "S",
+          "id": "5_S",
+          "rank": "5",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "H",
+          "id": "2_H",
+          "rank": "2",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "D",
+          "id": "K_D",
+          "rank": "K",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "12": {
+      "timestamp": 1769806080,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "S",
+          "id": "J_S",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "H",
+          "id": "3_H",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "J_H",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "D",
+          "id": "J_D",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "C",
+          "id": "8_C",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "H",
+          "id": "8_H",
+          "rank": "8",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "13": {
+      "timestamp": 1769806081,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "C",
+          "id": "J_C",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "S",
+          "id": "J_S",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "C",
+          "id": "10_C",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "S",
+          "id": "K_S",
+          "rank": "K",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "Q_D",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "D",
+          "id": "7_D",
+          "rank": "7",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "14": {
+      "timestamp": 1769806081,
+      "reasoning": "Bought: the_polymath",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "15": {
+      "timestamp": 1769806081,
+      "reasoning": "Bought: echo",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "16": {
+      "timestamp": 1769806081,
+      "reasoning": "Bought: echo",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "17": {
+      "timestamp": 1769806081,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "18": {
+      "timestamp": 1769806081,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "19": {
+      "timestamp": 1769806081,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "20": {
+      "timestamp": 1769806082,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "21": {
+      "timestamp": 1769806082,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "22": {
+      "timestamp": 1769806082,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "23": {
+      "timestamp": 1769806082,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "24": {
+      "timestamp": 1769806082,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "25": {
+      "timestamp": 1769806082,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "26": {
+      "timestamp": 1769806082,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "27": {
+      "timestamp": 1769806082,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "28": {
+      "timestamp": 1769806082,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "29": {
+      "timestamp": 1769806083,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "30": {
+      "timestamp": 1769806083,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "31": {
+      "timestamp": 1769806083,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "32": {
+      "timestamp": 1769806083,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "33": {
+      "timestamp": 1769806083,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "34": {
+      "timestamp": 1769806083,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "35": {
+      "timestamp": 1769806083,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "36": {
+      "timestamp": 1769806083,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "37": {
+      "timestamp": 1769806083,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "38": {
+      "timestamp": 1769806084,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "39": {
+      "timestamp": 1769806084,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "40": {
+      "timestamp": 1769806084,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "41": {
+      "timestamp": 1769806084,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "42": {
+      "timestamp": 1769806084,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "43": {
+      "timestamp": 1769806084,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "44": {
+      "timestamp": 1769806084,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "45": {
+      "timestamp": 1769806084,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "46": {
+      "timestamp": 1769806084,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "47": {
+      "timestamp": 1769806084,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "48": {
+      "timestamp": 1769806085,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "49": {
+      "timestamp": 1769806085,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "50": {
+      "timestamp": 1769806085,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "51": {
+      "timestamp": 1769806085,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "52": {
+      "timestamp": 1769806085,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "53": {
+      "timestamp": 1769806085,
+      "reasoning": "Bought: fifteen_fever",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "echo",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "fifteen_fever",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "54": {
+      "timestamp": 1769806085,
+      "reasoning": "Discarded to crib",
+      "type": "crib_selection",
+      "selected": {
+        "1": 1,
+        "2": 2
+      },
+      "options": {
+        "1": {
+          "suit": "C",
+          "id": "J_C",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "S",
+          "id": "J_S",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "C",
+          "id": "10_C",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "S",
+          "id": "K_S",
+          "rank": "K",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "Q_D",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "D",
+          "id": "7_D",
+          "rank": "7",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "55": {
+      "timestamp": 1769806086,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "C",
+          "id": "J_C",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "S",
+          "id": "J_S",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "C",
+          "id": "10_C",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "S",
+          "id": "K_S",
+          "rank": "K",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "Q_D",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "D",
+          "id": "7_D",
+          "rank": "7",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "56": {
+      "timestamp": 1769806086,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "C",
+          "id": "9_C",
+          "rank": "9",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "C",
+          "id": "3_C",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "3_H",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "H",
+          "id": "10_H",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "K_D",
+          "rank": "K",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "H",
+          "id": "9_H",
+          "rank": "9",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "57": {
+      "timestamp": 1769806087,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "D",
+          "id": "A_D",
+          "rank": "A",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "C",
+          "id": "Q_C",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "J_S",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "D",
+          "id": "Q_D",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "C",
+          "id": "6_C",
+          "rank": "6",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "D",
+          "id": "8_D",
+          "rank": "8",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "58": {
+      "timestamp": 1769806087,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "D",
+          "id": "8_D",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "H",
+          "id": "A_H",
+          "rank": "A",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "10_H",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "H",
+          "id": "8_H",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "C",
+          "id": "5_C",
+          "rank": "5",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "A_S",
+          "rank": "A",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "59": {
+      "timestamp": 1769806087,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "60": {
+      "timestamp": 1769806087,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "61": {
+      "timestamp": 1769806087,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "62": {
+      "timestamp": 1769806088,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "63": {
+      "timestamp": 1769806088,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "64": {
+      "timestamp": 1769806088,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "65": {
+      "timestamp": 1769806088,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "66": {
+      "timestamp": 1769806088,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "67": {
+      "timestamp": 1769806088,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "68": {
+      "timestamp": 1769806088,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "69": {
+      "timestamp": 1769806088,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "70": {
+      "timestamp": 1769806088,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "71": {
+      "timestamp": 1769806089,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "72": {
+      "timestamp": 1769806089,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "73": {
+      "timestamp": 1769806089,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "74": {
+      "timestamp": 1769806089,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "75": {
+      "timestamp": 1769806089,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "76": {
+      "timestamp": 1769806089,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "77": {
+      "timestamp": 1769806089,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "78": {
+      "timestamp": 1769806089,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "79": {
+      "timestamp": 1769806089,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "80": {
+      "timestamp": 1769806089,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "81": {
+      "timestamp": 1769806090,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "82": {
+      "timestamp": 1769806090,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "83": {
+      "timestamp": 1769806090,
+      "reasoning": "Bought: flush_king",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "flush_king",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "big_hand",
+          "price": 50,
+          "rarity": "common"
+        },
+        "3": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        }
+      }
+    },
+    "84": {
+      "timestamp": 1769806090,
+      "reasoning": "Discarded to crib",
+      "type": "crib_selection",
+      "selected": {
+        "1": 2,
+        "2": 3
+      },
+      "options": {
+        "1": {
+          "suit": "D",
+          "id": "8_D",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "H",
+          "id": "A_H",
+          "rank": "A",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "10_H",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "H",
+          "id": "8_H",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "C",
+          "id": "5_C",
+          "rank": "5",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "A_S",
+          "rank": "A",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "85": {
+      "timestamp": 1769806090,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "D",
+          "id": "8_D",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "H",
+          "id": "A_H",
+          "rank": "A",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "10_H",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "H",
+          "id": "8_H",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "C",
+          "id": "5_C",
+          "rank": "5",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "A_S",
+          "rank": "A",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "86": {
+      "timestamp": 1769806091,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "C",
+          "id": "9_C",
+          "rank": "9",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "10_D",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "C",
+          "id": "2_C",
+          "rank": "2",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "H",
+          "id": "3_H",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "H",
+          "id": "2_H",
+          "rank": "2",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "2_S",
+          "rank": "2",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "87": {
+      "timestamp": 1769806091,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "H",
+          "id": "2_H",
+          "rank": "2",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "S",
+          "id": "10_S",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "J_S",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "H",
+          "id": "7_H",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "C",
+          "id": "Q_C",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "C",
+          "id": "K_C",
+          "rank": "K",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "88": {
+      "timestamp": 1769806092,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "D",
+          "id": "4_D",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "S",
+          "id": "9_S",
+          "rank": "9",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "10_S",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "H",
+          "id": "10_H",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "C",
+          "id": "A_C",
+          "rank": "A",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "C",
+          "id": "K_C",
+          "rank": "K",
+          "imprints": {
+
+          }
+        }
+      }
+    }
+  },
+  "endTime": 1769806092,
+  "actReached": 3,
+  "worstHandScore": 278,
+  "handsPlayed": 13,
+  "errors": {
+
+  }
+}

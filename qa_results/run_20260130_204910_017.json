@@ -1,0 +1,838 @@
+{
+  "logicErrors": {
+
+  },
+  "jokersStacked": {
+
+  },
+  "warpsActive": {
+
+  },
+  "bossesDefeated": {
+
+  },
+  "rerollsUsed": 0,
+  "blindReached": 2,
+  "bossesEncountered": {
+
+  },
+  "planetsAcquired": {
+
+  },
+  "goldEarned": 0,
+  "jokersAcquired": {
+    "1": "big_hand",
+    "2": "high_roller"
+  },
+  "imprintsApplied": {
+
+  },
+  "minFrameTimeMs": 16.000000759959,
+  "cribScores": {
+
+  },
+  "maxFrameTimeMs": 24.000000208616,
+  "averageHandScore": 328.0,
+  "discardsUsed": 0,
+  "jokersMaxTier": {
+
+  },
+  "goldSpent": 150,
+  "warnings": {
+
+  },
+  "strategy": "Optimal",
+  "outcome": "loss",
+  "achievementsUnlocked": {
+
+  },
+  "avgFrameTimeMs": 17.518939591493,
+  "handScores": {
+    "1": {
+      "score": 24,
+      "handNum": 1,
+      "timestamp": 1769806150,
+      "breakdown": {
+
+      }
+    },
+    "2": {
+      "score": 144,
+      "handNum": 2,
+      "timestamp": 1769806151,
+      "breakdown": {
+
+      }
+    },
+    "3": {
+      "score": 328,
+      "handNum": 3,
+      "timestamp": 1769806152,
+      "breakdown": {
+
+      }
+    },
+    "4": {
+      "score": 304,
+      "handNum": 4,
+      "timestamp": 1769806152,
+      "breakdown": {
+
+      }
+    },
+    "5": {
+      "score": 452,
+      "handNum": 5,
+      "timestamp": 1769806153,
+      "breakdown": {
+
+      }
+    },
+    "6": {
+      "score": 360,
+      "handNum": 6,
+      "timestamp": 1769806154,
+      "breakdown": {
+
+      }
+    },
+    "7": {
+      "score": 340,
+      "handNum": 7,
+      "timestamp": 1769806154,
+      "breakdown": {
+
+      }
+    },
+    "8": {
+      "score": 672,
+      "handNum": 8,
+      "timestamp": 1769806155,
+      "breakdown": {
+
+      }
+    }
+  },
+  "bossesFaced": {
+
+  },
+  "runId": "run_20260130_204910_017",
+  "durationSeconds": 5,
+  "startTime": 1769806150,
+  "bestHandScore": 672,
+  "sculptorsUsed": {
+
+  },
+  "finalScore": 1824,
+  "decisions": {
+    "1": {
+      "timestamp": 1769806150,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "H",
+          "id": "J_H",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "Q_D",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "6_H",
+          "rank": "6",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "S",
+          "id": "6_S",
+          "rank": "6",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "C",
+          "id": "6_C",
+          "rank": "6",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "8_S",
+          "rank": "8",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "2": {
+      "timestamp": 1769806151,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "C",
+          "id": "8_C",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "S",
+          "id": "7_S",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "8_S",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "H",
+          "id": "10_H",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "J_D",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "2_S",
+          "rank": "2",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "3": {
+      "timestamp": 1769806151,
+      "reasoning": "Bought: big_hand",
+      "type": "shop_purchase",
+      "selected": 2,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "ace_in_hole",
+          "price": 100,
+          "rarity": "uncommon"
+        },
+        "2": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "4": {
+      "timestamp": 1769806151,
+      "reasoning": "Nothing affordable or wanted",
+      "type": "shop_skip",
+      "options": {
+
+      }
+    },
+    "5": {
+      "timestamp": 1769806151,
+      "reasoning": "Discarded to crib",
+      "type": "crib_selection",
+      "selected": {
+        "1": 3,
+        "2": 5
+      },
+      "options": {
+        "1": {
+          "suit": "C",
+          "id": "8_C",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "S",
+          "id": "7_S",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "8_S",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "H",
+          "id": "10_H",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "J_D",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "2_S",
+          "rank": "2",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "6": {
+      "timestamp": 1769806152,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "C",
+          "id": "8_C",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "S",
+          "id": "7_S",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "8_S",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "H",
+          "id": "10_H",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "J_D",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "2_S",
+          "rank": "2",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "7": {
+      "timestamp": 1769806152,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "C",
+          "id": "3_C",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "S",
+          "id": "3_S",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "9_S",
+          "rank": "9",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "D",
+          "id": "3_D",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "S",
+          "id": "4_S",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "H",
+          "id": "7_H",
+          "rank": "7",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "8": {
+      "timestamp": 1769806152,
+      "reasoning": "Bought: high_roller",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "mimic",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "low_roller",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "9": {
+      "timestamp": 1769806152,
+      "reasoning": "Bought: mimic",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "mimic",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "low_roller",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "10": {
+      "timestamp": 1769806152,
+      "reasoning": "Bought: mimic",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "mimic",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "joker",
+          "id": "low_roller",
+          "price": 50,
+          "rarity": "common"
+        }
+      }
+    },
+    "11": {
+      "timestamp": 1769806153,
+      "reasoning": "Nothing affordable or wanted",
+      "type": "shop_skip",
+      "options": {
+
+      }
+    },
+    "12": {
+      "timestamp": 1769806153,
+      "reasoning": "Discarded to crib",
+      "type": "crib_selection",
+      "selected": {
+        "1": 1,
+        "2": 2
+      },
+      "options": {
+        "1": {
+          "suit": "C",
+          "id": "3_C",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "S",
+          "id": "3_S",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "9_S",
+          "rank": "9",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "D",
+          "id": "3_D",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "S",
+          "id": "4_S",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "H",
+          "id": "7_H",
+          "rank": "7",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "13": {
+      "timestamp": 1769806153,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "C",
+          "id": "3_C",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "S",
+          "id": "3_S",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "9_S",
+          "rank": "9",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "D",
+          "id": "3_D",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "S",
+          "id": "4_S",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "H",
+          "id": "7_H",
+          "rank": "7",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "14": {
+      "timestamp": 1769806154,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "D",
+          "id": "J_D",
+          "rank": "J",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "K_D",
+          "rank": "K",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "3_H",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "D",
+          "id": "10_D",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "H",
+          "id": "A_H",
+          "rank": "A",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "8_S",
+          "rank": "8",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "15": {
+      "timestamp": 1769806154,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "D",
+          "id": "10_D",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "S",
+          "id": "2_S",
+          "rank": "2",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "Q_H",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "H",
+          "id": "8_H",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "H",
+          "id": "4_H",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "H",
+          "id": "J_H",
+          "rank": "J",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "16": {
+      "timestamp": 1769806155,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "S",
+          "id": "7_S",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "K_D",
+          "rank": "K",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "5_S",
+          "rank": "5",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "H",
+          "id": "7_H",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "C",
+          "id": "2_C",
+          "rank": "2",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "H",
+          "id": "Q_H",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        }
+      }
+    }
+  },
+  "endTime": 1769806155,
+  "actReached": 2,
+  "worstHandScore": 24,
+  "handsPlayed": 8,
+  "errors": {
+
+  }
+}

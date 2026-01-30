@@ -1,0 +1,347 @@
+{
+  "startTime": 1769805970,
+  "durationSeconds": 2,
+  "warnings": {
+
+  },
+  "runId": "run_20260130_204610_008",
+  "outcome": "loss",
+  "blindReached": 1,
+  "avgFrameTimeMs": 13.325000298209,
+  "handsPlayed": 4,
+  "endTime": 1769805972,
+  "jokersStacked": {
+
+  },
+  "goldEarned": 0,
+  "warpsActive": {
+
+  },
+  "bossesFaced": {
+
+  },
+  "worstHandScore": 10,
+  "bossesDefeated": {
+
+  },
+  "handScores": {
+    "1": {
+      "handNum": 1,
+      "breakdown": {
+
+      },
+      "timestamp": 1769805970,
+      "score": 24
+    },
+    "2": {
+      "handNum": 2,
+      "breakdown": {
+
+      },
+      "timestamp": 1769805971,
+      "score": 42
+    },
+    "3": {
+      "handNum": 3,
+      "breakdown": {
+
+      },
+      "timestamp": 1769805971,
+      "score": 10
+    },
+    "4": {
+      "handNum": 4,
+      "breakdown": {
+
+      },
+      "timestamp": 1769805972,
+      "score": 12
+    }
+  },
+  "bestHandScore": 42,
+  "imprintsApplied": {
+
+  },
+  "errors": {
+
+  },
+  "actReached": 1,
+  "planetsAcquired": {
+
+  },
+  "discardsUsed": 0,
+  "achievementsUnlocked": {
+
+  },
+  "sculptorsUsed": {
+
+  },
+  "goldSpent": 0,
+  "rerollsUsed": 0,
+  "decisions": {
+    "1": {
+      "reasoning": "Strategy: Optimal",
+      "options": {
+        "1": {
+          "imprints": {
+
+          },
+          "id": "2_C",
+          "rank": "2",
+          "suit": "C"
+        },
+        "2": {
+          "imprints": {
+
+          },
+          "id": "10_H",
+          "rank": "10",
+          "suit": "H"
+        },
+        "3": {
+          "imprints": {
+
+          },
+          "id": "7_D",
+          "rank": "7",
+          "suit": "D"
+        },
+        "4": {
+          "imprints": {
+
+          },
+          "id": "7_H",
+          "rank": "7",
+          "suit": "H"
+        },
+        "5": {
+          "imprints": {
+
+          },
+          "id": "Q_H",
+          "rank": "Q",
+          "suit": "H"
+        },
+        "6": {
+          "imprints": {
+
+          },
+          "id": "6_S",
+          "rank": "6",
+          "suit": "S"
+        }
+      },
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "type": "card_selection",
+      "timestamp": 1769805970
+    },
+    "2": {
+      "reasoning": "Strategy: Optimal",
+      "options": {
+        "1": {
+          "imprints": {
+
+          },
+          "id": "2_S",
+          "rank": "2",
+          "suit": "S"
+        },
+        "2": {
+          "imprints": {
+
+          },
+          "id": "8_S",
+          "rank": "8",
+          "suit": "S"
+        },
+        "3": {
+          "imprints": {
+
+          },
+          "id": "10_C",
+          "rank": "10",
+          "suit": "C"
+        },
+        "4": {
+          "imprints": {
+
+          },
+          "id": "10_H",
+          "rank": "10",
+          "suit": "H"
+        },
+        "5": {
+          "imprints": {
+
+          },
+          "id": "4_D",
+          "rank": "4",
+          "suit": "D"
+        },
+        "6": {
+          "imprints": {
+
+          },
+          "id": "Q_H",
+          "rank": "Q",
+          "suit": "H"
+        }
+      },
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "type": "card_selection",
+      "timestamp": 1769805971
+    },
+    "3": {
+      "reasoning": "Strategy: Optimal",
+      "options": {
+        "1": {
+          "imprints": {
+
+          },
+          "id": "4_C",
+          "rank": "4",
+          "suit": "C"
+        },
+        "2": {
+          "imprints": {
+
+          },
+          "id": "A_H",
+          "rank": "A",
+          "suit": "H"
+        },
+        "3": {
+          "imprints": {
+
+          },
+          "id": "3_S",
+          "rank": "3",
+          "suit": "S"
+        },
+        "4": {
+          "imprints": {
+
+          },
+          "id": "6_C",
+          "rank": "6",
+          "suit": "C"
+        },
+        "5": {
+          "imprints": {
+
+          },
+          "id": "9_H",
+          "rank": "9",
+          "suit": "H"
+        },
+        "6": {
+          "imprints": {
+
+          },
+          "id": "9_C",
+          "rank": "9",
+          "suit": "C"
+        }
+      },
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "type": "card_selection",
+      "timestamp": 1769805971
+    },
+    "4": {
+      "reasoning": "Strategy: Optimal",
+      "options": {
+        "1": {
+          "imprints": {
+
+          },
+          "id": "3_D",
+          "rank": "3",
+          "suit": "D"
+        },
+        "2": {
+          "imprints": {
+
+          },
+          "id": "8_H",
+          "rank": "8",
+          "suit": "H"
+        },
+        "3": {
+          "imprints": {
+
+          },
+          "id": "5_D",
+          "rank": "5",
+          "suit": "D"
+        },
+        "4": {
+          "imprints": {
+
+          },
+          "id": "9_D",
+          "rank": "9",
+          "suit": "D"
+        },
+        "5": {
+          "imprints": {
+
+          },
+          "id": "8_D",
+          "rank": "8",
+          "suit": "D"
+        },
+        "6": {
+          "imprints": {
+
+          },
+          "id": "7_C",
+          "rank": "7",
+          "suit": "C"
+        }
+      },
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "type": "card_selection",
+      "timestamp": 1769805972
+    }
+  },
+  "cribScores": {
+
+  },
+  "finalScore": 88,
+  "maxFrameTimeMs": 14.999999664724,
+  "minFrameTimeMs": 10.999999940395,
+  "jokersAcquired": {
+
+  },
+  "strategy": "Optimal",
+  "jokersMaxTier": {
+
+  },
+  "logicErrors": {
+
+  },
+  "bossesEncountered": {
+
+  },
+  "averageHandScore": 22.0
+}

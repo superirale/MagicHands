@@ -19,6 +19,12 @@ local AutoPlay = {
 }
 
 function AutoPlay:init(totalRuns, strategyName)
+    -- Prevent re-initialization during scene reloads
+    if self.initialized then
+        print("AutoPlay: Already initialized, skipping")
+        return
+    end
+    
     print("=================================================")
     print("===    Magic Hands QA AutoPlay Bot v1.0      ===")
     print("=================================================")
@@ -27,6 +33,7 @@ function AutoPlay:init(totalRuns, strategyName)
     print("=================================================")
     
     self.enabled = true
+    self.initialized = true
     self.totalRuns = totalRuns or 100
     self.currentRun = 1
     
@@ -80,6 +87,8 @@ function AutoPlay:startRun()
     -- Reset errors
     self.errors:reset()
     
+    -- Reset run state flags
+    self.runEnded = false
     self.runStartTime = os.clock()
     self.stateTimer = 0
     
@@ -89,6 +98,26 @@ end
 
 function AutoPlay:update(gameScene, dt)
     if not self.enabled then return end
+    
+    -- Handle scene reset for new runs
+    if self.needsSceneReset then
+        print("AutoPlay: Resetting GameScene for new run")
+        
+        -- Force state to DEAL and clear game data
+        gameScene.state = "DEAL"
+        gameScene.hand = {}
+        gameScene.cutCard = nil
+        gameScene.cardViews = {}
+        gameScene.cribViews = {}
+        
+        -- Call startNewHand to properly initialize the game
+        if gameScene.startNewHand then
+            pcall(function() gameScene:startNewHand() end)
+        end
+        
+        self.needsSceneReset = false
+        print("AutoPlay: GameScene reset complete, starting play")
+    end
     
     -- Update cooldowns
     if self.playPhaseCooldown and self.playPhaseCooldown > 0 then
@@ -309,11 +338,17 @@ function AutoPlay:handleBlindPreview(gameScene)
     gameScene.state = "DEAL"
     
     local CampaignState = require("criblage/CampaignState")
-    CampaignState:startNewBlind()
+    CampaignState:advanceBlind()
 end
 
 function AutoPlay:handleGameOver(gameScene)
     local CampaignState = require("criblage/CampaignState")
+    
+    -- Check if this is a spurious game over call
+    if self.runEnded then
+        print("AutoPlay: Ignoring duplicate game over call")
+        return
+    end
     
     -- Determine outcome
     local outcome = "loss"
@@ -328,6 +363,7 @@ function AutoPlay:handleGameOver(gameScene)
     print(string.format("║  Run %d Complete: %s", self.currentRun, string.upper(outcome)))
     print("╚════════════════════════════════════════════╝")
     
+    self.runEnded = true
     self:finishRun(outcome)
 end
 
@@ -377,12 +413,23 @@ function AutoPlay:finishRun(outcome)
     self.currentRun = self.currentRun + 1
     
     if self.currentRun <= self.totalRuns then
-        -- Start next run
-        self:startRun()
-        
-        -- Reset game state (this should reload the scene)
-        -- Note: GameScene integration will handle this
         print("\nRestarting for next run...")
+        
+        -- Reset game state completely
+        local CampaignState = require("criblage/CampaignState")
+        
+        -- Reset CampaignState
+        pcall(function() 
+            CampaignState:init()
+            print("Game state reset: Campaign reinitialized")
+        end)
+        
+        -- Force GameScene to reset to DEAL state
+        -- This will be picked up by the next update loop
+        self.needsSceneReset = true
+        
+        -- Start next run (stats will be reset in startRun)
+        self:startRun()
     else
         -- All runs complete
         self:generateSummary()
@@ -393,8 +440,30 @@ end
 function AutoPlay:saveRunData(runData)
     local filename = self.outputDir .. runData.runId .. ".json"
     
+    -- Create a copy of runData without the frameTimesMs array (too large)
+    local cleanData = {}
+    for k, v in pairs(runData) do
+        if k ~= "frameTimesMs" then
+            cleanData[k] = v
+        end
+    end
+    
+    -- Rename frame time fields for clarity and consistency
+    if cleanData.avgFrameTime then
+        cleanData.avgFrameTimeMs = cleanData.avgFrameTime
+        cleanData.avgFrameTime = nil
+    end
+    if cleanData.maxFrameTime then
+        cleanData.maxFrameTimeMs = cleanData.maxFrameTime
+        cleanData.maxFrameTime = nil
+    end
+    if cleanData.minFrameTime then
+        cleanData.minFrameTimeMs = cleanData.minFrameTime
+        cleanData.minFrameTime = nil
+    end
+    
     -- Convert to JSON string
-    local jsonString = self:toJSON(runData)
+    local jsonString = self:toJSON(cleanData)
     
     -- Save to file if files module is available
     if files and files.saveFile then

@@ -1,0 +1,1966 @@
+{
+  "logicErrors": {
+
+  },
+  "jokersStacked": {
+
+  },
+  "warpsActive": {
+
+  },
+  "bossesDefeated": {
+
+  },
+  "rerollsUsed": 0,
+  "blindReached": 3,
+  "bossesEncountered": {
+
+  },
+  "planetsAcquired": {
+    "1": "planet_mars"
+  },
+  "goldEarned": 0,
+  "jokersAcquired": {
+    "1": "ace_power_tiered",
+    "2": "fifteen_fever_tiered",
+    "3": "even_stevens",
+    "4": "run_master_tiered"
+  },
+  "imprintsApplied": {
+
+  },
+  "minFrameTimeMs": 9.9999997764826,
+  "cribScores": {
+
+  },
+  "maxFrameTimeMs": 16.000000759959,
+  "averageHandScore": 17364.0,
+  "discardsUsed": 0,
+  "jokersMaxTier": {
+
+  },
+  "goldSpent": 325,
+  "warnings": {
+
+  },
+  "strategy": "Optimal",
+  "outcome": "loss",
+  "achievementsUnlocked": {
+
+  },
+  "avgFrameTimeMs": 13.33695680723,
+  "handScores": {
+    "1": {
+      "score": 84,
+      "handNum": 1,
+      "timestamp": 1769806102,
+      "breakdown": {
+
+      }
+    },
+    "2": {
+      "score": 4320,
+      "handNum": 2,
+      "timestamp": 1769806103,
+      "breakdown": {
+
+      }
+    },
+    "3": {
+      "score": 20448,
+      "handNum": 3,
+      "timestamp": 1769806104,
+      "breakdown": {
+
+      }
+    },
+    "4": {
+      "score": 30672,
+      "handNum": 4,
+      "timestamp": 1769806105,
+      "breakdown": {
+
+      }
+    },
+    "5": {
+      "score": 46860,
+      "handNum": 5,
+      "timestamp": 1769806108,
+      "breakdown": {
+
+      }
+    },
+    "6": {
+      "score": 38340,
+      "handNum": 6,
+      "timestamp": 1769806110,
+      "breakdown": {
+
+      }
+    },
+    "7": {
+      "score": 8136,
+      "handNum": 7,
+      "timestamp": 1769806111,
+      "breakdown": {
+
+      }
+    },
+    "8": {
+      "score": 104,
+      "handNum": 8,
+      "timestamp": 1769806111,
+      "breakdown": {
+
+      }
+    },
+    "9": {
+      "score": 7312,
+      "handNum": 9,
+      "timestamp": 1769806112,
+      "breakdown": {
+
+      }
+    }
+  },
+  "bossesFaced": {
+
+  },
+  "runId": "run_20260130_204822_011",
+  "durationSeconds": 10,
+  "startTime": 1769806102,
+  "bestHandScore": 46860,
+  "sculptorsUsed": {
+
+  },
+  "finalScore": 53892,
+  "decisions": {
+    "1": {
+      "timestamp": 1769806102,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "S",
+          "id": "3_S",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "C",
+          "id": "6_C",
+          "rank": "6",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "C",
+          "id": "10_C",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "S",
+          "id": "Q_S",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "A_D",
+          "rank": "A",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "C",
+          "id": "J_C",
+          "rank": "J",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "2": {
+      "timestamp": 1769806103,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "H",
+          "id": "4_H",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "7_D",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "4_S",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "C",
+          "id": "4_C",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "4_D",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "Q_S",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "3": {
+      "timestamp": 1769806103,
+      "reasoning": "Bought: ace_power_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "opener",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "cascade",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "4": {
+      "timestamp": 1769806103,
+      "reasoning": "Bought: opener",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "opener",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "cascade",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "5": {
+      "timestamp": 1769806103,
+      "reasoning": "Bought: opener",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "enhancement",
+          "id": "opener",
+          "rarity": "common",
+          "price": 75
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "cascade",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "6": {
+      "timestamp": 1769806103,
+      "reasoning": "Nothing affordable or wanted",
+      "type": "shop_skip",
+      "options": {
+
+      }
+    },
+    "7": {
+      "timestamp": 1769806104,
+      "reasoning": "Discarded to crib",
+      "type": "crib_selection",
+      "selected": {
+        "1": 2,
+        "2": 4
+      },
+      "options": {
+        "1": {
+          "suit": "H",
+          "id": "4_H",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "7_D",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "4_S",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "C",
+          "id": "4_C",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "4_D",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "Q_S",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "8": {
+      "timestamp": 1769806104,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "H",
+          "id": "4_H",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "7_D",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "4_S",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "C",
+          "id": "4_C",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "4_D",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "Q_S",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "9": {
+      "timestamp": 1769806104,
+      "reasoning": "Bought: fifteen_fever_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+
+      }
+    },
+    "10": {
+      "timestamp": 1769806104,
+      "reasoning": "Bought: even_stevens",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+
+      }
+    },
+    "11": {
+      "timestamp": 1769806104,
+      "reasoning": "Bought: run_master_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+
+      }
+    },
+    "12": {
+      "timestamp": 1769806104,
+      "reasoning": "Nothing affordable or wanted",
+      "type": "shop_skip",
+      "options": {
+
+      }
+    },
+    "13": {
+      "timestamp": 1769806104,
+      "reasoning": "Discarded to crib",
+      "type": "crib_selection",
+      "selected": {
+        "1": 5,
+        "2": 6
+      },
+      "options": {
+        "1": {
+          "suit": "H",
+          "id": "4_H",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "7_D",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "4_S",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "C",
+          "id": "4_C",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "4_D",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "Q_S",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "14": {
+      "timestamp": 1769806105,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "H",
+          "id": "4_H",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "7_D",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "4_S",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "C",
+          "id": "4_C",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "4_D",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "Q_S",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "15": {
+      "timestamp": 1769806105,
+      "reasoning": "Bought: planet_mars",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "16": {
+      "timestamp": 1769806105,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "17": {
+      "timestamp": 1769806105,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "18": {
+      "timestamp": 1769806105,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "19": {
+      "timestamp": 1769806105,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "20": {
+      "timestamp": 1769806105,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "21": {
+      "timestamp": 1769806105,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "22": {
+      "timestamp": 1769806105,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "23": {
+      "timestamp": 1769806106,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "24": {
+      "timestamp": 1769806106,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "25": {
+      "timestamp": 1769806106,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "26": {
+      "timestamp": 1769806106,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "27": {
+      "timestamp": 1769806106,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "28": {
+      "timestamp": 1769806106,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "29": {
+      "timestamp": 1769806106,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "30": {
+      "timestamp": 1769806106,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "31": {
+      "timestamp": 1769806106,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "32": {
+      "timestamp": 1769806107,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "33": {
+      "timestamp": 1769806107,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "34": {
+      "timestamp": 1769806107,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "35": {
+      "timestamp": 1769806107,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "36": {
+      "timestamp": 1769806107,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "37": {
+      "timestamp": 1769806107,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "38": {
+      "timestamp": 1769806107,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "39": {
+      "timestamp": 1769806107,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "40": {
+      "timestamp": 1769806107,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "41": {
+      "timestamp": 1769806108,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "42": {
+      "timestamp": 1769806108,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "43": {
+      "timestamp": 1769806108,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "44": {
+      "timestamp": 1769806108,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "45": {
+      "timestamp": 1769806108,
+      "reasoning": "Bought: face_card_fan",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "face_card_fan",
+          "price": 50,
+          "rarity": "common"
+        },
+        "2": {
+          "type": "enhancement",
+          "id": "spectral_split",
+          "rarity": "common",
+          "price": 75
+        }
+      }
+    },
+    "46": {
+      "timestamp": 1769806108,
+      "reasoning": "Discarded to crib",
+      "type": "crib_selection",
+      "selected": {
+        "1": 2,
+        "2": 6
+      },
+      "options": {
+        "1": {
+          "suit": "H",
+          "id": "4_H",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "7_D",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "4_S",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "C",
+          "id": "4_C",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "4_D",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "Q_S",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "47": {
+      "timestamp": 1769806108,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "H",
+          "id": "4_H",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "7_D",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "4_S",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "C",
+          "id": "4_C",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "4_D",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "Q_S",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "48": {
+      "timestamp": 1769806108,
+      "reasoning": "Bought: blackjack_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "blackjack_tiered",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "the_streaker",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "3": {
+          "type": "joker",
+          "id": "flush_king_tiered",
+          "price": 200,
+          "rarity": "rare"
+        }
+      }
+    },
+    "49": {
+      "timestamp": 1769806109,
+      "reasoning": "Bought: blackjack_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "blackjack_tiered",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "the_streaker",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "3": {
+          "type": "joker",
+          "id": "flush_king_tiered",
+          "price": 200,
+          "rarity": "rare"
+        }
+      }
+    },
+    "50": {
+      "timestamp": 1769806109,
+      "reasoning": "Bought: blackjack_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "blackjack_tiered",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "the_streaker",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "3": {
+          "type": "joker",
+          "id": "flush_king_tiered",
+          "price": 200,
+          "rarity": "rare"
+        }
+      }
+    },
+    "51": {
+      "timestamp": 1769806109,
+      "reasoning": "Bought: blackjack_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "blackjack_tiered",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "the_streaker",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "3": {
+          "type": "joker",
+          "id": "flush_king_tiered",
+          "price": 200,
+          "rarity": "rare"
+        }
+      }
+    },
+    "52": {
+      "timestamp": 1769806109,
+      "reasoning": "Bought: blackjack_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "blackjack_tiered",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "the_streaker",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "3": {
+          "type": "joker",
+          "id": "flush_king_tiered",
+          "price": 200,
+          "rarity": "rare"
+        }
+      }
+    },
+    "53": {
+      "timestamp": 1769806109,
+      "reasoning": "Bought: blackjack_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "blackjack_tiered",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "the_streaker",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "3": {
+          "type": "joker",
+          "id": "flush_king_tiered",
+          "price": 200,
+          "rarity": "rare"
+        }
+      }
+    },
+    "54": {
+      "timestamp": 1769806109,
+      "reasoning": "Bought: blackjack_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "blackjack_tiered",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "the_streaker",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "3": {
+          "type": "joker",
+          "id": "flush_king_tiered",
+          "price": 200,
+          "rarity": "rare"
+        }
+      }
+    },
+    "55": {
+      "timestamp": 1769806109,
+      "reasoning": "Bought: blackjack_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "blackjack_tiered",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "the_streaker",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "3": {
+          "type": "joker",
+          "id": "flush_king_tiered",
+          "price": 200,
+          "rarity": "rare"
+        }
+      }
+    },
+    "56": {
+      "timestamp": 1769806109,
+      "reasoning": "Bought: blackjack_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "blackjack_tiered",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "the_streaker",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "3": {
+          "type": "joker",
+          "id": "flush_king_tiered",
+          "price": 200,
+          "rarity": "rare"
+        }
+      }
+    },
+    "57": {
+      "timestamp": 1769806109,
+      "reasoning": "Bought: blackjack_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "blackjack_tiered",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "the_streaker",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "3": {
+          "type": "joker",
+          "id": "flush_king_tiered",
+          "price": 200,
+          "rarity": "rare"
+        }
+      }
+    },
+    "58": {
+      "timestamp": 1769806110,
+      "reasoning": "Bought: blackjack_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "blackjack_tiered",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "the_streaker",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "3": {
+          "type": "joker",
+          "id": "flush_king_tiered",
+          "price": 200,
+          "rarity": "rare"
+        }
+      }
+    },
+    "59": {
+      "timestamp": 1769806110,
+      "reasoning": "Bought: blackjack_tiered",
+      "type": "shop_purchase",
+      "selected": 1,
+      "options": {
+        "1": {
+          "type": "joker",
+          "id": "blackjack_tiered",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "2": {
+          "type": "joker",
+          "id": "the_streaker",
+          "price": 200,
+          "rarity": "rare"
+        },
+        "3": {
+          "type": "joker",
+          "id": "flush_king_tiered",
+          "price": 200,
+          "rarity": "rare"
+        }
+      }
+    },
+    "60": {
+      "timestamp": 1769806110,
+      "reasoning": "Discarded to crib",
+      "type": "crib_selection",
+      "selected": {
+        "1": 5,
+        "2": 6
+      },
+      "options": {
+        "1": {
+          "suit": "H",
+          "id": "4_H",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "7_D",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "4_S",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "C",
+          "id": "4_C",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "4_D",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "Q_S",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "61": {
+      "timestamp": 1769806110,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "H",
+          "id": "4_H",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "7_D",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "4_S",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "C",
+          "id": "4_C",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "4_D",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "Q_S",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "62": {
+      "timestamp": 1769806111,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "H",
+          "id": "3_H",
+          "rank": "3",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "7_D",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "H",
+          "id": "Q_H",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "C",
+          "id": "5_C",
+          "rank": "5",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "D",
+          "id": "K_D",
+          "rank": "K",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "C",
+          "id": "2_C",
+          "rank": "2",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "63": {
+      "timestamp": 1769806111,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "D",
+          "id": "6_D",
+          "rank": "6",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "D",
+          "id": "10_D",
+          "rank": "10",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "D",
+          "id": "4_D",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "D",
+          "id": "8_D",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "H",
+          "id": "4_H",
+          "rank": "4",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "D",
+          "id": "K_D",
+          "rank": "K",
+          "imprints": {
+
+          }
+        }
+      }
+    },
+    "64": {
+      "timestamp": 1769806112,
+      "reasoning": "Strategy: Optimal",
+      "type": "card_selection",
+      "selected": {
+        "1": 1,
+        "2": 2,
+        "3": 3,
+        "4": 4
+      },
+      "options": {
+        "1": {
+          "suit": "C",
+          "id": "Q_C",
+          "rank": "Q",
+          "imprints": {
+
+          }
+        },
+        "2": {
+          "suit": "H",
+          "id": "8_H",
+          "rank": "8",
+          "imprints": {
+
+          }
+        },
+        "3": {
+          "suit": "S",
+          "id": "6_S",
+          "rank": "6",
+          "imprints": {
+
+          }
+        },
+        "4": {
+          "suit": "H",
+          "id": "7_H",
+          "rank": "7",
+          "imprints": {
+
+          }
+        },
+        "5": {
+          "suit": "C",
+          "id": "2_C",
+          "rank": "2",
+          "imprints": {
+
+          }
+        },
+        "6": {
+          "suit": "S",
+          "id": "8_S",
+          "rank": "8",
+          "imprints": {
+
+          }
+        }
+      }
+    }
+  },
+  "endTime": 1769806112,
+  "actReached": 3,
+  "worstHandScore": 84,
+  "handsPlayed": 9,
+  "errors": {
+
+  }
+}
