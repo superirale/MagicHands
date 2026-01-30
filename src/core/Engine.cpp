@@ -84,6 +84,28 @@ bool Engine::Init() {
   return true;
 }
 
+bool Engine::InitHeadless() {
+  LOG_DEBUG("Engine initializing in HEADLESS mode (no window/GPU)...");
+  m_Headless = true;
+
+  // Initialize only non-graphical systems
+  
+  // Initialize physics (works without GPU)
+  m_Physics.Init();
+
+  // Initialize audio (works without GPU)
+  AudioSystem::Init();
+
+  // Initialize input system (works without window events)
+  if (!m_Input.Init()) {
+    LOG_ERROR("Failed to initialize InputSystem");
+    return false;
+  }
+
+  LOG_INFO("Engine headless subsystems initialized successfully");
+  return true;
+}
+
 void Engine::Update(float dt) {
   PROFILE_SCOPE();
 

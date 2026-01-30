@@ -26,6 +26,13 @@ local ScorePreview = require("UI/ScorePreview")
 local AchievementNotification = require("UI/AchievementNotification")
 local RunStatsPanel = require("UI/RunStatsPanel")
 
+-- QA Automation Bot (optional)
+local AutoPlay = nil
+if AUTOPLAY_MODE then
+    AutoPlay = require("Systems/AutoPlay")
+    print("AutoPlay Mode: ENABLED")
+end
+
 local UILayout = require("UI.UILayout")
 GameScene = class()
 
@@ -122,6 +129,11 @@ function GameScene:init()
     self.addToCribButton.bgColor = { r = 0.2, g = 0.6, b = 0.3, a = 1 }
     self.addToCribButton.hoverColor = { r = 0.3, g = 0.8, b = 0.4, a = 1 }
     self.addToCribButton.visible = false -- Only show during DEAL state
+
+    -- Initialize AutoPlay if enabled
+    if AutoPlay and AUTOPLAY_MODE then
+        AutoPlay:init(AUTOPLAY_RUNS or 100, AUTOPLAY_STRATEGY or "Random")
+    end
 
     print("Game Scene initialized!")
 end
@@ -281,6 +293,11 @@ function GameScene:update(dt)
     if not self.hud then
         print("Late initialization of GameScene...")
         self:init()
+    end
+    
+    -- AutoPlay bot update
+    if AutoPlay and AutoPlay.enabled then
+        AutoPlay:update(self, dt)
     end
 
     -- Check for window resize to update viewport scaling and UI Layout
@@ -1074,6 +1091,11 @@ function GameScene:discardSelected()
 end
 
 function GameScene:draw()
+    -- Safety check for initialization
+    if not self.camera or not self.hud then
+        return
+    end
+    
     -- Draw UI (Reset Camera to 0,0 so UI scales with Zoom but stays fixed relative to screen)
     local gameCamX, gameCamY = self.camera:getPosition()
     graphics.setCamera(0, 0)

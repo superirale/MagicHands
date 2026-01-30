@@ -14,9 +14,15 @@ public:
 
   // Initialize all subsystems
   bool Init();
+  
+  // Initialize in headless mode (no window/GPU)
+  bool InitHeadless();
 
   // Update subsystems
   void Update(float dt);
+  
+  // Check if running in headless mode
+  bool IsHeadless() const { return m_Headless; }
 
   // Shutdown all subsystems in reverse order
   void Destroy();
@@ -46,6 +52,7 @@ private:
   Engine &operator=(const Engine &) = delete;
 
   SDL_GPUDevice *m_GPUDevice = nullptr;
+  bool m_Headless = false;
 
   SpriteRenderer m_Renderer;
   PhysicsSystem m_Physics;

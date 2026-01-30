@@ -49,10 +49,31 @@ bool CheckLua(lua_State *L, int r) {
 }
 
 int main(int argc, char *argv[]) {
-  // 0. Initialize Logger first
+  // 0. Parse command line arguments
+  bool autoplayMode = false;
+  int autoplayRuns = 100;  // default
+  const char* autoplayStrategy = "Random";  // default
+  
+  for (int i = 1; i < argc; i++) {
+    if (strcmp(argv[i], "--autoplay") == 0) {
+      autoplayMode = true;
+    } else if (strncmp(argv[i], "--autoplay-runs=", 16) == 0) {
+      autoplayRuns = atoi(argv[i] + 16);
+    } else if (strncmp(argv[i], "--autoplay-strategy=", 20) == 0) {
+      autoplayStrategy = argv[i] + 20;
+    }
+  }
+  
+  // Initialize Logger first
   Logger::Init(LogLevel::Info);
+  
+  if (autoplayMode) {
+    LOG_INFO("=== AutoPlay QA Bot Mode Enabled ===");
+    LOG_INFO("Runs: %d", autoplayRuns);
+    LOG_INFO("Strategy: %s", autoplayStrategy);
+  }
 
-  // 1. Initialize WindowManager (Handles SDL_Init and Window Creation)
+  // 1. Initialize WindowManager (always use windowed mode)
   WindowConfig config;
   config.title = "Magic Hands";
   config.width = 1280;
@@ -98,6 +119,14 @@ int main(int argc, char *argv[]) {
 
   // Register WindowManager
   WindowManager::RegisterLua(L);
+
+  // Pass AutoPlay flags to Lua as global variables
+  lua_pushboolean(L, autoplayMode);
+  lua_setglobal(L, "AUTOPLAY_MODE");
+  lua_pushinteger(L, autoplayRuns);
+  lua_setglobal(L, "AUTOPLAY_RUNS");
+  lua_pushstring(L, autoplayStrategy);
+  lua_setglobal(L, "AUTOPLAY_STRATEGY");
 
   // Run the main script
   if (CheckLua(L, luaL_dofile(L, "content/scripts/main.lua"))) {
@@ -199,44 +228,6 @@ int main(int argc, char *argv[]) {
     Engine::Instance().Update(dt);
 
     // Rendering
-    // We need the GPU device, which Engine now owns.
-    // Ideally Engine or Renderer handles BeginFrame/EndFrame completely, but
-    // main loop logic here does Lua Update inside. Let's get the device from
-    // Engine? Or just trust Engine::Renderer() is initialized.
-
-    // We need the GPU Device to AcquireCommandBuffer.
-    // Engine owns it now (m_GPUDevice).
-    // Accessor needed? Or Engine::BeginFrame()?
-    // Current design: Engine::Instance().Renderer().BeginFrame(cmdBuf).
-    // But we need cmdBuf from `SDL_AcquireGPUCommandBuffer`.
-    // And that needs `gpu_device`.
-
-    // Quick fix: Add GetGPUDevice() to Engine?
-    // Or just make Engine::Update do rendering? But Lua update is in the
-    // middle.
-
-    // Let's add GetGPUDevice() to Engine.h?
-    // Or make m_GPUDevice public (it's public in my previous edit? No, default
-    // is private? I used `replace_file_content` targeting the block but checked
-    // the structure... In `Engine.h`:
-    //   SDL_GPUDevice *m_GPUDevice = nullptr;
-    //   SpriteRenderer m_Renderer;
-    // These are usually private in the provided file?
-    // `private:` was at line 46.
-    // My previous edit inserted `m_GPUDevice` around line 47, which is INSIDE
-    // `private:`. So it's private. I need a getter.
-
-    // OR: Move `SDL_AcquireGPUCommandBuffer` to Engine?
-    // `Engine::BeginFrame()` -> returns cmdBuf?
-    // Let's assume for now I added a getter or I will add one.
-    // Actually, I should add a simple getter `SDL_GPUDevice* GetDevice() {
-    // return m_GPUDevice; }` to `Engine.h`. I'll do that in a separate step or
-    // right now via another replace.
-
-    // Wait, I can access it if I make it public.
-    // Let's change `main.cpp` to use `Engine::Instance().GetGPUDevice()`, and I
-    // will add that method.
-
     // Skip rendering if window is minimized/occluded to prevent GPU blocking
     if (!WindowManager::getInstance().isMinimized()) {
       SDL_GPUDevice *gpu_device = Engine::Instance().GetGPUDevice();
@@ -275,14 +266,28 @@ int main(int argc, char *argv[]) {
       // Sleep briefly to avoid spinning the CPU
       SDL_Delay(16); // ~60 FPS equivalent
     }
+    
+    // Check if AutoPlay wants to quit
+    if (autoplayMode) {
+      lua_getglobal(L, "AUTOPLAY_QUIT");
+      if (lua_isboolean(L, -1) && lua_toboolean(L, -1)) {
+        LOG_INFO("AutoPlay requested quit");
+        quit = true;
+      }
+      lua_pop(L, 1);
+    }
   }
 
   // Cleanup
+  LOG_INFO("Shutting down Magic Hands Engine");
   EventSystem::Instance().Destroy();
   Engine::Instance().Destroy();
   WindowManager::getInstance().shutdown();
   lua_close(L);
-  // Handle destroyed in shutdown/destroy calls
+  
+  if (autoplayMode) {
+    LOG_INFO("AutoPlay QA Bot Shutdown Complete");
+  }
 
   return 0;
 }

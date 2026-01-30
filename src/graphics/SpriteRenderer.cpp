@@ -8,8 +8,9 @@
 #include <sstream>
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
-#define STB_IMAGE_WRITE_IMPLEMENTATION
-#include "stb_image_write.h"
+// Note: stb_image_write included but not implemented here (avoid duplicate symbols)
+// #define STB_IMAGE_WRITE_IMPLEMENTATION
+// #include "stb_image_write.h"
 
 // Helper function to read shader file
 static std::string ReadShaderFile(const char *path) {
@@ -1160,27 +1161,22 @@ int SpriteRenderer::GetWhiteTexture() {
 
 bool SpriteRenderer::SaveScreenshot(const char *filepath) {
   if (!m_SwapchainTexture) {
-    LOG_ERROR("Cannot save screenshot: No swapchain texture available");
+    LOG_WARN("Cannot save screenshot: No swapchain texture available");
     return false;
   }
 
-  // Get swapchain texture dimensions
-  SDL_GPUTextureFormat format;
-  Uint32 width, height;
-  SDL_QueryGPUTexture(m_SwapchainTexture, &format, &width, &height);
+  LOG_INFO("Screenshot requested: %s", filepath);
 
-  LOG_INFO("Saving screenshot: %ux%u to %s", width, height, filepath);
-
-  // Note: This is a simplified implementation
-  // In production, you'd need to:
-  // 1. Create a transfer buffer
-  // 2. Copy GPU texture to CPU memory
-  // 3. Save using stbi_write_png
+  // Note: This is a stub implementation
+  // SDL_GPU in SDL3 doesn't have a simple texture query API yet
+  // Full implementation would require:
+  // 1. SDL_GPUTextureProperties to get dimensions
+  // 2. Create a transfer buffer
+  // 3. Copy GPU texture to CPU memory via command buffer
+  // 4. Save using stbi_write_png
   
-  // For now, return true to indicate the function exists
-  // Full implementation would require SDL_GPU texture download
-  LOG_WARN("Screenshot functionality not yet fully implemented");
-  LOG_WARN("TODO: Implement GPU texture readback for screenshots");
+  LOG_INFO("Screenshot functionality is a stub - feature not yet implemented");
+  LOG_INFO("This is optional for QA bot functionality");
   
   return false;
 }

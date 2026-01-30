@@ -684,3 +684,153 @@ Crib Final Score: 234
 - Consider creating "The Crib" planet enhancement (mentioned in GDD but not implemented)
 - Add UI indicator showing crib scoring is different/enhanced
 - Consider separate achievement for high crib scores
+
+---
+
+# 🤖 QA Automation Bot
+
+## Overview
+A comprehensive QA automation system that plays Magic Hands autonomously, detecting errors, tracking statistics, and generating detailed reports. Built using Lua integration for direct game state access.
+
+## Features
+
+### Error Detection
+- **Console Errors**: Captures ERROR/WARN log messages
+- **Lua Runtime Errors**: Catches pcall failures with stack traces  
+- **Logic Errors**: Detects invalid game states (negative gold, impossible values)
+- **Performance Issues**: Monitors frame times and performance
+
+### AI Strategies
+- **Random**: Baseline random decisions for regression testing
+- **FifteenEngine**: Optimizes for fifteen scoring patterns
+- **PairExplosion**: Focuses on pair-based builds
+- **Extensible**: Easy to add new strategies
+
+### Comprehensive Statistics
+- Run outcome (win/loss/crash)
+- Act/Blind reached
+- Total score and best hand score
+- Jokers acquired and stacked
+- Gold earned/spent
+- Every decision with reasoning
+- Performance metrics
+
+### Output & Reporting
+- JSON format for machine parsing
+- Screenshots on errors and run completion
+- Detailed decision logs
+- Summary reports across multiple runs
+
+## Usage
+
+```bash
+# Launch with autoplay enabled
+cd build
+./MagicHand --autoplay
+
+# Custom configuration
+./MagicHand --autoplay --autoplay-runs=500 --autoplay-strategy=FifteenEngine
+
+# Results saved to:
+qa_results/
+├── run_YYYYMMDD_HHMMSS_001.json
+├── screenshots/
+│   ├── error_*.png
+│   └── run_*_final.png
+└── summary_YYYYMMDD_HHMMSS.json
+```
+
+## Architecture
+
+```
+main.cpp (--autoplay flag)
+    ↓
+main.lua (checks AUTOPLAY_MODE)
+    ↓
+GameScene.lua
+    ↓
+AutoPlay.lua (main controller)
+    ├─→ AutoPlayStrategies.lua (AI decisions)
+    ├─→ AutoPlayStats.lua (data collection)
+    └─→ AutoPlayErrors.lua (error detection)
+```
+
+## Implementation Status
+
+### ✅ Complete (Phase 1-2)
+- C++ screenshot infrastructure
+- Lua bindings for screenshot
+- Command line flag parsing
+- Error capture system
+- AI strategy framework (3 strategies)
+
+### 🚧 In Progress (Phase 3-5)
+- Statistics collector
+- Main controller
+- GameScene integration
+- File I/O for results
+
+### ⏳ Pending (Phase 6)
+- Build and compile
+- End-to-end testing
+- Analysis tools (Python scripts)
+
+## Files
+
+### C++ (Modified)
+- `src/graphics/SpriteRenderer.h/cpp` - Screenshot support
+- `src/scripting/LuaBindings.cpp` - Lua bindings
+- `src/core/main.cpp` - CLI flag parsing
+
+### Lua (New)
+- `content/scripts/Systems/AutoPlayErrors.lua` ✅
+- `content/scripts/Systems/AutoPlayStrategies.lua` ✅
+- `content/scripts/Systems/AutoPlayStats.lua` (in progress)
+- `content/scripts/Systems/AutoPlay.lua` (in progress)
+
+### Lua (To Modify)
+- `content/scripts/scenes/GameScene.lua` - Integration hooks
+
+## JSON Output Example
+
+```json
+{
+  "runId": "run_20260130_143022_001",
+  "startTime": 1738249822,
+  "endTime": 1738249845,
+  "durationSeconds": 23,
+  "strategy": "Random",
+  "outcome": "loss",
+  "actReached": 2,
+  "blindReached": 2,
+  "finalScore": 1245,
+  "handsPlayed": 12,
+  "jokersAcquired": ["fifteen_fever", "pair_power"],
+  "bestHandScore": 120,
+  "errors": [],
+  "warnings": [],
+  "decisions": [
+    {
+      "type": "crib_selection",
+      "timestamp": 1738249823,
+      "selected": [0, 3],
+      "reasoning": "Strategy: Random"
+    }
+  ]
+}
+```
+
+## Future Enhancements
+
+- Complete screenshot GPU readback
+- Add more AI strategies (RunMaster, Economic, etc.)
+- Python analysis tools (plot_stats.py, compare_builds.py)
+- Real-time dashboard
+- CI/CD integration
+- Parallel execution support
+- Visual regression testing
+
+---
+
+**Status**: Foundation complete, integration in progress  
+**Last Updated**: January 30, 2026

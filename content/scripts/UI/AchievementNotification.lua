@@ -3,8 +3,9 @@
 
 local AchievementNotification = class()
 
-function AchievementNotification:init(font)
-    self.font = font
+function AchievementNotification:init(font, smallFont)
+    self.font = font or 0
+    self.smallFont = smallFont or font or 0
     self.queue = {}
     self.current = nil
     self.displayTime = 4.0 -- seconds
