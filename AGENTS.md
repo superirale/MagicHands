@@ -69,8 +69,18 @@ MagicHands/
 │   ├── events/            # Event system (EventSystem)
 │   ├── asset/             # Asset management (AssetManager, AssetConfig)
 │   ├── tilemap/           # Tilemap system (TileMap, TileSet, TileLayer)
-│   └── pathfinding/       # Pathfinding (Pathfinder)
-├── tests/                 # Catch2 unit tests
+│   ├── pathfinding/       # Pathfinding (Pathfinder)
+│   └── gameplay/          # Game-specific systems
+│       ├── card/          # Card & Deck classes
+│       ├── cribbage/      # Cribbage hand evaluation & scoring
+│       │   └── effects/   # Warp effects (Strategy Pattern)
+│       ├── joker/         # Joker system (Strategy Pattern)
+│       │   ├── conditions/ # Joker condition classes
+│       │   ├── counters/   # Joker counter classes
+│       │   └── effects/    # Joker effect classes
+│       ├── blind/         # Blind system
+│       └── boss/          # Boss system
+├── tests/                 # Catch2 unit tests (93 assertions)
 ├── content/               # Game assets (Lua scripts, JSON data, images, audio)
 │   ├── scripts/          # Lua game logic
 │   └── data/             # JSON definitions
@@ -276,6 +286,216 @@ EventData event("item_collected");
 event.SetString("itemId", "gold_coin").SetInt("quantity", 10);
 EventSystem::Instance().Emit(event);
 ```
+
+### Joker System (Strategy Pattern Architecture)
+
+The Joker system uses **Strategy Pattern** and **Factory Pattern** for extensibility and testability.
+
+#### Architecture Overview
+
+```
+JokerEffectSystem
+├── Conditions    - Evaluate when joker triggers (e.g., "count_15s > 0")
+├── Counters      - Calculate multipliers (e.g., "each_15" = count fifteens)
+└── Effects       - Apply score changes (e.g., "add_chips")
+```
+
+#### Condition System
+
+Conditions determine when a joker's effects should apply.
+
+**Base Interface:**
+```cpp
+class Condition {
+public:
+    virtual bool evaluate(const HandEvaluator::HandResult& hand) const = 0;
+    virtual std::string getDescription() const = 0;
+    static std::unique_ptr<Condition> parse(const std::string& conditionStr);
+};
+```
+
+**Supported Condition Types:**
+- `ContainsRankCondition` - Check for specific rank (e.g., `contains_rank:7`)
+- `ContainsSuitCondition` - Check for specific suit (e.g., `contains_suit:H`)
+- `CountComparisonCondition` - Compare counts (e.g., `count_15s > 0`, `count_pairs >= 2`)
+- `HasNobsCondition` - Check for nobs (boolean)
+- `HandTotal21Condition` - Check if hand totals 21 (boolean)
+
+**Usage:**
+```cpp
+// Parse and evaluate condition
+auto condition = Condition::parse("count_15s > 0");
+bool met = condition->evaluate(handResult);
+```
+
+#### Counter System
+
+Counters calculate multipliers for joker effects (the "per" field).
+
+**Base Interface:**
+```cpp
+class Counter {
+public:
+    virtual int count(const HandEvaluator::HandResult& handResult) const = 0;
+    static std::unique_ptr<Counter> parse(const std::string& perString);
+};
+```
+
+**Pattern Counters** (cribbage scoring patterns):
+- `each_15` - Count of 15 combinations
+- `each_pair` - Count of pair combinations
+- `each_run` - Count of run sequences
+- `cards_in_runs` - Total cards in runs
+- `card_count` - Total cards in hand
+
+**Property Counters** (card properties):
+- `each_even` - Even-ranked cards
+- `each_odd` - Odd-ranked cards
+- `each_face` - Face cards (J, Q, K)
+- `each_<rank>` - Specific rank (e.g., `each_7`, `each_K`)
+- `each_<suit>` - Specific suit (e.g., `each_H`, `each_S`)
+
+**Usage:**
+```cpp
+// Parse and count
+auto counter = Counter::parse("each_15");
+int multiplier = counter->count(handResult);
+```
+
+#### Effect System
+
+Effects apply the actual score changes.
+
+**Base Interface:**
+```cpp
+class Effect {
+public:
+    virtual JokerEffectSystem::EffectResult 
+    apply(const HandEvaluator::HandResult& handResult, int count) const = 0;
+    
+    virtual float getValue() const = 0;
+    static std::unique_ptr<Effect> create(const std::string& type, float value);
+};
+```
+
+**Effect Types:**
+- `AddChipsEffect` - Add chips to score
+- `AddMultiplierEffect` - Add temporary multiplier
+- `AddPermMultEffect` - Add permanent multiplier
+
+**Usage:**
+```cpp
+// Create and apply effect
+auto effect = Effect::create("add_chips", 10.0f);
+auto result = effect->apply(handResult, multiplier);
+```
+
+#### Complete Example
+
+```cpp
+// From JokerEffectSystem::ApplyJokersWithStacks()
+
+// 1. Evaluate conditions
+for (const auto& conditionStr : joker.conditions) {
+    auto condition = Condition::parse(conditionStr);
+    if (!condition->evaluate(handResult)) {
+        allConditionsMet = false;
+        break;
+    }
+}
+
+// 2. Calculate counter multiplier
+int count = 1;
+if (!effect.per.empty()) {
+    auto counter = Counter::parse(effect.per);
+    count = counter->count(handResult);
+}
+
+// 3. Apply effect
+auto effectObj = Effect::create(effect.type, effect.value);
+auto result = effectObj->apply(handResult, count);
+```
+
+#### JSON Format (backward compatible)
+
+```json
+{
+    "id": "fifteen_fever",
+    "triggers": ["on_score"],
+    "conditions": ["count_15s > 0"],
+    "effects": [{
+        "type": "add_chips",
+        "value": 15,
+        "per": "each_15"
+    }]
+}
+```
+
+#### Adding New Types
+
+**New Condition:**
+```cpp
+class CustomCondition : public Condition {
+public:
+    bool evaluate(const HandEvaluator::HandResult& hand) const override {
+        // Custom logic
+    }
+    std::string getDescription() const override { return "custom"; }
+};
+
+// Register in ConditionFactory.cpp
+if (conditionStr == "custom") {
+    return std::make_unique<CustomCondition>();
+}
+```
+
+**New Counter:**
+```cpp
+class CustomCounter : public Counter {
+public:
+    int count(const HandEvaluator::HandResult& hand) const override {
+        // Custom counting logic
+    }
+};
+
+// Register in CounterFactory.cpp
+if (perString == "custom_count") {
+    return std::make_unique<CustomCounter>();
+}
+```
+
+**New Effect:**
+```cpp
+class CustomEffect : public Effect {
+public:
+    JokerEffectSystem::EffectResult 
+    apply(const HandEvaluator::HandResult& hand, int count) const override {
+        // Custom effect logic
+    }
+    float getValue() const override { return m_Value; }
+};
+
+// Register in EffectFactory.cpp
+if (type == "custom_effect") {
+    return std::make_unique<CustomEffect>(value);
+}
+```
+
+#### Testing
+
+Unit tests cover all Strategy Pattern classes:
+
+```bash
+# Run joker system tests
+./magic_hands_tests "[joker]"
+
+# Run specific subsystem
+./magic_hands_tests "[condition]"
+./magic_hands_tests "[counter]"
+./magic_hands_tests "[effect]"
+```
+
+**Test Coverage:** 93 assertions across 9 test cases
 
 ### Asset Management
 
