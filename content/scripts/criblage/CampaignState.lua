@@ -131,6 +131,179 @@ function CampaignState:duplicateCard(idx)
     return false
 end
 
+-- Split a rank: Remove card and add 2 cards of ranks above/below
+function CampaignState:splitCard(idx)
+    if idx > 0 and idx <= #self.masterDeck then
+        local card = self.masterDeck[idx]
+        local rank = card.rank
+        local suit = card.suit
+        
+        -- Remove original card
+        table.remove(self.masterDeck, idx)
+        
+        -- Add lower rank card (wrapping from A to K)
+        local lowerRank = rank - 1
+        if lowerRank < 1 then lowerRank = 13 end
+        table.insert(self.masterDeck, {
+            rank = lowerRank,
+            suit = suit,
+            id = "split_" .. lowerRank .. suit .. os.time()
+        })
+        
+        -- Add higher rank card (wrapping from K to A)
+        local higherRank = rank + 1
+        if higherRank > 13 then higherRank = 1 end
+        table.insert(self.masterDeck, {
+            rank = higherRank,
+            suit = suit,
+            id = "split_" .. higherRank .. suit .. (os.time() + 1)
+        })
+        
+        return true
+    end
+    return false
+end
+
+-- Purge all cards of a specific suit
+function CampaignState:purgeSuit(suit)
+    local removed = 0
+    local i = 1
+    while i <= #self.masterDeck do
+        if self.masterDeck[i].suit == suit then
+            -- Remove imprints
+            if self.cardImprints[self.masterDeck[i].id] then
+                self.cardImprints[self.masterDeck[i].id] = nil
+            end
+            table.remove(self.masterDeck, i)
+            removed = removed + 1
+        else
+            i = i + 1
+        end
+    end
+    return removed > 0, removed
+end
+
+-- Equalize suits: Redistribute cards to have equal suit distribution
+function CampaignState:equalizeSuits()
+    if #self.masterDeck < 4 then
+        return false, "Deck too small to equalize"
+    end
+    
+    local suits = {0, 1, 2, 3} -- Hearts, Diamonds, Clubs, Spades
+    local cardsPerSuit = math.floor(#self.masterDeck / 4)
+    local remainder = #self.masterDeck % 4
+    
+    -- Collect all cards
+    local allCards = {}
+    for _, card in ipairs(self.masterDeck) do
+        table.insert(allCards, card)
+    end
+    
+    -- Redistribute suits evenly
+    local newDeck = {}
+    local suitIdx = 1
+    for i, card in ipairs(allCards) do
+        card.suit = suits[suitIdx]
+        -- Assign extra cards to first suits
+        if suitIdx <= remainder then
+            if #newDeck >= (cardsPerSuit + 1) * suitIdx then
+                suitIdx = suitIdx + 1
+            end
+        else
+            if #newDeck >= cardsPerSuit * suitIdx + remainder then
+                suitIdx = suitIdx + 1
+            end
+        end
+        if suitIdx > 4 then suitIdx = 4 end
+        table.insert(newDeck, card)
+    end
+    
+    self.masterDeck = newDeck
+    return true, "Deck equalized"
+end
+
+-- Merge two suits: Convert all cards of suit2 to suit1
+function CampaignState:mergeSuits(suit1, suit2)
+    local merged = 0
+    for _, card in ipairs(self.masterDeck) do
+        if card.suit == suit2 then
+            card.suit = suit1
+            merged = merged + 1
+        end
+    end
+    return merged > 0, merged
+end
+
+-- Ascend all cards of a rank to the next higher rank
+function CampaignState:ascendRank(idx)
+    if idx < 1 or idx > #self.masterDeck then
+        return false, 0
+    end
+    
+    local targetCard = self.masterDeck[idx]
+    local targetRank = targetCard.rank
+    
+    -- Calculate next rank (wrap King → Ace)
+    local newRank = targetRank + 1
+    if newRank > 13 then
+        newRank = 1
+    end
+    
+    local upgraded = 0
+    
+    -- Find and upgrade all cards with target rank
+    for _, card in ipairs(self.masterDeck) do
+        if card.rank == targetRank then
+            card.rank = newRank
+            -- Update card ID to avoid conflicts
+            card.id = "ascend_" .. newRank .. card.suit .. os.time() .. upgraded
+            upgraded = upgraded + 1
+            
+            -- Clear imprints when rank changes
+            if self.cardImprints[card.id] then
+                self.cardImprints[card.id] = nil
+            end
+        end
+    end
+    
+    return upgraded > 0, upgraded
+end
+
+-- Collapse adjacent rank into selected rank (absorb lower rank)
+function CampaignState:collapseRank(idx)
+    if idx < 1 or idx > #self.masterDeck then
+        return false, 0
+    end
+    
+    local targetCard = self.masterDeck[idx]
+    local targetRank = targetCard.rank
+    
+    -- Calculate lower rank (wrap Ace → King)
+    local lowerRank = targetRank - 1
+    if lowerRank < 1 then
+        lowerRank = 13
+    end
+    
+    local collapsed = 0
+    
+    -- Find and collapse all cards with lower rank into target rank
+    for _, card in ipairs(self.masterDeck) do
+        if card.rank == lowerRank then
+            card.rank = targetRank
+            -- Update card ID to avoid conflicts
+            card.id = "collapse_" .. targetRank .. card.suit .. os.time() .. collapsed
+            collapsed = collapsed + 1
+            
+            -- Clear imprints when rank changes
+            if self.cardImprints[card.id] then
+                self.cardImprints[card.id] = nil
+            end
+        end
+    end
+    
+    return collapsed > 0, collapsed
+end
+
 -- Add imprint to a specific card (max 2 per card)
 function CampaignState:addImprintToCard(cardId, imprintId)
     if not self.cardImprints then

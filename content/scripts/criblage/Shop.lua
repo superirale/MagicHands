@@ -334,7 +334,18 @@ function Shop:applySculptor(shopIndex, cardIndex, action)
     local item = self.jokers[shopIndex]
 
     -- Verify it's a sculptor item
-    if item.id ~= "spectral_remove" and item.id ~= "spectral_clone" then
+    local validSculptors = {
+        spectral_remove = true,
+        spectral_clone = true,
+        spectral_split = true,
+        spectral_purge = true,
+        spectral_rainbow = true,
+        spectral_fusion = true,
+        spectral_ascend = true,
+        spectral_collapse = true
+    }
+    
+    if not validSculptors[item.id] then
         return false, "Item is not a deck sculptor"
     end
 
@@ -349,9 +360,71 @@ function Shop:applySculptor(shopIndex, cardIndex, action)
     if item.id == "spectral_remove" then
         success = CampaignState:removeCard(cardIndex)
         msg = success and "Card removed from deck" or "Failed to remove card"
+        
     elseif item.id == "spectral_clone" then
         success = CampaignState:duplicateCard(cardIndex)
         msg = success and "Card duplicated" or "Failed to duplicate card"
+        
+    elseif item.id == "spectral_split" then
+        -- Split a card into two adjacent ranks
+        success = CampaignState:splitCard(cardIndex)
+        msg = success and "Card split into two ranks" or "Failed to split card"
+        
+    elseif item.id == "spectral_purge" then
+        -- Purge all cards of the selected card's suit
+        if cardIndex > 0 and cardIndex <= #CampaignState.masterDeck then
+            local targetSuit = CampaignState.masterDeck[cardIndex].suit
+            local removed = 0
+            success, removed = CampaignState:purgeSuit(targetSuit)
+            msg = success and ("Purged " .. removed .. " cards from suit") or "Failed to purge suit"
+        else
+            success = false
+            msg = "Invalid card selection"
+        end
+        
+    elseif item.id == "spectral_rainbow" then
+        -- Equalize suit distribution in deck
+        success, msg = CampaignState:equalizeSuits()
+        if not msg then
+            msg = success and "Deck suits equalized" or "Failed to equalize suits"
+        end
+        
+    elseif item.id == "spectral_fusion" then
+        -- Merge suits: Convert selected card's suit to merge into another
+        -- For now, merge into Hearts (suit 0) - could be enhanced with UI selection
+        if cardIndex > 0 and cardIndex <= #CampaignState.masterDeck then
+            local sourceSuit = CampaignState.masterDeck[cardIndex].suit
+            -- Merge into the "opposite" suit (simple logic)
+            local targetSuit = (sourceSuit + 2) % 4
+            local merged = 0
+            success, merged = CampaignState:mergeSuits(targetSuit, sourceSuit)
+            msg = success and ("Merged " .. merged .. " cards into new suit") or "Failed to merge suits"
+        else
+            success = false
+            msg = "Invalid card selection"
+        end
+        
+    elseif item.id == "spectral_ascend" then
+        -- Ascend all cards of selected rank to next higher rank
+        if cardIndex > 0 and cardIndex <= #CampaignState.masterDeck then
+            local upgraded = 0
+            success, upgraded = CampaignState:ascendRank(cardIndex)
+            msg = success and ("Ascended " .. upgraded .. " cards to higher rank") or "Failed to ascend rank"
+        else
+            success = false
+            msg = "Invalid card selection"
+        end
+        
+    elseif item.id == "spectral_collapse" then
+        -- Collapse lower adjacent rank into selected rank
+        if cardIndex > 0 and cardIndex <= #CampaignState.masterDeck then
+            local collapsed = 0
+            success, collapsed = CampaignState:collapseRank(cardIndex)
+            msg = success and ("Collapsed " .. collapsed .. " cards into this rank") or "Failed to collapse rank"
+        else
+            success = false
+            msg = "Invalid card selection"
+        end
     end
 
     if success then

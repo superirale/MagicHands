@@ -305,6 +305,8 @@ function CollectionUI:getItemDescription(category, itemId)
         path = "content/data/imprints/" .. itemId .. ".json"
     elseif category == "sculptors" then
         path = "content/data/spectrals/" .. itemId .. ".json"
+    elseif string.find(itemId, "spectral_") then
+        path = "content/data/spectrals/" .. itemId .. ".json"
     end
 
     if path then

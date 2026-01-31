@@ -82,7 +82,24 @@ function EnhancementManager:resolveWarps()
 
     -- Load warp effects dynamically from JSON
     for _, warp in ipairs(self.warps) do
-        local path = "content/data/warps/" .. warp.id .. ".json"
+        -- Check if it's a sculptor spectral (they're in spectrals/ not warps/)
+        local sculptors = {
+            spectral_ascend = true,
+            spectral_collapse = true,
+            spectral_remove = true,
+            spectral_clone = true,
+            spectral_split = true,
+            spectral_purge = true,
+            spectral_rainbow = true,
+            spectral_fusion = true
+        }
+        
+        local path
+        if sculptors[warp.id] then
+            path = "content/data/spectrals/" .. warp.id .. ".json"
+        else
+            path = "content/data/warps/" .. warp.id .. ".json"
+        end
         local data = files and files.loadJSON and files.loadJSON(path)
         
         if data and data.effect then
