@@ -2,6 +2,7 @@
 #include "gameplay/joker/conditions/ContainsRankCondition.h"
 #include "gameplay/joker/conditions/ContainsSuitCondition.h"
 #include "gameplay/joker/conditions/CountComparisonCondition.h"
+#include "gameplay/joker/conditions/BooleanCondition.h"
 #include "gameplay/card/Card.h"
 #include <catch2/catch_test_macros.hpp>
 
@@ -112,5 +113,57 @@ TEST_CASE("Condition System", "[joker][condition]") {
     HandEvaluator::HandResult hand;
     AlwaysTrueCondition condition;
     REQUIRE(condition.evaluate(hand) == true);
+  }
+
+  SECTION("HasNobsCondition - checks for nobs") {
+    HandEvaluator::HandResult hand;
+    hand.hasNobs = true;
+
+    HasNobsCondition condition;
+    REQUIRE(condition.evaluate(hand) == true);
+
+    hand.hasNobs = false;
+    REQUIRE(condition.evaluate(hand) == false);
+  }
+
+  SECTION("HandTotal21Condition - checks if total equals 21") {
+    // Hand totaling 21: K (10) + J (10) + A (1) = 21
+    std::vector<Card> cards = {
+        Card(Card::Rank::King, Card::Suit::Hearts),  // 10
+        Card(Card::Rank::Jack, Card::Suit::Diamonds), // 10
+        Card(Card::Rank::Ace, Card::Suit::Spades)     // 1
+    };
+    auto hand = createTestHand(cards);
+
+    HandTotal21Condition condition;
+    REQUIRE(condition.evaluate(hand) == true);
+
+    // Hand not totaling 21
+    std::vector<Card> cards2 = {
+        Card(Card::Rank::Seven, Card::Suit::Hearts),
+        Card(Card::Rank::Eight, Card::Suit::Diamonds)
+    };
+    auto hand2 = createTestHand(cards2);
+    REQUIRE(condition.evaluate(hand2) == false);
+  }
+
+  SECTION("Condition Factory - parses has_nobs") {
+    HandEvaluator::HandResult hand;
+    hand.hasNobs = true;
+
+    auto condition = Condition::parse("has_nobs");
+    REQUIRE(condition->evaluate(hand) == true);
+  }
+
+  SECTION("Condition Factory - parses hand_total_21") {
+    std::vector<Card> cards = {
+        Card(Card::Rank::King, Card::Suit::Hearts),
+        Card(Card::Rank::Jack, Card::Suit::Diamonds),
+        Card(Card::Rank::Ace, Card::Suit::Spades)
+    };
+    auto hand = createTestHand(cards);
+
+    auto condition = Condition::parse("hand_total_21");
+    REQUIRE(condition->evaluate(hand) == true);
   }
 }

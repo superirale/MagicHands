@@ -2,6 +2,7 @@
 #include "ContainsRankCondition.h"
 #include "ContainsSuitCondition.h"
 #include "CountComparisonCondition.h"
+#include "BooleanCondition.h"
 #include "core/Logger.h"
 #include <sstream>
 
@@ -94,14 +95,13 @@ std::unique_ptr<Condition> Condition::parse(const std::string &conditionStr) {
 
   // Check if parsing succeeded
   if (iss.fail()) {
-    // Boolean conditions without operator (e.g., "has_nobs")
+    // Boolean conditions without operator (e.g., "has_nobs", "hand_total_21")
     if (conditionStr == "has_nobs") {
-      // has_nobs is equivalent to "count_nobs > 0"
-      // But nobs is boolean, so we need special handling
-      // For now, use AlwaysTrueCondition and log warning
-      LOG_WARN("Boolean condition not yet implemented: %s",
-               conditionStr.c_str());
-      return std::make_unique<AlwaysTrueCondition>();
+      return std::make_unique<HasNobsCondition>();
+    }
+    
+    if (conditionStr == "hand_total_21") {
+      return std::make_unique<HandTotal21Condition>();
     }
 
     // Unknown condition format
