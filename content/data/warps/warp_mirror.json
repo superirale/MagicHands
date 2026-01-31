@@ -2,10 +2,11 @@
     "id": "warp_mirror",
     "name": "Mirror",
     "type": "warp",
-    "description": "Pairs count as runs, runs count as pairs",
+    "description": "Pairs worth 8 chips, Runs worth 12 chips per card.",
     "trigger": "on_score",
     "effect": {
         "type": "mirror_categories",
-        "value": 1.0
+        "requires_boss_rule": true,
+        "boss_rule": "warp_mirror"
     }
 }

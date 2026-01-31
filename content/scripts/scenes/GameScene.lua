@@ -671,8 +671,21 @@ function GameScene:playHand()
         end
     end
 
-    -- 1. Get Boss Rules
+    -- 1. Get Boss Rules (from Boss + Warps)
     local bossRules = BossManager:getEffects()
+    
+    -- Add warp-specific boss rules (for engine warps)
+    local warpEffects = EnhancementManager:resolveWarps()
+    if warpEffects.active_warps then
+        for _, warpId in ipairs(warpEffects.active_warps) do
+            -- Check if this warp requires a boss rule for C++ scoring
+            if warpId == "warp_blaze" or warpId == "warp_mirror" or 
+               warpId == "warp_inversion" or warpId == "warp_wildfire" then
+                table.insert(bossRules, warpId)
+                print("🔥 Engine Warp Active: " .. warpId)
+            end
+        end
+    end
 
     -- 2. Base Score (Hand Result) with Boss Rules applied
     local handResult = cribbage.evaluate(engineCards)

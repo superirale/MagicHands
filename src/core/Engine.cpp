@@ -3,6 +3,7 @@
 #include "audio/AudioSystem.h"
 #include "core/Logger.h"
 #include "core/Profiler.h"
+#include "gameplay/cribbage/effects/EffectFactory.h"
 #include "graphics/FontRenderer.h"
 
 Engine &Engine::Instance() {
@@ -12,6 +13,9 @@ Engine &Engine::Instance() {
 
 bool Engine::Init() {
   LOG_DEBUG("Engine initializing subsystems...");
+
+  // 0. Register built-in warp effects (must be done before gameplay)
+  gameplay::EffectFactory::registerBuiltInEffects();
 
   // 1. Get window from WindowManager
   SDL_Window *window = WindowManager::getInstance().getNativeWindowHandle();

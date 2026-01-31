@@ -1,7 +1,10 @@
 #include "ScoringEngine.h"
+#include "RuleType.h"
+#include "effects/EffectFactory.h"
 #include <algorithm>
 #include <cmath>
 #include <string>
+#include <unordered_set>
 #include <vector>
 
 namespace gameplay {
@@ -12,31 +15,25 @@ ScoringEngine::CalculateScore(const HandEvaluator::HandResult &handResult,
                               const std::vector<std::string> &bossRules) {
   ScoreResult result;
 
-  // Check boss rules
-  bool fifteensDisabled = false;
-  bool multDisabled = false;
-  bool flushDisabled = false;
-  bool nobsDisabled = false;
-  bool pairsDisabled = false;
-  bool runsDisabled = false;
-  bool onlyPairsRuns = false;
-
+  // Parse boss rules using enum registry (O(1) hash lookup per rule)
+  std::unordered_set<RuleType> activeRules;
   for (const auto &rule : bossRules) {
-    if (rule == "fifteens_disabled")
-      fifteensDisabled = true;
-    else if (rule == "multipliers_disabled")
-      multDisabled = true;
-    else if (rule == "flush_disabled")
-      flushDisabled = true;
-    else if (rule == "nobs_disabled")
-      nobsDisabled = true;
-    else if (rule == "pairs_disabled")
-      pairsDisabled = true;
-    else if (rule == "runs_disabled")
-      runsDisabled = true;
-    else if (rule == "only_pairs_runs")
-      onlyPairsRuns = true;
+    RuleType ruleType = RuleRegistry::fromString(rule);
+    if (ruleType != RuleType::Unknown) {
+      activeRules.insert(ruleType);
+    }
   }
+
+  // Check for rule activations
+  bool fifteensDisabled = activeRules.count(RuleType::FifteensDisabled) > 0;
+  bool multDisabled = activeRules.count(RuleType::MultipliersDisabled) > 0;
+  bool flushDisabled = activeRules.count(RuleType::FlushDisabled) > 0;
+  bool nobsDisabled = activeRules.count(RuleType::NobsDisabled) > 0;
+  bool pairsDisabled = activeRules.count(RuleType::PairsDisabled) > 0;
+  bool runsDisabled = activeRules.count(RuleType::RunsDisabled) > 0;
+  bool onlyPairsRuns = activeRules.count(RuleType::OnlyPairsRuns) > 0;
+  
+  // Warp effects are now handled by strategy pattern (no boolean flags needed)
 
   if (onlyPairsRuns) {
     fifteensDisabled = true;
@@ -47,8 +44,8 @@ ScoringEngine::CalculateScore(const HandEvaluator::HandResult &handResult,
   // Calculate chips per category
   // Base formula from GDD:
   // Fifteens: 10 × count
-  // Pairs: 12 × count
-  // Runs: 8 × total_length
+  // Pairs: 12 × count (or 8 if warp_mirror)
+  // Runs: 8 × total_length (or 12 if warp_mirror)
   // Flush: 20 (4 cards), 30 (5 cards)
   // Nobs: 15
 
@@ -57,13 +54,13 @@ ScoringEngine::CalculateScore(const HandEvaluator::HandResult &handResult,
     result.fifteenChips = static_cast<int>(handResult.fifteens.size()) * 10;
   }
 
-  // Pairs: 12 chips per pair
+  // Pairs: 12 chips per pair (base value, Mirror effect may modify)
   // Note: Three-of-a-kind = 3 pairs, Four-of-a-kind = 6 pairs
   if (!pairsDisabled) {
     result.pairChips = static_cast<int>(handResult.pairs.size()) * 12;
   }
 
-  // Runs: 8 chips per card in run
+  // Runs: 8 chips per card in run (base value, Mirror effect may modify)
   if (!runsDisabled) {
     for (const auto &run : handResult.runs) {
       result.runChips += static_cast<int>(run.size()) * 8;
@@ -86,9 +83,19 @@ ScoringEngine::CalculateScore(const HandEvaluator::HandResult &handResult,
     }
   }
 
-  // Sum all base chips
+  // Sum base chips before applying warp effects
   result.baseChips = result.fifteenChips + result.pairChips + result.runChips +
                      result.flushChips + result.nobsChips;
+
+  // Apply warp effects via strategy pattern
+  // Effects are applied in order they appear in activeRules
+  auto &factory = EffectFactory::getInstance();
+  for (RuleType ruleType : activeRules) {
+    auto effect = factory.create(ruleType);
+    if (effect) {
+      effect->apply(result, handResult);
+    }
+  }
 
   // Apply multipliers with caps
   result.tempMultiplier = std::min(tempMult, 10.0f);

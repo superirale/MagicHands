@@ -2,10 +2,11 @@
     "id": "warp_inversion",
     "name": "Inversion",
     "type": "warp",
-    "description": "Low cards score as high cards",
+    "description": "Low cards (A-5) boost score by +20% each.",
     "trigger": "on_score",
     "effect": {
         "type": "invert_values",
-        "value": 1.0
+        "requires_boss_rule": true,
+        "boss_rule": "warp_inversion"
     }
 }

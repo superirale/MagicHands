@@ -163,6 +163,12 @@ add_executable(MagicHand
     # Cribbage scoring (gameplay)
     src/gameplay/cribbage/HandEvaluator.cpp
     src/gameplay/cribbage/ScoringEngine.cpp
+    src/gameplay/cribbage/RuleType.cpp
+    src/gameplay/cribbage/effects/BlazeEffect.cpp
+    src/gameplay/cribbage/effects/MirrorEffect.cpp
+    src/gameplay/cribbage/effects/InversionEffect.cpp
+    src/gameplay/cribbage/effects/WildfireEffect.cpp
+    src/gameplay/cribbage/effects/EffectFactory.cpp
     src/scripting/CribbageBindings.cpp
     # Joker system (gameplay)
     src/gameplay/joker/Joker.cpp

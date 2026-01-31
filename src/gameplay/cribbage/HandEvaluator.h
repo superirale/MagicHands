@@ -33,8 +33,10 @@ public:
   /// @brief Evaluate a hand with a cut card
   /// @param hand The 4-card hand
   /// @param cut The cut card (5th card)
+  /// @param bossRules Optional boss rules for special evaluation modes
   /// @return All detected scoring patterns
-  static HandResult Evaluate(const std::vector<Card> &hand, const Card &cut);
+  static HandResult Evaluate(const std::vector<Card> &hand, const Card &cut,
+                             const std::vector<std::string> &bossRules = {});
 
 private:
   /// @brief Find all combinations of cards that sum to 15

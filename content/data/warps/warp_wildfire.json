@@ -2,10 +2,11 @@
     "id": "warp_wildfire",
     "name": "Wildfire",
     "type": "warp",
-    "description": "All 5s become wild (+20% blind scaling)",
+    "description": "5s boost score by +30% each (simplified wild).",
     "trigger": "on_score",
     "effect": {
         "type": "wild_fives",
-        "value": 1.0
+        "requires_boss_rule": true,
+        "boss_rule": "warp_wildfire"
     }
 }

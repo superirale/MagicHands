@@ -2,10 +2,11 @@
     "id": "warp_blaze",
     "name": "Blaze",
     "type": "warp",
-    "description": "First category scores triple, others score nothing",
+    "description": "Only the first scoring category counts.",
     "trigger": "on_score",
     "effect": {
         "type": "blaze",
-        "value": 1.0
+        "requires_boss_rule": true,
+        "boss_rule": "warp_blaze"
     }
 }

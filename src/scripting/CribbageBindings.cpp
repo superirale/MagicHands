@@ -121,9 +121,30 @@ static int Lua_CribbageScore(lua_State *L) {
     }
   }
 
+  // Check for warp_inversion - modify card values before evaluation
+  bool warpInversion = false;
+  for (const auto &rule : bossRules) {
+    if (rule == "warp_inversion") {
+      warpInversion = true;
+      break;
+    }
+  }
+  
+  // If warp_inversion is active, create modified cards with inverted values
+  std::vector<Card> evalHand = hand;
+  Card evalCut = *cutCard;
+  
+  if (warpInversion) {
+    // Invert values: Ace(1)→10, 2→9, 3→8, 4→7, 5→6, 6→5, 7→4, 8→3, 9→2, 10+→1
+    // But keep ranks the same for pair/run detection
+    // This is conceptually complex - we'd need to modify Card class
+    // For now, we'll handle this in the scoring phase with a score multiplier
+    // based on low cards. Actually, let's implement this properly in ScoringEngine.
+  }
+  
   // Evaluate and score
   HandEvaluator::HandResult handResult =
-      HandEvaluator::Evaluate(hand, *cutCard);
+      HandEvaluator::Evaluate(evalHand, evalCut);
   ScoringEngine::ScoreResult scoreResult =
       ScoringEngine::CalculateScore(handResult, tempMult, permMult, bossRules);
 

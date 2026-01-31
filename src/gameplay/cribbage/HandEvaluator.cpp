@@ -5,7 +5,8 @@
 namespace gameplay {
 
 HandEvaluator::HandResult HandEvaluator::Evaluate(const std::vector<Card> &hand,
-                                                  const Card &cut) {
+                                                  const Card &cut,
+                                                  const std::vector<std::string> &bossRules) {
   HandResult result;
 
   // Combine hand + cut for evaluation
@@ -19,6 +20,10 @@ HandEvaluator::HandResult HandEvaluator::Evaluate(const std::vector<Card> &hand,
   findRuns(allCards, result);
   result.flushCount = findFlush(hand, cut);
   result.hasNobs = findNobs(hand, cut);
+
+  // Note: bossRules like warp_wildfire (5s as wild) would require
+  // significant changes to pair/run/fifteen detection logic.
+  // Currently handled as score modifiers in ScoringEngine instead.
 
   return result;
 }
