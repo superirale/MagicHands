@@ -173,6 +173,10 @@ add_executable(MagicHand
     # Joker system (gameplay)
     src/gameplay/joker/Joker.cpp
     src/gameplay/joker/JokerEffectSystem.cpp
+    src/gameplay/joker/EffectType.cpp
+    src/gameplay/joker/conditions/ConditionFactory.cpp
+    src/gameplay/joker/counters/CounterFactory.cpp
+    src/gameplay/joker/effects/EffectFactory.cpp
     src/scripting/JokerBindings.cpp
     # Blind & Boss system (gameplay)
     src/gameplay/blind/Blind.cpp
@@ -224,8 +228,16 @@ enable_testing()
 file(GLOB_RECURSE TEST_SOURCES tests/*.cpp)
 
 if(TEST_SOURCES)
-    add_executable(magic_hands_tests ${TEST_SOURCES} src/core/Base64.cpp)
-    target_link_libraries(magic_hands_tests PRIVATE Catch2::Catch2WithMain nlohmann_json::nlohmann_json)
+    add_executable(magic_hands_tests 
+        ${TEST_SOURCES}
+        src/core/Base64.cpp
+        src/core/Logger.cpp
+        src/gameplay/card/Card.cpp
+        src/gameplay/joker/conditions/ConditionFactory.cpp
+        src/gameplay/joker/counters/CounterFactory.cpp
+        src/gameplay/joker/effects/EffectFactory.cpp
+    )
+    target_link_libraries(magic_hands_tests PRIVATE Catch2::Catch2WithMain nlohmann_json::nlohmann_json lua_static)
     target_include_directories(magic_hands_tests PRIVATE src ${stb_SOURCE_DIR})
     
     # Register tests with CTest
