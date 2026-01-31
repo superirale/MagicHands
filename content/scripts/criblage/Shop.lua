@@ -201,8 +201,18 @@ function Shop:buyJoker(index)
             return true, msg
         elseif string.find(item.id, "spectral") or string.find(item.id, "warp") then
             -- Check for Sculptors (Action requiring selection)
-            if item.id == "spectral_remove" or item.id == "spectral_clone" then
-                -- Return signal to open DeckView
+            -- These spectrals modify the deck structure and need user interaction
+            local sculptorSpectrals = {
+                spectral_remove = true,
+                spectral_clone = true,
+                spectral_split = true,
+                spectral_purge = true,
+                spectral_rainbow = true,
+                spectral_fusion = true
+            }
+            
+            if sculptorSpectrals[item.id] then
+                -- Return signal to open DeckView or selection UI
                 -- We verify funds first but don't charge yet
                 if Economy.gold < item.price then
                     return false, "Not enough gold"
@@ -210,7 +220,7 @@ function Shop:buyJoker(index)
 
                 return { action = "select_card", itemId = item.id, itemIndex = index }, "Select card to modify"
             else
-                -- Handle Rule Warps
+                -- Handle Rule Warps (spectral_echo, spectral_ghost, warp_*, etc.)
                 local success, msg = EnhancementManager:addEnhancement(item.id, "warp")
                 if not success then
                     Economy:addGold(item.price) -- Refund if charged (logic above charges before this check)

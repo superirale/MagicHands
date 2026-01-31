@@ -251,9 +251,9 @@ function GameScene:startNewHand()
     local baseHandSize = 6
     local handSizeBonus = 0
     
-    -- Apply first blind hand bonus if active
+    -- Apply first blind hand bonus ONLY on the very first hand of blind 1
     if CampaignState.firstBlindHandBonus and CampaignState.firstBlindHandBonus > 0 and 
-       CampaignState.currentBlind == 1 then
+       CampaignState.currentBlind == 1 and CampaignState.handsRemaining == 4 then
         handSizeBonus = CampaignState.firstBlindHandBonus
         print("✨ First Blind Bonus: +" .. handSizeBonus .. " cards in hand!")
     end
@@ -883,8 +883,8 @@ function GameScene:playHand()
                 cribFinalChips = cribFinalChips + warpEffects.cut_bonus
             end
 
-            local cribTotalTempMult = cribScore.tempMultiplier + cribAugmentEffects.mult + cribJokerEffects.addedTempMult + cribImprintEffects.mult
-            local cribTotalPermMult = cribScore.permMultiplier + cribJokerEffects.addedPermMult
+            local cribTotalTempMult = cribBaseScore.tempMultiplier + cribAugmentEffects.mult + cribJokerEffects.addedTempMult + cribImprintEffects.mult
+            local cribTotalPermMult = cribBaseScore.permMultiplier + cribJokerEffects.addedPermMult
 
             -- Apply Warp: Mult Multiplier (Ascension - double all mult)
             if warpEffects.mult_multiplier > 1.0 then
@@ -1199,6 +1199,12 @@ function GameScene:discardSelected()
 
         -- 4. Recreate visuals (Full redraw of HAND views only, Preserving Cut Card View)
         self.cardViews = {}
+        local startX = 200
+        local startY = 500
+        local spacing = 110
+        
+        local CardView = require("visuals/CardView")
+        
         for i, card in ipairs(self.hand) do
             local view = CardView(card, startX + (i - 1) * spacing, startY, self.cardAtlas, self.smallFont)
             table.insert(self.cardViews, view)

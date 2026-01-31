@@ -252,6 +252,11 @@ function CampaignState:advanceBlind()
     self.discardsRemaining = 3
     self.currentScore = 0
     self.crib = {} -- Clear crib for new blind
+    
+    -- Clear first blind hand bonus after blind 1
+    if self.currentBlind > 1 then
+        self.firstBlindHandBonus = 0
+    end
 
     -- Generate shop
     Shop:generateJokers(self.currentAct)

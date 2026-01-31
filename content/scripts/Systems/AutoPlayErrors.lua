@@ -66,8 +66,16 @@ function AutoPlayErrors:checkGameState(gameState)
     end
     
     -- Check for invalid hand sizes
-    if gameState.hand and #gameState.hand > 6 then
-        table.insert(issues, "Too many cards in hand: " .. tostring(#gameState.hand))
+    -- Allow up to 9 cards on the very first hand of blind 1 (starting advantage bonus)
+    local maxHandSize = 6
+    local CampaignState = require("criblage/CampaignState")
+    if CampaignState.currentBlind == 1 and CampaignState.handsRemaining == 4 and 
+       CampaignState.firstBlindHandBonus > 0 then
+        maxHandSize = 6 + CampaignState.firstBlindHandBonus
+    end
+    
+    if gameState.hand and #gameState.hand > maxHandSize then
+        table.insert(issues, "Too many cards in hand: " .. tostring(#gameState.hand) .. " (max: " .. maxHandSize .. ")")
     end
     
     if gameState.hand and #gameState.hand < 0 then
