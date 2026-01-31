@@ -138,12 +138,26 @@ function CampaignState:splitCard(idx)
         local rank = card.rank
         local suit = card.suit
         
+        -- Rank lookup tables
+        local rankValues = { A = 1, ["2"] = 2, ["3"] = 3, ["4"] = 4, ["5"] = 5, 
+                            ["6"] = 6, ["7"] = 7, ["8"] = 8, ["9"] = 9, ["10"] = 10, 
+                            J = 11, Q = 12, K = 13 }
+        local valueToRank = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" }
+        
         -- Remove original card
         table.remove(self.masterDeck, idx)
         
+        -- Get numeric value of current rank
+        local rankValue = rankValues[rank]
+        if not rankValue then
+            print("ERROR: Invalid rank: " .. tostring(rank))
+            return false
+        end
+        
         -- Add lower rank card (wrapping from A to K)
-        local lowerRank = rank - 1
-        if lowerRank < 1 then lowerRank = 13 end
+        local lowerValue = rankValue - 1
+        if lowerValue < 1 then lowerValue = 13 end
+        local lowerRank = valueToRank[lowerValue]
         table.insert(self.masterDeck, {
             rank = lowerRank,
             suit = suit,
@@ -151,8 +165,9 @@ function CampaignState:splitCard(idx)
         })
         
         -- Add higher rank card (wrapping from K to A)
-        local higherRank = rank + 1
-        if higherRank > 13 then higherRank = 1 end
+        local higherValue = rankValue + 1
+        if higherValue > 13 then higherValue = 1 end
+        local higherRank = valueToRank[higherValue]
         table.insert(self.masterDeck, {
             rank = higherRank,
             suit = suit,
@@ -243,11 +258,23 @@ function CampaignState:ascendRank(idx)
     local targetCard = self.masterDeck[idx]
     local targetRank = targetCard.rank
     
+    -- Rank lookup tables
+    local rankValues = { A = 1, ["2"] = 2, ["3"] = 3, ["4"] = 4, ["5"] = 5, 
+                        ["6"] = 6, ["7"] = 7, ["8"] = 8, ["9"] = 9, ["10"] = 10, 
+                        J = 11, Q = 12, K = 13 }
+    local valueToRank = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" }
+    
     -- Calculate next rank (wrap King → Ace)
-    local newRank = targetRank + 1
-    if newRank > 13 then
-        newRank = 1
+    local rankValue = rankValues[targetRank]
+    if not rankValue then
+        return false, 0
     end
+    
+    local newValue = rankValue + 1
+    if newValue > 13 then
+        newValue = 1
+    end
+    local newRank = valueToRank[newValue]
     
     local upgraded = 0
     
@@ -278,11 +305,23 @@ function CampaignState:collapseRank(idx)
     local targetCard = self.masterDeck[idx]
     local targetRank = targetCard.rank
     
+    -- Rank lookup tables
+    local rankValues = { A = 1, ["2"] = 2, ["3"] = 3, ["4"] = 4, ["5"] = 5, 
+                        ["6"] = 6, ["7"] = 7, ["8"] = 8, ["9"] = 9, ["10"] = 10, 
+                        J = 11, Q = 12, K = 13 }
+    local valueToRank = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" }
+    
     -- Calculate lower rank (wrap Ace → King)
-    local lowerRank = targetRank - 1
-    if lowerRank < 1 then
-        lowerRank = 13
+    local rankValue = rankValues[targetRank]
+    if not rankValue then
+        return false, 0
     end
+    
+    local lowerValue = rankValue - 1
+    if lowerValue < 1 then
+        lowerValue = 13
+    end
+    local lowerRank = valueToRank[lowerValue]
     
     local collapsed = 0
     

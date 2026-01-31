@@ -103,7 +103,8 @@ function CollectionUI:update(dt)
     if not self.visible then return end
 
     local mx, my = inputmgr.getCursor()
-    local clicked = inputmgr.isActionJustPressed("confirm")
+    -- Check for mouse button click (use old input API for mouse detection)
+    local clicked = input.isMouseButtonPressed("left")
 
     -- Tab switching with mouse
     local tabY = 100
