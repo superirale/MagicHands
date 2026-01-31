@@ -1,6 +1,8 @@
 -- CollectionUI.lua
 -- Collection browser and achievement viewer
 
+local Theme = require("UI.Theme")
+
 local CollectionUI = class()
 
 function CollectionUI:init(font, smallFont, layout)
@@ -12,6 +14,7 @@ function CollectionUI:init(font, smallFont, layout)
     -- Tabs
     self.currentTab = "achievements" -- "achievements", "jokers", "planets", "warps", "imprints", "sculptors"
     self.tabs = { "achievements", "jokers", "planets", "warps", "imprints", "sculptors" }
+    self.selectedTabIndex = 1
 
     -- Scroll state
     self.scrollOffset = 0
@@ -20,6 +23,22 @@ function CollectionUI:init(font, smallFont, layout)
     -- Cache
     self.achievementsList = {}
     self.collectionData = {}
+    
+    -- Cache theme colors for performance
+    self.colors = {
+        overlay = Theme.get("colors.overlay"),
+        background = Theme.get("colors.backgroundDark"),
+        panelBg = Theme.get("colors.panelBg"),
+        panelBgHover = Theme.get("colors.panelBgHover"),
+        text = Theme.get("colors.text"),
+        textMuted = Theme.get("colors.textMuted"),
+        primary = Theme.get("colors.primary"),
+        success = Theme.get("colors.success"),
+        successLight = Theme.lighten(Theme.get("colors.success"), 0.2),
+        gold = Theme.get("colors.gold"),
+        border = Theme.get("colors.border"),
+        borderLight = Theme.get("colors.borderLight")
+    }
 end
 
 function CollectionUI:show()
@@ -83,10 +102,10 @@ end
 function CollectionUI:update(dt)
     if not self.visible then return end
 
-    local mx, my = input.getMousePosition()
-    local clicked = input.isMouseButtonPressed("left")
+    local mx, my = inputmgr.getCursor()
+    local clicked = inputmgr.isActionJustPressed("confirm")
 
-    -- Tab switching
+    -- Tab switching with mouse
     local tabY = 100
     local tabX = 50
     local tabWidth = 150
@@ -97,16 +116,39 @@ function CollectionUI:update(dt)
         if mx >= tx and mx <= tx + tabWidth and my >= tabY and my <= tabY + tabHeight then
             if clicked then
                 self.currentTab = tab
+                self.selectedTabIndex = i
                 self.scrollOffset = 0
             end
         end
     end
 
-    -- Mouse wheel scrolling
-    -- Note: Would need mouse wheel input binding
+    -- Tab switching with controller (LB/RB or Tab)
+    if inputmgr.isActionJustPressed("tab_next") then
+        self.selectedTabIndex = self.selectedTabIndex + 1
+        if self.selectedTabIndex > #self.tabs then
+            self.selectedTabIndex = 1
+        end
+        self.currentTab = self.tabs[self.selectedTabIndex]
+        self.scrollOffset = 0
+    elseif inputmgr.isActionJustPressed("tab_previous") then
+        self.selectedTabIndex = self.selectedTabIndex - 1
+        if self.selectedTabIndex < 1 then
+            self.selectedTabIndex = #self.tabs
+        end
+        self.currentTab = self.tabs[self.selectedTabIndex]
+        self.scrollOffset = 0
+    end
+
+    -- Scrolling with controller or keyboard
+    local scrollSpeed = 30
+    if inputmgr.isActionPressed("navigate_up") then
+        self.scrollOffset = math.max(0, self.scrollOffset - scrollSpeed)
+    elseif inputmgr.isActionPressed("navigate_down") then
+        self.scrollOffset = math.min(self.maxScroll, self.scrollOffset + scrollSpeed)
+    end
 
     -- Close button
-    if input.isPressed("escape") or input.isPressed("c") then
+    if inputmgr.isActionJustPressed("cancel") or inputmgr.isActionJustPressed("open_menu") then
         self:hide()
         return "close"
     end
@@ -115,14 +157,13 @@ end
 function CollectionUI:draw()
     if not self.visible then return end
 
+    local winW, winH = graphics.getWindowSize()
+
     -- Dim background
-    graphics.setColor(0, 0, 0, 0.9)
-    graphics.rectangle("fill", 0, 0, 1280, 720)
-    graphics.setColor(1, 1, 1, 1)
+    graphics.drawRect(0, 0, winW, winH, self.colors.overlay, true)
 
     -- Title
-    graphics.setFont(self.font)
-    graphics.print("COLLECTION", 50, 30)
+    graphics.print(self.font, "COLLECTION", 50, 30, self.colors.text)
 
     -- Progress summary
     if MagicHandsAchievements then
@@ -130,13 +171,12 @@ function CollectionUI:draw()
         local unlocked = MagicHandsAchievements:countUnlocked()
         local total = MagicHandsAchievements:count()
 
-        graphics.setFont(self.smallFont)
-        graphics.print(string.format("Achievements: %d/%d (%.1f%%)", unlocked, total, progress), 500, 40)
+        graphics.print(self.smallFont, string.format("Achievements: %d/%d (%.1f%%)", unlocked, total, progress), 500, 40, self.colors.textMuted)
     end
 
     if UnlockSystem then
         local totalUnlocked = UnlockSystem:getTotalUnlocked()
-        graphics.print(string.format("Cards Unlocked: %d/121", totalUnlocked), 800, 40)
+        graphics.print(self.smallFont, string.format("Cards Unlocked: %d/121", totalUnlocked), 800, 40, self.colors.gold)
     end
 
     -- Tabs
@@ -151,9 +191,14 @@ function CollectionUI:draw()
         self:drawCollection(contentY, self.currentTab)
     end
 
-    -- Close hint
-    graphics.setFont(self.smallFont)
-    graphics.print("Press ESC or C to close", 50, 680)
+    -- Close hint (show controller prompts if gamepad active)
+    local hintText
+    if inputmgr.isGamepad() then
+        hintText = "[B] Close   [LB/RB] Switch Tabs   [D-Pad] Scroll"
+    else
+        hintText = "[ESC] Close   [Tab/Shift+Tab] Switch Tabs   [Arrow Keys] Scroll"
+    end
+    graphics.print(self.smallFont, hintText, 50, winH - 40, self.colors.textMuted)
 end
 
 function CollectionUI:drawTabs()
@@ -166,21 +211,22 @@ function CollectionUI:drawTabs()
         local tx = tabX + (i - 1) * (tabWidth + 10)
 
         -- Tab background
+        local bgColor
         if tab == self.currentTab then
-            graphics.setColor(0.3, 0.3, 0.5, 1)
+            bgColor = self.colors.primary
         else
-            graphics.setColor(0.15, 0.15, 0.2, 1)
+            bgColor = self.colors.background
         end
-        graphics.rectangle("fill", tx, tabY, tabWidth, tabHeight)
+        graphics.drawRect(tx, tabY, tabWidth, tabHeight, bgColor, true)
 
         -- Tab border
-        graphics.setColor(1, 1, 1, 1)
-        graphics.rectangle("line", tx, tabY, tabWidth, tabHeight)
+        local borderColor = tab == self.currentTab and self.colors.borderLight or self.colors.border
+        graphics.drawRect(tx, tabY, tabWidth, tabHeight, borderColor, false)
 
         -- Tab text
-        graphics.setFont(self.smallFont)
         local label = tab:gsub("^%l", string.upper)
-        graphics.print(label, tx + 10, tabY + 12)
+        local textColor = tab == self.currentTab and self.colors.text or self.colors.textMuted
+        graphics.print(self.smallFont, label, tx + 10, tabY + 12, textColor)
     end
 end
 
@@ -188,49 +234,32 @@ function CollectionUI:drawAchievements(startY)
     local y = startY - self.scrollOffset
     local itemHeight = 80
 
-    graphics.setFont(self.smallFont)
-
     for i, ach in ipairs(self.achievementsList) do
         if y > 150 and y < 700 then
             -- Achievement box
-            if ach.unlocked then
-                graphics.setColor(0.2, 0.4, 0.2, 0.8)
-            else
-                graphics.setColor(0.2, 0.2, 0.2, 0.8)
-            end
-            graphics.rectangle("fill", 50, y, 1180, itemHeight - 10)
+            local bgColor = ach.unlocked and Theme.withAlpha(self.colors.success, 0.2) or self.colors.panelBg
+            graphics.drawRect(50, y, 1180, itemHeight - 10, bgColor, true)
 
             -- Border
-            if ach.unlocked then
-                graphics.setColor(0.4, 0.8, 0.4, 1)
-            else
-                graphics.setColor(0.4, 0.4, 0.4, 1)
-            end
-            graphics.rectangle("line", 50, y, 1180, itemHeight - 10)
+            local borderColor = ach.unlocked and self.colors.successLight or self.colors.border
+            graphics.drawRect(50, y, 1180, itemHeight - 10, borderColor, false)
 
             -- Icon area (placeholder)
-            graphics.setColor(0.3, 0.3, 0.3, 1)
-            graphics.rectangle("fill", 60, y + 10, 50, 50)
+            graphics.drawRect(60, y + 10, 50, 50, self.colors.background, true)
 
             -- Achievement name
-            graphics.setColor(1, 1, 1, 1)
-            graphics.setFont(self.font)
             local prefix = ach.unlocked and "✓ " or "🔒 "
-            graphics.print(prefix .. ach.name, 120, y + 5)
+            graphics.print(self.font, prefix .. ach.name, 120, y + 5, self.colors.text)
 
             -- Description
-            graphics.setFont(self.smallFont)
-            graphics.setColor(0.8, 0.8, 0.8, 1)
-            graphics.print(ach.description, 120, y + 30)
+            graphics.print(self.smallFont, ach.description, 120, y + 30, self.colors.textMuted)
 
             -- Category badge
-            graphics.setColor(0.5, 0.5, 0.7, 1)
-            graphics.print("[" .. ach.category .. "]", 120, y + 50)
+            graphics.print(self.smallFont, "[" .. ach.category .. "]", 120, y + 50, self.colors.primary)
 
             -- Reward
             if ach.reward and ach.unlocked then
-                graphics.setColor(1, 0.8, 0.2, 1)
-                graphics.print("Reward: " .. ach.reward, 400, y + 50)
+                graphics.print(self.smallFont, "Reward: " .. ach.reward, 400, y + 50, self.colors.gold)
             end
         end
 
@@ -249,8 +278,6 @@ function CollectionUI:drawCollection(startY, category)
     local itemWidth = 280
     local spacing = 20
 
-    graphics.setFont(self.smallFont)
-
     -- Display unlocked items
     local count = 0
     for i, itemId in ipairs(items) do
@@ -262,21 +289,16 @@ function CollectionUI:drawCollection(startY, category)
 
         if cardY > 150 and cardY < 700 then
             -- Card box
-            graphics.setColor(0.2, 0.3, 0.4, 0.9)
-            graphics.rectangle("fill", x, cardY, itemWidth, itemHeight)
-
-            graphics.setColor(0.5, 0.7, 0.9, 1)
-            graphics.rectangle("line", x, cardY, itemWidth, itemHeight)
+            graphics.drawRect(x, cardY, itemWidth, itemHeight, self.colors.panelBg, true)
+            graphics.drawRect(x, cardY, itemWidth, itemHeight, self.colors.primary, false)
 
             -- Item name
-            graphics.setColor(1, 1, 1, 1)
-            graphics.print(itemId, x + 10, cardY + 10)
+            graphics.print(self.smallFont, itemId, x + 10, cardY + 10, self.colors.text)
 
             -- Try to load and show description
             local desc = self:getItemDescription(category, itemId)
             if desc then
-                graphics.setColor(0.8, 0.8, 0.8, 1)
-                graphics.print(desc, x + 10, cardY + 35)
+                graphics.print(self.smallFont, desc, x + 10, cardY + 35, self.colors.textMuted)
             end
         end
 
@@ -284,10 +306,8 @@ function CollectionUI:drawCollection(startY, category)
     end
 
     -- Show count
-    graphics.setFont(self.font)
-    graphics.setColor(1, 1, 1, 1)
     local totalPossible = self:getTotalInCategory(category)
-    graphics.print(string.format("Unlocked: %d/%d", #items, totalPossible), 50, startY - 40)
+    graphics.print(self.font, string.format("Unlocked: %d/%d", #items, totalPossible), 50, startY - 40, self.colors.text)
 
     self.maxScroll = math.max(0, math.ceil(#items / cols) * (itemHeight + spacing) - 500)
 end

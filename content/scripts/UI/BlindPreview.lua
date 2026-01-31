@@ -1,6 +1,7 @@
 -- BlindPreview.lua
 -- UI Screen shown before a blind starts
 
+local Theme = require("UI.Theme")
 local BlindPreview = class()
 local UIButton = require("UI.elements.UIButton")
 
@@ -28,18 +29,27 @@ function BlindPreview:init(font, smallFont, layout)
     self.btnWidth = 200
     self.btnHeight = 60
     
-    -- Create Play Button (without layout - we'll position it manually)
+    -- Create Play Button with success style (green)
     self.playButton = UIButton(nil, "PLAY", font, function()
         self.shouldStartBlind = true
-    end)
+    end, "success")
     
     -- Set button dimensions
     self.playButton.width = self.btnWidth
     self.playButton.height = self.btnHeight
     
-    -- Customize button colors (green theme)
-    self.playButton.bgColor = { r = 0.3, g = 0.6, b = 0.3, a = 1 }
-    self.playButton.hoverColor = { r = 0.4, g = 0.8, b = 0.4, a = 1 }
+    -- Cache theme colors
+    self.colors = {
+        overlay = Theme.get("colors.overlay"),
+        text = Theme.get("colors.text"),
+        textMuted = Theme.get("colors.textMuted"),
+        danger = Theme.get("colors.danger"),
+        dangerDark = Theme.darken(Theme.get("colors.danger"), 0.3),
+        primary = Theme.get("colors.primary"),
+        primaryDark = Theme.darken(Theme.get("colors.primary"), 0.3),
+        gold = Theme.get("colors.gold"),
+        border = Theme.get("colors.border")
+    }
 end
 
 function BlindPreview:show(blindData, reward)
@@ -68,11 +78,11 @@ function BlindPreview:update(dt, mx, my, clicked)
     self.playButton.x = x + (self.width - self.btnWidth) / 2
     self.playButton.y = y + self.height - self.btnHeight - 40
     
-    -- Update the play button
+    -- Update the play button with the mouse position and click state passed from GameScene
     self.playButton:update(dt, mx, my, clicked)
     
-    -- Also check for Enter key
-    if input.isPressed("return") then
+    -- Also check for Confirm action (Enter or A button) using InputManager
+    if inputmgr.isActionJustPressed("confirm") then
         self.shouldStartBlind = true
     end
     
@@ -86,13 +96,13 @@ function BlindPreview:draw()
     local w, h = self.width, self.height
 
     -- 1. Full Screen Dim Overlay
-    graphics.drawRect(0, 0, self.layout.screenWidth, self.layout.screenHeight, { r = 0, g = 0, b = 0, a = 0.85 }, true)
+    graphics.drawRect(0, 0, self.layout.screenWidth, self.layout.screenHeight, self.colors.overlay, true)
 
     -- 2. Modal Window Background
     -- Theme colors based on blind type
     local isBoss = self.blindData.type == "boss"
-    local bgColor = isBoss and { r = 0.15, g = 0.05, b = 0.05, a = 1 } or { r = 0.1, g = 0.1, b = 0.15, a = 1 }
-    local borderColor = isBoss and { r = 0.8, g = 0.2, b = 0.2, a = 1 } or { r = 0.4, g = 0.6, b = 0.8, a = 1 }
+    local bgColor = isBoss and self.colors.dangerDark or self.colors.primaryDark
+    local borderColor = isBoss and self.colors.danger or self.colors.primary
 
     graphics.drawRect(x, y, w, h, bgColor, true)
 
@@ -106,25 +116,22 @@ function BlindPreview:draw()
 
     -- Title
     local title = "BLIND: " .. self.blindData.type:upper()
-    local titleColor = { r = 1, g = 1, b = 1, a = 1 }
     local titleW = graphics.getTextSize(self.font, title)
-    graphics.print(self.font, title, cx - titleW / 2, y + 40, titleColor)
+    graphics.print(self.font, title, cx - titleW / 2, y + 40, self.colors.text)
 
     -- Separator
-    graphics.drawRect(x + 50, y + 80, w - 100, 2, { r = 0.5, g = 0.5, b = 0.5, a = 0.5 }, true)
+    graphics.drawRect(x + 50, y + 80, w - 100, 2, self.colors.border, true)
 
     -- Target Score
     local required = blind.getRequiredScore(self.blindData, 1.0) -- Assuming difficulty 1.0 for display
     local goalText = "Goal: " .. required
-    local goalColor = { r = 1, g = 0.3, b = 0.3, a = 1 }         -- Reddish
     local goalW = graphics.getTextSize(self.font, goalText)
-    graphics.print(self.font, goalText, cx - goalW / 2, y + 110, goalColor)
+    graphics.print(self.font, goalText, cx - goalW / 2, y + 110, self.colors.danger)
 
     -- Reward
     local rewardText = "Reward: " .. self.reward .. "g"
-    local rewardColor = { r = 1, g = 0.8, b = 0, a = 1 } -- Gold
     local rewardW = graphics.getTextSize(self.smallFont, rewardText)
-    graphics.print(self.smallFont, rewardText, cx - rewardW / 2, y + 150, rewardColor)
+    graphics.print(self.smallFont, rewardText, cx - rewardW / 2, y + 150, self.colors.gold)
 
     -- Boss Description Area
     if isBoss and self.blindData.bossId ~= "" then
@@ -138,28 +145,26 @@ function BlindPreview:draw()
             -- Description Box
             local descBoxY = y + 260
             local descBoxH = 80
-            graphics.drawRect(x + 60, descBoxY, w - 120, descBoxH, { r = 0, g = 0, b = 0, a = 0.3 }, true)
+            graphics.drawRect(x + 60, descBoxY, w - 120, descBoxH, Theme.withAlpha(self.colors.overlay, 0.5), true)
 
             -- Description Text (Centered)
             local descW = graphics.getTextSize(self.smallFont, boss.description)
-            graphics.print(self.smallFont, boss.description, cx - descW / 2, descBoxY + (descBoxH - 16) / 2,
-                { r = 0.9, g = 0.9, b = 0.9, a = 1 })
+            graphics.print(self.smallFont, boss.description, cx - descW / 2, descBoxY + (descBoxH - 16) / 2, self.colors.text)
         end
     else
         -- Standard Text
         local stdText = "Standard Rules"
         local stdW = graphics.getTextSize(self.smallFont, stdText)
-        graphics.print(self.smallFont, stdText, cx - stdW / 2, y + 240, { r = 0.6, g = 0.6, b = 0.6, a = 1 })
+        graphics.print(self.smallFont, stdText, cx - stdW / 2, y + 240, self.colors.textMuted)
     end
 
     -- 4. Draw Play Button using UIButton component
     self.playButton:draw()
 
-    -- Draw hint text below button
-    local hintText = "[Enter]"
+    -- Draw hint text below button (show controller prompts if gamepad active)
+    local hintText = inputmgr.isGamepad() and "[A] Play" or "[Enter] Play"
     local hintW = graphics.getTextSize(self.smallFont, hintText)
-    graphics.print(self.smallFont, hintText, cx - hintW / 2, self.playButton.y + self.btnHeight + 10,
-        { r = 0.5, g = 0.5, b = 0.5, a = 1 })
+    graphics.print(self.smallFont, hintText, cx - hintW / 2, self.playButton.y + self.btnHeight + 10, self.colors.textMuted)
 end
 
 return BlindPreview

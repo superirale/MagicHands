@@ -126,6 +126,7 @@ add_executable(MagicHand
     src/graphics/SpriteRenderer.cpp
     src/physics/PhysicsSystem.cpp
     src/input/InputSystem.cpp
+    src/input/InputManager.cpp
     src/audio/AudioSystem.cpp
     src/graphics/FontRenderer.cpp
     src/core/JsonUtils.cpp

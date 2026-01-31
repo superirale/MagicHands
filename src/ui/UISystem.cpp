@@ -125,6 +125,15 @@ void UISystem::ParseElement(lua_State *L, const std::string &name) {
     lua_pop(L, 1);
   };
 
+  // Helper lambda to get boolean field
+  auto getBool = [&](const char *key, bool &out) {
+    lua_getfield(L, -1, key);
+    if (lua_isboolean(L, -1)) {
+      out = lua_toboolean(L, -1);
+    }
+    lua_pop(L, 1);
+  };
+
   // Parse all properties
   getNumber("X", element->x);
   getNumber("Y", element->y);
@@ -146,6 +155,13 @@ void UISystem::ParseElement(lua_State *L, const std::string &name) {
   getString("Font", element->font);
   getString("Text", element->text);
   getString("AttachTo", element->attachTo);
+  
+  // Parse 9-slice properties
+  getBool("Use9Slice", element->use9Slice);
+  getNumber("SliceLeft", element->sliceLeft);
+  getNumber("SliceRight", element->sliceRight);
+  getNumber("SliceTop", element->sliceTop);
+  getNumber("SliceBottom", element->sliceBottom);
 
   // Handle InheritFrom - copy parent properties first, then override
   std::string inheritFrom;
@@ -251,4 +267,19 @@ void UISystem::Hide(const std::string &name, bool immediate) {
       element->fadeOpacity = 0.0f;
     }
   }
+}
+
+void UISystem::SetScaleFactor(float scale) {
+  m_ScaleFactor = scale;
+  LOG_INFO("UI scale factor set to: %.2f", scale);
+}
+
+void UISystem::CalculateScaleFactor(int windowWidth, int windowHeight) {
+  // Calculate scale based on smallest dimension to ensure UI fits on screen
+  float scaleW = static_cast<float>(windowWidth) / m_BaseWidth;
+  float scaleH = static_cast<float>(windowHeight) / m_BaseHeight;
+  m_ScaleFactor = std::min(scaleW, scaleH);
+  
+  LOG_DEBUG("Window: %dx%d, Base: %dx%d, Auto-calculated scale: %.2f", 
+            windowWidth, windowHeight, m_BaseWidth, m_BaseHeight, m_ScaleFactor);
 }

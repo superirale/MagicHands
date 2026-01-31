@@ -17,6 +17,7 @@ extern "C" {
 #include "graphics/ParticleSystem.h"
 #include "graphics/SpriteRenderer.h"
 #include "input/InputSystem.h"
+#include "input/InputManager.h"
 #include "physics/NoiseGenerator.h"
 #include "physics/PhysicsSystem.h"
 #include "ui/UISystem.h"
@@ -103,6 +104,7 @@ int main(int argc, char *argv[]) {
   // Register Physics & Input & Audio & Font
   Engine::Instance().Physics().RegisterLua(L);
   InputSystem::RegisterLua(L);
+  InputManager::RegisterLua(L);  // Gamepad & unified input
   AudioSystem::RegisterLua(L);
   FontRenderer::RegisterLua(L);
   // Register JSON utilities (Phase 5: now includes file I/O)

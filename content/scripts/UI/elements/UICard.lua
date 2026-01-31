@@ -1,5 +1,6 @@
 -- UICard.lua
 local UIElement = require("UI.elements.UIElement")
+local Theme = require("UI.Theme")
 local UICard = class(UIElement)
 
 function UICard:init(layout_name, jokerData, font, onClick)
@@ -8,37 +9,44 @@ function UICard:init(layout_name, jokerData, font, onClick)
     self.font = font
     self.onClick = onClick
     self.isHoveredState = false
-    self.width = 220
-    self.height = 300
+    
+    -- Load sizes from theme
+    self.width = Theme.get("sizes.cardWidth")
+    self.height = Theme.get("sizes.cardHeight")
 
-    -- Visual config
+    -- Load colors from theme
     self.colors = {
-        bg = { r = 0.15, g = 0.15, b = 0.18, a = 1 },
-        hoverBg = { r = 0.2, g = 0.2, b = 0.23, a = 1 },
-        text = { r = 1, g = 1, b = 1, a = 1 },
-        desc = { r = 0.9, g = 0.9, b = 0.9, a = 1 },
-        priceBg = { r = 0, g = 0, b = 0, a = 0.3 },
-        buyText = { r = 0.4, g = 1, b = 0.4, a = 1 },
-        shadow = { r = 0, g = 0, b = 0, a = 0.5 }
+        bg = Theme.get("colors.panelBg"),
+        hoverBg = Theme.get("colors.panelBgHover"),
+        text = Theme.get("colors.text"),
+        desc = Theme.get("colors.textMuted"),
+        priceBg = Theme.get("colors.overlayLight"),
+        buyText = Theme.get("colors.success"),
+        shadow = Theme.get("colors.shadow")
     }
 
+    -- Get rarity colors from theme
     self.rarityColors = {
-        common      = { r = 0.4, g = 0.6, b = 0.8, a = 1 },
-        uncommon    = { r = 0.2, g = 0.7, b = 0.4, a = 1 },
-        rare        = { r = 0.8, g = 0.3, b = 0.3, a = 1 },
-        legendary   = { r = 0.9, g = 0.8, b = 0.2, a = 1 },
-        enhancement = { r = 0.5, g = 0.4, b = 0.8, a = 1 },
-        default     = { r = 0.5, g = 0.5, b = 0.5, a = 1 }
+        common = Theme.get("colors.rarityCommon"),
+        uncommon = Theme.get("colors.rarityUncommon"),
+        rare = Theme.get("colors.rarityRare"),
+        legendary = Theme.get("colors.rarityLegendary"),
+        enhancement = Theme.get("colors.rarityEnhancement"),
+        default = Theme.get("colors.secondary")
     }
     
-    -- Padding configuration for description section
+    -- Load padding configuration from theme
     self.padding = {
-        top = 20,      -- Space from header to description
-        left = 10,     -- Left padding for description text
-        right = 10,    -- Right padding for description text
-        bottom = 10,   -- Space from description to footer
-        lineSpacing = 20  -- Space between description lines
+        top = Theme.get("sizes.cardPadding") * 2,
+        left = Theme.get("sizes.cardPadding"),
+        right = Theme.get("sizes.cardPadding"),
+        bottom = Theme.get("sizes.cardPadding"),
+        lineSpacing = Theme.get("sizes.cardLineSpacing")
     }
+    
+    -- Cache header and footer heights from theme
+    self.headerHeight = Theme.get("sizes.cardHeaderHeight")
+    self.footerHeight = Theme.get("sizes.cardFooterHeight")
 end
 
 -- Set padding for description section
@@ -52,9 +60,7 @@ end
 
 -- Get the available content area for description (accounting for header, footer, and padding)
 function UICard:getContentArea()
-    local headerHeight = 50
-    local footerHeight = 40
-    local contentHeight = self.height - headerHeight - footerHeight - self.padding.top - self.padding.bottom
+    local contentHeight = self.height - self.headerHeight - self.footerHeight - self.padding.top - self.padding.bottom
     local contentWidth = self.width - self.padding.left - self.padding.right
     return contentWidth, contentHeight
 end
@@ -132,22 +138,24 @@ function UICard:draw()
 
     -- Outline on hover
     if self.isHoveredState then
-        graphics.drawRect(self.x - 2, self.y - 2, self.width + 4, self.height + 4, rarityColor, true)
+        local borderWidth = Theme.get("sizes.borderWidth")
+        graphics.drawRect(self.x - borderWidth, self.y - borderWidth, 
+                         self.width + borderWidth * 2, self.height + borderWidth * 2, 
+                         rarityColor, true)
     end
 
     -- Main Body
     graphics.drawRect(self.x, self.y, self.width, self.height, bgColor, true)
 
     -- Header (Rarity)
-    local headerHeight = 50
-    graphics.drawRect(self.x, self.y, self.width, headerHeight, rarityColor, true)
+    graphics.drawRect(self.x, self.y, self.width, self.headerHeight, rarityColor, true)
     
     -- Title (Properly Centered)
     if self.font then
         local textW, textH, baselineOffset = graphics.getTextSize(self.font, self.jokerData.name)
         local tx = self.x + (self.width - textW) / 2
         -- Center the text vertically: position the baseline so the visual center of text is in center of header
-        local ty = self.y + (headerHeight - textH) / 2 + baselineOffset
+        local ty = self.y + (self.headerHeight - textH) / 2 + baselineOffset
 
         -- Shadow for depth
         graphics.print(self.font, self.jokerData.name, tx + 1, ty + 1, self.colors.shadow)
@@ -155,7 +163,7 @@ function UICard:draw()
     end
 
     -- Description (Wrapped with padding)
-    local descY = self.y + headerHeight + self.padding.top
+    local descY = self.y + self.headerHeight + self.padding.top
     local descX = self.x + self.padding.left
     local availableWidth = self.width - self.padding.left - self.padding.right
     
@@ -165,29 +173,28 @@ function UICard:draw()
     end
 
     -- Footer / Price
-    local priceH = 40
-    local priceY = self.y + self.height - priceH
-    graphics.drawRect(self.x, priceY, self.width, priceH, self.colors.priceBg, true)
+    local priceY = self.y + self.height - self.footerHeight
+    graphics.drawRect(self.x, priceY, self.width, self.footerHeight, self.colors.priceBg, true)
 
-    local priceColor = { r = 1, g = 0.8, b = 0.2, a = 1 }
-
+    -- Determine price color based on affordability
+    local priceColor = Theme.get("colors.gold")
     if Economy and Economy.gold < self.jokerData.price then
-        priceColor = { r = 0.8, g = 0.2, b = 0.2, a = 1 }
+        priceColor = Theme.get("colors.danger")
     end
 
     -- Price text (left side, vertically centered)
     local priceText = self.jokerData.price .. "g"
     local priceW, priceTextH, priceBaselineOffset = graphics.getTextSize(self.font, priceText)
-    local priceTX = self.x + 15  -- Left padding
-    local priceTY = priceY + (priceH - priceTextH) / 2 + priceBaselineOffset
+    local priceTX = self.x + Theme.get("sizes.padding") + 5
+    local priceTY = priceY + (self.footerHeight - priceTextH) / 2 + priceBaselineOffset
     graphics.print(self.font, priceText, priceTX, priceTY, priceColor)
 
     -- BUY Text on Hover (right side, vertically centered)
     if self.isHoveredState then
         local buyText = "BUY"
         local buyW, buyTextH, buyBaselineOffset = graphics.getTextSize(self.font, buyText)
-        local buyTX = self.x + self.width - buyW - 15  -- Right padding
-        local buyTY = priceY + (priceH - buyTextH) / 2 + buyBaselineOffset
+        local buyTX = self.x + self.width - buyW - Theme.get("sizes.padding") - 5
+        local buyTY = priceY + (self.footerHeight - buyTextH) / 2 + buyBaselineOffset
         graphics.print(self.font, buyText, buyTX, buyTY, self.colors.buyText)
     end
 end

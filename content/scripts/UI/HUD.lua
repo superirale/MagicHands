@@ -1,12 +1,24 @@
 -- HUD.lua
 -- Heads-up Display for score and status
 
+local Theme = require("UI.Theme")
+
 local HUD = class()
 
 function HUD:init(font, smallFont, layout)
     self.font = font
     self.smallFont = smallFont
     self.layout = layout -- Store layout instance
+    
+    -- Cache theme colors for performance
+    self.colors = {
+        background = Theme.get("colors.overlay"),
+        text = Theme.get("colors.text"),
+        textMuted = Theme.get("colors.textMuted"),
+        gold = Theme.get("colors.gold"),
+        danger = Theme.get("colors.danger"),
+        dangerLight = Theme.lighten(Theme.get("colors.danger"), 0.2)
+    }
 
     -- Register Layout Regions (Responsive Anchors)
     -- Top Bar elements
@@ -34,48 +46,52 @@ function HUD:draw(state)
 
     -- Top Bar background (Responsive Width)
     local winW, winH = graphics.getWindowSize()
-    graphics.drawRect(0, 0, winW, 80, { r = 0, g = 0, b = 0, a = 0.6 }, true)
+    graphics.drawRect(0, 0, winW, 80, self.colors.background, true)
 
     -- Blind Info
     local bx, by = self.layout:getPosition("HUD_Blind")
-    graphics.print(self.font, "Blind: " .. currentBlind.type:upper(), bx, by)
-    graphics.print(self.smallFont, "Score: " .. state.currentScore .. " / " .. required, bx, by + 30)
+    graphics.print(self.font, "Blind: " .. currentBlind.type:upper(), bx, by, self.colors.text)
+    graphics.print(self.smallFont, "Score: " .. state.currentScore .. " / " .. required, bx, by + 30, self.colors.textMuted)
 
     -- Stats
     local hx, hy = self.layout:getPosition("HUD_Hands")
-    graphics.print(self.smallFont, "Hands: " .. state.handsRemaining, hx, hy)
+    graphics.print(self.smallFont, "Hands: " .. state.handsRemaining, hx, hy, self.colors.text)
     local dx, dy = self.layout:getPosition("HUD_Discards")
-    graphics.print(self.smallFont, "Discards: " .. state.discardsRemaining, dx, dy)
+    graphics.print(self.smallFont, "Discards: " .. state.discardsRemaining, dx, dy, self.colors.text)
     local gx, gy = self.layout:getPosition("HUD_Gold")
-    graphics.print(self.smallFont, "Gold: " .. Economy.gold, gx, gy)
+    graphics.print(self.smallFont, "Gold: " .. Economy.gold, gx, gy, self.colors.gold)
 
     -- Act Info
     local ax, ay = self.layout:getPosition("HUD_Act")
-    graphics.print(self.font, "Act " .. state.currentAct, ax, ay)
+    graphics.print(self.font, "Act " .. state.currentAct, ax, ay, self.colors.text)
 
     -- Boss Info (if active)
     local BossManager = require("criblage/BossManager")
     if BossManager.activeBoss then
         local box, boy = self.layout:getPosition("HUD_Boss")
-        graphics.print(self.font, "BOSS: " .. BossManager.activeBoss.name, box, boy, { r = 1, g = 0, b = 0, a = 1 })
-        graphics.print(self.smallFont, BossManager.activeBoss.description, box, boy + 30,
-            { r = 1, g = 0.5, b = 0.5, a = 1 })
+        graphics.print(self.font, "BOSS: " .. BossManager.activeBoss.name, box, boy, self.colors.danger)
+        graphics.print(self.smallFont, BossManager.activeBoss.description, box, boy + 30, self.colors.dangerLight)
     end
 
     -- Jokers Display
     local jokers = JokerManager:getJokers()
     if #jokers > 0 then
         local jx, jy = self.layout:getPosition("HUD_Jokers")
-        graphics.print(self.font, "Jokers:", jx, jy - 100, { r = 1, g = 0.8, b = 0, a = 1 })
+        graphics.print(self.font, "Jokers:", jx, jy - 100, self.colors.gold)
         for i, jokerId in ipairs(jokers) do
-            graphics.print(self.smallFont, (i) .. ". " .. jokerId, jx, jy - 75 + (i - 1) * 20,
-                { r = 0.9, g = 0.9, b = 0.9, a = 1 })
+            graphics.print(self.smallFont, (i) .. ". " .. jokerId, jx, jy - 75 + (i - 1) * 20, self.colors.textMuted)
         end
     end
 
-    -- Controls Help
+    -- Controls Help (show controller prompts if gamepad active)
     local cx, cy = self.layout:getPosition("HUD_Controls")
-    graphics.print(self.smallFont, "[Enter] Play Hand   [Backspace] Discard", cx, cy)
+    local controlsText
+    if inputmgr.isGamepad() then
+        controlsText = "[A] Play Hand   [X] Discard   [Start] Menu"
+    else
+        controlsText = "[Enter] Play Hand   [Backspace] Discard   [F1] Settings"
+    end
+    graphics.print(self.smallFont, controlsText, cx, cy, self.colors.textMuted)
 end
 
 return HUD

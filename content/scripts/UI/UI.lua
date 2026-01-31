@@ -4,10 +4,15 @@
 require "content.scripts.UI.UIData"
 require "content.scripts.UI.UILogic"
 require "content.scripts.UI.UIDefinitions"
+local Theme = require("UI.Theme")
+local UIScale = require("UI.UIScale")
 
 UI = {}
 
 function UI.init()
+    -- Initialize scaling system (auto-detect window size)
+    UIScale.init()
+    
     -- Build UI from C++ (parses UIDefinitions table)
     ui.build()
 end

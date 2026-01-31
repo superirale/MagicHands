@@ -312,6 +312,30 @@ int Lua_UIHide(lua_State *L) {
   return 0;
 }
 
+int Lua_UISetScaleFactor(lua_State *L) {
+  float scale = (float)luaL_checknumber(L, 1);
+  g_UISystem.SetScaleFactor(scale);
+  return 0;
+}
+
+int Lua_UIGetScaleFactor(lua_State *L) {
+  lua_pushnumber(L, g_UISystem.GetScaleFactor());
+  return 1;
+}
+
+int Lua_UIScale(lua_State *L) {
+  float value = (float)luaL_checknumber(L, 1);
+  lua_pushnumber(L, g_UISystem.Scale(value));
+  return 1;
+}
+
+int Lua_UICalculateScaleFactor(lua_State *L) {
+  int width = (int)luaL_checkinteger(L, 1);
+  int height = (int)luaL_checkinteger(L, 2);
+  g_UISystem.CalculateScaleFactor(width, height);
+  return 0;
+}
+
 // --- UILayout Bindings ---
 
 int Lua_LayoutInit(lua_State *L) {
@@ -606,6 +630,14 @@ void LuaBindings::Register(lua_State *L) {
   lua_setfield(L, -2, "show");
   lua_pushcfunction(L, Lua_UIHide);
   lua_setfield(L, -2, "hide");
+  lua_pushcfunction(L, Lua_UISetScaleFactor);
+  lua_setfield(L, -2, "setScaleFactor");
+  lua_pushcfunction(L, Lua_UIGetScaleFactor);
+  lua_setfield(L, -2, "getScaleFactor");
+  lua_pushcfunction(L, Lua_UIScale);
+  lua_setfield(L, -2, "scale");
+  lua_pushcfunction(L, Lua_UICalculateScaleFactor);
+  lua_setfield(L, -2, "calculateScaleFactor");
   lua_setglobal(L, "ui");
 
   // Register Layout

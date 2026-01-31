@@ -33,12 +33,14 @@ ShopUI.KnownImprints = {
     wildcard_imprint = true
 }
 
+-- Rarity colors are now loaded from Theme, but keep this for backward compatibility
+local Theme = require("UI.Theme")
 ShopUI.RarityColors = {
-    common      = { r = 0.4, g = 0.6, b = 0.8, a = 1 }, -- Blueish
-    uncommon    = { r = 0.2, g = 0.7, b = 0.4, a = 1 }, -- Greenish
-    rare        = { r = 0.8, g = 0.3, b = 0.3, a = 1 }, -- Red
-    legendary   = { r = 0.9, g = 0.8, b = 0.2, a = 1 }, -- Gold
-    enhancement = { r = 0.5, g = 0.4, b = 0.8, a = 1 }, -- Purple
+    common      = Theme.get("colors.rarityCommon"),
+    uncommon    = Theme.get("colors.rarityUncommon"),
+    rare        = Theme.get("colors.rarityRare"),
+    legendary   = Theme.get("colors.rarityLegendary"),
+    enhancement = Theme.get("colors.rarityEnhancement")
 }
 
 local UIButton = require("UI.elements.UIButton")
@@ -62,20 +64,15 @@ function ShopUI:init(font, layout)
     self.layout:register("Shop_SellJokers", { anchor = "bottom-left", width = 200, height = 60, offsetX = 220, offsetY = 0 })
     self.layout:register("Shop_Next", { anchor = "bottom-right", width = 200, height = 60, offsetX = 0, offsetY = 0 })
 
-    -- Initialize Buttons
+    -- Initialize Buttons with theme-based styles
     self.nextButton = UIButton("Shop_Next", "Next Round >", self.font, function()
         self.shouldClose = true
-    end)
-    -- Custom colors for Next button
-    self.nextButton.bgColor = { r = 0.8, g = 0.2, b = 0.2, a = 1 }
-    self.nextButton.hoverColor = { r = 0.9, g = 0.3, b = 0.3, a = 1 }
-
+    end, "danger")  -- Red button for ending shop
+    
     self.rerollButton = UIButton("Shop_Reroll", "Reroll", self.font, function()
         Shop:reroll()
         self:rebuildCards()
-    end)
-    self.rerollButton.bgColor = { r = 0.3, g = 0.3, b = 0.8, a = 1 }
-    self.rerollButton.hoverColor = { r = 0.4, g = 0.4, b = 0.9, a = 1 }
+    end, "primary")  -- Blue button for reroll
     
     self.sellButton = UIButton("Shop_SellJokers", "Sell Jokers", self.font, function()
         self.sellMode = not self.sellMode
@@ -84,9 +81,7 @@ function ShopUI:init(font, layout)
         else
             log.info("Sell mode disabled")
         end
-    end)
-    self.sellButton.bgColor = { r = 0.6, g = 0.4, b = 0.1, a = 1 }
-    self.sellButton.hoverColor = { r = 0.8, g = 0.5, b = 0.2, a = 1 }
+    end, "warning")  -- Gold/orange button for sell
     
     self.sellMode = false
     self.sellPrice = 25  -- Default sell price (half of typical buy price)
@@ -310,13 +305,13 @@ function ShopUI:update(dt, mx, my, clicked)
     self.sellButton:setSize(sr.width, sr.height)
     self.sellButton:update(dt, mx, my, clicked)
     
-    -- Update sell button text based on mode
+    -- Update sell button text and style based on mode
     if self.sellMode then
         self.sellButton.text = "Cancel Sell"
-        self.sellButton.bgColor = { r = 0.8, g = 0.3, b = 0.1, a = 1 }
+        self.sellButton:setStyle("danger")  -- Red when in sell mode
     else
         self.sellButton.text = "Sell Jokers"
-        self.sellButton.bgColor = { r = 0.6, g = 0.4, b = 0.1, a = 1 }
+        self.sellButton:setStyle("warning")  -- Gold/orange for normal sell button
     end
     
     -- Handle joker selling in sell mode

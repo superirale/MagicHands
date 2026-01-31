@@ -38,6 +38,13 @@ struct UIElement {
     std::string graphic;
     int textureId = 0;
     
+    // 9-slice settings
+    bool use9Slice = false;
+    float sliceLeft = 0.0f;
+    float sliceRight = 0.0f;
+    float sliceTop = 0.0f;
+    float sliceBottom = 0.0f;
+    
     // Text
     std::string font;
     float fontSize = 20.0f;
@@ -71,10 +78,23 @@ public:
     void Show(const std::string& name, bool immediate = false);
     void Hide(const std::string& name, bool immediate = false);
     
+    // UI Scaling
+    void SetScaleFactor(float scale);
+    float GetScaleFactor() const { return m_ScaleFactor; }
+    float Scale(float value) const { return value * m_ScaleFactor; }
+    
+    // Auto-calculate scale based on window size
+    void CalculateScaleFactor(int windowWidth, int windowHeight);
+    
 private:
     std::unordered_map<std::string, std::unique_ptr<UIElement>> m_Elements;
     SpriteRenderer* m_Renderer = nullptr;
     FontRenderer* m_FontRenderer = nullptr;
+    
+    // UI Scaling
+    float m_ScaleFactor = 1.0f;  // 1.0 = 1280x720 base resolution
+    int m_BaseWidth = 1280;
+    int m_BaseHeight = 720;
     
     void ParseElement(lua_State* L, const std::string& name);
     void ResolveHierarchy();

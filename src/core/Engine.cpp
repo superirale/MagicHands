@@ -5,6 +5,7 @@
 #include "core/Profiler.h"
 #include "gameplay/cribbage/effects/EffectFactory.h"
 #include "graphics/FontRenderer.h"
+#include "input/InputManager.h"
 
 Engine &Engine::Instance() {
   static Engine instance;
@@ -59,6 +60,10 @@ bool Engine::Init() {
     LOG_ERROR("Failed to initialize InputSystem");
     return false;
   }
+
+  // Initialize InputManager (gamepad/unified input)
+  InputManager::Instance().Init();
+  LOG_INFO("InputManager initialized");
 
   // Initialize font renderer (depends on SpriteRenderer)
   FontRenderer::Init(&m_Renderer);
@@ -117,6 +122,9 @@ void Engine::Update(float dt) {
   // This MUST happen before game logic uses input
   m_Input.Update();
 
+  // Update InputManager (gamepad + unified input)
+  InputManager::Instance().Update(dt);
+
   // Update audio system
   AudioSystem::Update(dt);
 
@@ -129,6 +137,10 @@ void Engine::Update(float dt) {
 
 void Engine::Destroy() {
   LOG_DEBUG("Engine destroying subsystems...");
+
+  // Shutdown InputManager
+  InputManager::Instance().Shutdown();
+  LOG_INFO("InputManager shut down");
 
   // Unsubscribe from WindowManager events
   if (m_ResizeCallbackHandle != 0) {
