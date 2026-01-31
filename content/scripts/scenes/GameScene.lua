@@ -15,6 +15,8 @@ local EnhancementManager = require("criblage/EnhancementManager")
 local EffectManager = require("visuals/EffectManager")
 local AudioManager = require("audio/AudioManager")
 local Camera = require("Camera")
+local GameSceneLayout = require("scenes/GameSceneLayout")
+print("GameSceneLayout loaded successfully!")
 
 -- Phase 3: Meta-progression & Polish
 local MagicHandsAchievements = require("Systems/MagicHandsAchievements")
@@ -38,9 +40,22 @@ GameScene = class()
 
 function GameScene:init()
     print("Initializing Game Scene (Constructor)...")
+    
+    -- Store reference resolution (what we design for)
+    self.referenceWidth = 1280
+    self.referenceHeight = 720
 
     -- Initialize Camera (1280x720 fixed viewport)
     self.camera = Camera({ viewportWidth = 1280, viewportHeight = 720 })
+    
+    -- CRITICAL: Set viewport immediately
+    graphics.setViewport(1280, 720)
+    print("GameScene: Viewport set to 1280x720")
+    
+    -- Calculate initial UI scale factor
+    local winW, winH = graphics.getWindowSize()
+    self.uiScale = math.min(winW / self.referenceWidth, winH / self.referenceHeight)
+    print(string.format("GameScene UI Scale: %.2f (screen: %dx%d)", self.uiScale, winW, winH))
 
     -- Initialize Campaign
     CampaignState:init()
@@ -122,13 +137,10 @@ function GameScene:init()
     self.addToCribButton = UIButton(nil, "Add to Crib", self.font, function()
         self:addSelectedCardsToCrib()
     end)
-    self.addToCribButton.x = 980
-    self.addToCribButton.y = 420
-    self.addToCribButton.width = 240
-    self.addToCribButton.height = 50
     self.addToCribButton.bgColor = { r = 0.2, g = 0.6, b = 0.3, a = 1 }
     self.addToCribButton.hoverColor = { r = 0.3, g = 0.8, b = 0.4, a = 1 }
     self.addToCribButton.visible = false -- Only show during DEAL state
+    self:updateAddToCribButtonPosition()  -- Set initial scaled position
 
     -- Initialize AutoPlay if enabled
     if AutoPlay and AUTOPLAY_MODE then
@@ -146,6 +158,19 @@ end
 function GameScene:enter()
     print("Entered Game Scene")
     self:startNewHand()
+end
+
+function GameScene:scale(value)
+    return value * self.uiScale
+end
+
+function GameScene:updateAddToCribButtonPosition()
+    -- Use layout system for positioning
+    local buttonLayout = GameSceneLayout.getPosition("addToCribButton")
+    self.addToCribButton.x = buttonLayout.x
+    self.addToCribButton.y = buttonLayout.y
+    self.addToCribButton.width = buttonLayout.width
+    self.addToCribButton.height = buttonLayout.height
 end
 
 function GameScene:addSelectedCardsToCrib()
@@ -265,21 +290,25 @@ function GameScene:startNewHand()
     -- Cut card
     self.cutCard = table.remove(self.deckList)
 
-    -- Create visual cards
+    -- Create visual cards using layout system
     self.cardViews = {}
     -- Rebuild crib views from CampaignState (don't reset crib - it persists!)
     self:rebuildCribViews()
-    local startX = 200
-    local startY = 500
-    local spacing = 110
-
+    
+    -- Position hand cards using relative layout
+    local startX, startY, spacing = GameSceneLayout.getCenteredHandPosition(#self.hand)
+    print(string.format("Hand cards: startX=%.0f, startY=%.0f, spacing=%.0f, count=%d", 
+        startX, startY, spacing, #self.hand))
     for i, card in ipairs(self.hand) do
-        local view = CardView(card, startX + (i - 1) * spacing, startY, self.cardAtlas, self.smallFont)
+        local x = startX + (i - 1) * spacing
+        local view = CardView(card, x, startY, self.cardAtlas, self.smallFont)
         table.insert(self.cardViews, view)
     end
 
-    -- Create cut card view (displayed at top center)
-    self.cutCardView = CardView(self.cutCard, 585, 200, self.cardAtlas, self.smallFont)
+    -- Create cut card view using layout system
+    local cutX, cutY = GameSceneLayout.getPosition("cutCard")
+    print(string.format("Cut card: x=%.0f, y=%.0f", cutX, cutY))
+    self.cutCardView = CardView(self.cutCard, cutX, cutY, self.cardAtlas, self.smallFont)
 
     self.state = "PLAY"
     print("Hand dealt: " .. #self.hand .. " cards")
@@ -287,13 +316,13 @@ end
 
 function GameScene:rebuildCribViews()
     self.cribViews = {}
-    local startX = 990
-    local startY = 490
-    local spacing = 120 -- Spacing for 2 slots (980, 1100)
-
     local CardView = require("visuals/CardView")
+    
+    -- Position crib cards using layout system
     for i, card in ipairs(CampaignState.crib) do
-        local view = CardView(card, startX + (i - 1) * spacing, startY, self.cardAtlas, self.smallFont)
+        local x, y = GameSceneLayout.getPosition("crib", {slotIndex = i})
+        print(string.format("Crib card %d: x=%.0f, y=%.0f", i, x, y))
+        local view = CardView(card, x, y, self.cardAtlas, self.smallFont)
         table.insert(self.cribViews, view)
     end
 end
@@ -317,6 +346,10 @@ function GameScene:update(dt)
         self.lastWinW = winW
         self.lastWinH = winH
 
+        -- Recalculate UI scale factor
+        self.uiScale = math.min(winW / self.referenceWidth, winH / self.referenceHeight)
+        print(string.format("GameScene UI Scale updated: %.2f", self.uiScale))
+
         -- Re-apply viewport to force zoom recalculation in C++
         if self.camera and self.camera.viewportWidth and self.camera.viewportHeight then
             graphics.setViewport(self.camera.viewportWidth, self.camera.viewportHeight)
@@ -328,6 +361,9 @@ function GameScene:update(dt)
             print("DEBUG GameScene: Updating UILayout size")
             self.uiLayout:updateScreenSize(winW, winH)
         end
+        
+        -- Update "Add to Crib" button position
+        self:updateAddToCribButtonPosition()
     end
 
     -- Update CRT Shader
@@ -1253,7 +1289,8 @@ function GameScene:draw()
 
         -- Phase 3: Draw keyboard shortcuts helper text
         if self.state == "PLAY" then
-            graphics.print(self.smallFont, "[C] Collection  [TAB] Stats  [Z] Undo", 20, 680,
+            local shortcutX, shortcutY = GameSceneLayout.getPosition("shortcuts")
+            graphics.print(self.smallFont, "[C] Collection  [TAB] Stats  [Z] Undo", shortcutX, shortcutY,
                 { r = 0.7, g = 0.7, b = 0.7, a = 0.8 })
         end
 

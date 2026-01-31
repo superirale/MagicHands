@@ -94,7 +94,7 @@ function ShopUI:updateJokerLabels()
     
     if not JokerManager or not JokerManager.slots then return end
     
-    local winW, winH = graphics.getWindowSize()
+    local winW, winH = self.layout.screenWidth, self.layout.screenHeight
     local jokerW = 120
     local jokerH = 40
     local jokerSpacing = 10
@@ -194,7 +194,7 @@ function ShopUI:handleJokerSellClick(mx, my)
     if not JokerManager or not JokerManager.slots then return nil end
     
     -- Joker display area (centered at top of screen)
-    local winW, winH = graphics.getWindowSize()
+    local winW, winH = self.layout.screenWidth, self.layout.screenHeight
     local jokerW = 120
     local jokerH = 40
     local jokerSpacing = 10
@@ -280,8 +280,8 @@ function ShopUI:update(dt, mx, my, clicked)
         self:rebuildCards()
     end
 
-    -- Layout Constants
-    local winW, winH = graphics.getWindowSize()
+    -- Layout Constants (use layout dimensions for proper scaling)
+    local winW, winH = self.layout.screenWidth, self.layout.screenHeight
 
     -- Update Buttons Position & State
     local nx, ny = self.layout:getPosition("Shop_Next")
