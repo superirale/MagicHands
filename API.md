@@ -453,3 +453,9 @@ lua_setfield(L, -2, "drawCircle");
 ---
 
 **This is the complete Magic Hands Lua API. Use only these functions - others do not exist!**
+
+
+
+What is the meaning of this message in console:
+Happens when I tried to buy item from shop:
+Failed: Item is not a deck sculptor
