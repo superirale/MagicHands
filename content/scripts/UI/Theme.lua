@@ -303,6 +303,10 @@ end
 
 -- Copy color table (for modifications)
 function Theme.copyColor(color)
+    if not color then
+        print("WARNING: Theme.copyColor called with nil color")
+        return { r = 0, g = 0, b = 0, a = 1 }  -- Return black as fallback
+    end
     return { r = color.r, g = color.g, b = color.b, a = color.a }
 end
 

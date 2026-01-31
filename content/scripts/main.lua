@@ -11,6 +11,7 @@ require "Core"
 require "Scenes"
 
 -- Game Scenes
+require "scenes/MenuScene"
 require "scenes/GameScene"
 
 -- Object Pool & Console
@@ -23,8 +24,8 @@ thread(function()
     -- Initialize console
     Console.init()
 
-    -- Start Criblage Game
-    SceneManager.switch("GameScene")
+    -- Start with Main Menu
+    SceneManager.switch("MenuScene")
 end)
 
 function update(dt)

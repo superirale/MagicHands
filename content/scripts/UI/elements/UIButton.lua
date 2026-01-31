@@ -59,7 +59,9 @@ function UIButton:update(dt, mx, my, isPressed)
     -- Check Click ("mouse_left")
     if self.isHoveredState and pressed and not self.wasClicked then
         self.wasClicked = true
-        if self.onClick then self.onClick() end
+        if self.onClick then 
+            self.onClick() 
+        end
     elseif not pressed then
         self.wasClicked = false
     end
@@ -88,7 +90,7 @@ function UIButton:draw()
     graphics.drawRect(self.x, self.y, self.width, self.height, borderColor, false)
 
     -- Draw Text (Properly Centered)
-    if self.font then
+    if self.font and self.font ~= -1 then
         local textColor = self.disabled and self.disabledColor or self.textColor
         local textW, textH, baselineOffset = graphics.getTextSize(self.font, self.text)
         local tx = self.x + (self.width - textW) / 2

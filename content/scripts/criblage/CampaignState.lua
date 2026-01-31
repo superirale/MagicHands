@@ -70,6 +70,11 @@ function CampaignState:initDeck()
     end
 end
 
+-- Reset campaign state (for new game)
+function CampaignState:reset()
+    self:init()
+end
+
 -- Return a COPY of the master deck for the current hand
 function CampaignState:getDeck()
     local deckCopy = {}
