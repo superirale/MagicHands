@@ -16,16 +16,7 @@ local EffectManager = require("visuals/EffectManager")
 local AudioManager = require("audio/AudioManager")
 local Camera = require("Camera")
 local GameSceneLayout = require("scenes/GameSceneLayout")
-
--- NEW: Refactored UI Architecture
-local CoordinateSystem = require("UI/CoordinateSystem")
-local UIEvents = require("UI/UIEvents")
-local UILayer = require("UI/UILayer")
-local LayoutManager = require("UI/LayoutManager")
-local InputHandler = require("UI/InputHandler")
-local CardViewModel = require("visuals/CardViewModel")
-local CardViewRefactored = require("visuals/CardViewRefactored")
-print("[GameScene] New UI architecture loaded!")
+print("GameSceneLayout loaded successfully!")
 
 -- Phase 3: Meta-progression & Polish
 local MagicHandsAchievements = require("Systems/MagicHandsAchievements")
@@ -54,23 +45,6 @@ function GameScene:init()
     self.referenceWidth = 1280
     self.referenceHeight = 720
 
-    -- NEW: Initialize Coordinate System (FIRST - before anything else)
-    local winW, winH = graphics.getWindowSize()
-    CoordinateSystem.init(winW, winH)
-    print("[GameScene] CoordinateSystem initialized: " .. winW .. "x" .. winH)
-    
-    -- NEW: Initialize Input Handler
-    self.inputHandler = InputHandler()
-    print("[GameScene] InputHandler initialized")
-    
-    -- NEW: Setup Rendering Pipeline
-    self.renderPipeline = UILayer.createStandardPipeline()
-    print("[GameScene] Rendering pipeline created")
-    
-    -- NEW: Setup Layout Manager
-    self.layoutManager = LayoutManager.Container(self.referenceWidth, self.referenceHeight)
-    print("[GameScene] LayoutManager initialized")
-
     -- Initialize Camera (1280x720 fixed viewport)
     self.camera = Camera({ viewportWidth = 1280, viewportHeight = 720 })
     
@@ -78,13 +52,10 @@ function GameScene:init()
     graphics.setViewport(1280, 720)
     print("GameScene: Viewport set to 1280x720")
     
-    -- Calculate initial UI scale factor (kept for backward compatibility)
-    self.uiScale = CoordinateSystem.getScale()
+    -- Calculate initial UI scale factor
+    local winW, winH = graphics.getWindowSize()
+    self.uiScale = math.min(winW / self.referenceWidth, winH / self.referenceHeight)
     print(string.format("GameScene UI Scale: %.2f (screen: %dx%d)", self.uiScale, winW, winH))
-    
-    -- NEW: Setup UI Event Listeners
-    self:setupEventListeners()
-    print("[GameScene] UI event listeners registered")
 
     -- Initialize Campaign
     CampaignState:init()
@@ -177,108 +148,6 @@ function GameScene:init()
     end
 
     print("Game Scene initialized!")
-    
-    -- NEW: Track if using new architecture for cards
-    self.useNewCardSystem = true
-    self.cardViewModels = {}  -- New system: CardViewModels
-    -- self.cardViews remains for backward compatibility
-end
-
---- NEW: Setup UI Event Listeners
-function GameScene:setupEventListeners()
-    -- Card selection events
-    UIEvents.on("card:selected", function(data)
-        self:onCardSelected(data.cardIndex)
-    end)
-    
-    UIEvents.on("card:deselected", function(data)
-        self:onCardDeselected(data.cardIndex)
-    end)
-    
-    -- Card drag events
-    UIEvents.on("card:dragStart", function(data)
-        self:onCardDragStart(data.cardIndex, data.startX, data.startY)
-    end)
-    
-    UIEvents.on("card:dragEnd", function(data)
-        self:onCardDragEnd(data.cardIndex, data.x, data.y)
-    end)
-    
-    -- Input shortcuts
-    UIEvents.on("input:confirm", function()
-        if self.state == "PLAY" then
-            self:playHand()
-        end
-    end)
-    
-    UIEvents.on("input:discard", function()
-        if self.state == "PLAY" then
-            self:discardSelected()
-        end
-    end)
-    
-    UIEvents.on("input:sortByRank", function()
-        if self.state == "PLAY" then
-            self:sortHand("rank")
-        end
-    end)
-    
-    UIEvents.on("input:sortBySuit", function()
-        if self.state == "PLAY" then
-            self:sortHand("suit")
-        end
-    end)
-end
-
---- NEW: Card selection handler
-function GameScene:onCardSelected(cardIndex)
-    print("[GameScene] Card selected: " .. cardIndex)
-    -- Spawn sparkles effect
-    if self.cardViewModels[cardIndex] then
-        local vm = self.cardViewModels[cardIndex]
-        local x, y = vm:getRenderPosition()
-        EffectManager:spawnSparkles(x + 50, y + 70, 5)
-    end
-end
-
---- NEW: Card deselection handler
-function GameScene:onCardDeselected(cardIndex)
-    print("[GameScene] Card deselected: " .. cardIndex)
-end
-
---- NEW: Card drag start handler
-function GameScene:onCardDragStart(cardIndex, startX, startY)
-    print("[GameScene] Drag start: " .. cardIndex)
-    self.draggingCardIndex = cardIndex
-end
-
---- NEW: Card drag end handler (drop logic)
-function GameScene:onCardDragEnd(cardIndex, x, y)
-    print("[GameScene] Drag end: " .. cardIndex .. " at " .. x .. ", " .. y)
-    
-    -- Check if dropped in crib zone (right side: ~980-1220, 480-640)
-    if x > 980 and x < 1220 and y > 480 and y < 640 and #CampaignState.crib < 2 then
-        -- Add card to crib
-        local card = self.hand[cardIndex]
-        if card then
-            table.remove(self.hand, cardIndex)
-            table.insert(CampaignState.crib, card)
-            
-            -- Rebuild views
-            self:rebuildHandViews()
-            self:rebuildCribViews()
-            
-            print("[GameScene] Card added to crib")
-        end
-    else
-        -- Snap back to hand position
-        print("[GameScene] Card snapped back to hand")
-        if self.cardViewModels[cardIndex] then
-            self:repositionCards()
-        end
-    end
-    
-    self.draggingCardIndex = nil
 end
 
 function GameScene:onInit()
@@ -421,42 +290,25 @@ function GameScene:startNewHand()
     -- Cut card
     self.cutCard = table.remove(self.deckList)
 
-    -- NEW: Create visual cards using CardViewModel
-    if self.useNewCardSystem then
-        self.cardViewModels = {}
-        
-        -- Position hand cards using relative layout
-        local startX, startY, spacing = GameSceneLayout.getCenteredHandPosition(#self.hand)
-        print(string.format("[NEW] Hand cards: startX=%.0f, startY=%.0f, spacing=%.0f, count=%d", 
-            startX, startY, spacing, #self.hand))
-        
-        for i, card in ipairs(self.hand) do
-            local x = startX + (i - 1) * spacing
-            local vm = CardViewModel(card, x, startY, i)
-            table.insert(self.cardViewModels, vm)
-        end
-        
-        -- Create cut card view model
-        local cutX, cutY = GameSceneLayout.getPosition("cutCard")
-        print(string.format("[NEW] Cut card: x=%.0f, y=%.0f", cutX, cutY))
-        self.cutCardViewModel = CardViewModel(self.cutCard, cutX, cutY, 0)
-    else
-        -- OLD: Legacy CardView system (backward compatibility)
-        self.cardViews = {}
-        
-        local startX, startY, spacing = GameSceneLayout.getCenteredHandPosition(#self.hand)
-        for i, card in ipairs(self.hand) do
-            local x = startX + (i - 1) * spacing
-            local view = CardView(card, x, startY, self.cardAtlas, self.smallFont)
-            table.insert(self.cardViews, view)
-        end
-        
-        local cutX, cutY = GameSceneLayout.getPosition("cutCard")
-        self.cutCardView = CardView(self.cutCard, cutX, cutY, self.cardAtlas, self.smallFont)
-    end
-    
+    -- Create visual cards using layout system
+    self.cardViews = {}
     -- Rebuild crib views from CampaignState (don't reset crib - it persists!)
     self:rebuildCribViews()
+    
+    -- Position hand cards using relative layout
+    local startX, startY, spacing = GameSceneLayout.getCenteredHandPosition(#self.hand)
+    print(string.format("Hand cards: startX=%.0f, startY=%.0f, spacing=%.0f, count=%d", 
+        startX, startY, spacing, #self.hand))
+    for i, card in ipairs(self.hand) do
+        local x = startX + (i - 1) * spacing
+        local view = CardView(card, x, startY, self.cardAtlas, self.smallFont)
+        table.insert(self.cardViews, view)
+    end
+
+    -- Create cut card view using layout system
+    local cutX, cutY = GameSceneLayout.getPosition("cutCard")
+    print(string.format("Cut card: x=%.0f, y=%.0f", cutX, cutY))
+    self.cutCardView = CardView(self.cutCard, cutX, cutY, self.cardAtlas, self.smallFont)
 
     self.state = "PLAY"
     print("Hand dealt: " .. #self.hand .. " cards")
@@ -487,11 +339,6 @@ function GameScene:update(dt)
         AutoPlay:update(self, dt)
     end
 
-    -- NEW: Process input via InputHandler
-    if self.inputHandler then
-        self.inputHandler:update(dt)
-    end
-    
     -- Check for window resize to update viewport scaling and UI Layout
     local winW, winH = graphics.getWindowSize()
     if winW ~= self.lastWinW or winH ~= self.lastWinH then
@@ -499,11 +346,8 @@ function GameScene:update(dt)
         self.lastWinW = winW
         self.lastWinH = winH
 
-        -- NEW: Update CoordinateSystem
-        CoordinateSystem.updateScreenSize(winW, winH)
-        
         -- Recalculate UI scale factor
-        self.uiScale = CoordinateSystem.getScale()
+        self.uiScale = math.min(winW / self.referenceWidth, winH / self.referenceHeight)
         print(string.format("GameScene UI Scale updated: %.2f", self.uiScale))
 
         -- Re-apply viewport to force zoom recalculation in C++
@@ -512,53 +356,14 @@ function GameScene:update(dt)
             print("Camera: Window resized to " .. winW .. "x" .. winH .. ". Re-applying viewport.")
         end
 
-        -- Update UI Layout (old system)
+        -- Update UI Layout
         if self.uiLayout then
             print("DEBUG GameScene: Updating UILayout size")
             self.uiLayout:updateScreenSize(winW, winH)
         end
         
-        -- NEW: Update LayoutManager
-        if self.layoutManager then
-            self.layoutManager:setSize(self.referenceWidth, self.referenceHeight)
-        end
-        
         -- Update "Add to Crib" button position
         self:updateAddToCribButtonPosition()
-        
-        -- NEW: Reposition cards
-        if self.useNewCardSystem then
-            self:repositionCards()
-        end
-    end
-    
-    -- NEW: Update CardViewModels (animation)
-    if self.useNewCardSystem and self.state == "PLAY" then
-        -- Get viewport mouse position from InputHandler
-        local viewportX, viewportY = 0, 0
-        if self.inputHandler then
-            viewportX, viewportY = self.inputHandler:getMousePosition()
-        end
-        
-        for i, vm in ipairs(self.cardViewModels) do
-            vm:update(dt)
-            
-            -- Handle hover
-            vm:handleInput("hover", viewportX, viewportY)
-        end
-        
-        -- Handle dragging
-        if self.draggingCardIndex and self.cardViewModels[self.draggingCardIndex] then
-            local vm = self.cardViewModels[self.draggingCardIndex]
-            if vm.isDragging then
-                vm:handleInput("drag", viewportX, viewportY)
-            end
-        end
-        
-        -- Update cut card
-        if self.cutCardViewModel then
-            self.cutCardViewModel:update(dt)
-        end
     end
 
     -- Update CRT Shader
@@ -672,69 +477,23 @@ function GameScene:update(dt)
             self:startNewHand()
         end
     elseif self.state == "PLAY" then
-        -- NEW: Use new input system or fallback to old
-        if self.useNewCardSystem then
-            -- NEW SYSTEM: Input handled via UIEvents and InputHandler
-            -- Update Score Preview
-            local selectedCards = {}
-            for i, vm in ipairs(self.cardViewModels) do
-                if vm.isSelected then
-                    table.insert(selectedCards, self.hand[i])
-                end
-            end
-
-            if #selectedCards == 4 and self.cutCard then
-                -- Calculate score preview
-                self.scorePreviewData = ScorePreview.calculate(selectedCards, self.cutCard)
-            else
-                self.scorePreviewData = nil
-            end
-            
-            -- Get viewport mouse position
-            local viewportX, viewportY = 0, 0
-            if self.inputHandler then
-                viewportX, viewportY = self.inputHandler:getMousePosition()
-            end
-            
-            -- Handle click for starting drag
-            if mLeft and not self.lastMouseState.left then
-                -- Mouse just pressed
-                for i, vm in ipairs(self.cardViewModels) do
-                    if vm:hitTest(viewportX, viewportY) then
-                        vm:handleInput("dragStart", viewportX, viewportY)
-                        self.draggingCardIndex = i
-                        break
-                    end
-                end
-            end
-            
-            -- Handle mouse release (end drag or click)
-            if not mLeft and self.lastMouseState.left then
-                if self.draggingCardIndex and self.cardViewModels[self.draggingCardIndex] then
-                    local vm = self.cardViewModels[self.draggingCardIndex]
-                    vm:handleInput("dragEnd", viewportX, viewportY)
-                end
-            end
-            
-        else
-            -- OLD SYSTEM: Legacy input handling
-            local selectedCards = {}
-            for i, view in ipairs(self.cardViews) do
-                if view.selected then
-                    table.insert(selectedCards, self.hand[i])
-                end
-            end
-
-            if #selectedCards == 4 and self.cutCard then
-                -- Calculate score preview
-                self.scorePreviewData = ScorePreview.calculate(selectedCards, self.cutCard)
-            else
-                self.scorePreviewData = nil
+        -- Update Score Preview
+        local selectedCards = {}
+        for i, view in ipairs(self.cardViews) do
+            if view.selected then
+                table.insert(selectedCards, self.hand[i])
             end
         end
 
-        -- OLD: Handle Dragging State (legacy system)
-        if not self.useNewCardSystem and self.draggingView then
+        if #selectedCards == 4 and self.cutCard then
+            -- Calculate score preview
+            self.scorePreviewData = ScorePreview.calculate(selectedCards, self.cutCard)
+        else
+            self.scorePreviewData = nil
+        end
+
+        -- Handle Dragging State
+        if self.draggingView then
             -- Update Position
             self.draggingView.currentX = mx - self.dragOffset.x
             self.draggingView.currentY = my - self.dragOffset.y
@@ -800,47 +559,43 @@ function GameScene:update(dt)
             end
         end
 
-        -- OLD: Update Targets & Logic (legacy system only)
-        if not self.useNewCardSystem then
-            for i, view in ipairs(self.cardViews) do
-                -- Start Dragging
-                if clicked and not self.draggingView and view:isHovered(mx, my) then
-                    self.draggingView = view
-                    view.isDragging = true
-                    self.dragOffset.x = mx - view.currentX
-                    self.dragOffset.y = my - view.currentY
-                    self.dragStartX = mx
-                    self.dragStartY = my
+        -- Update Targets & Logic
+        for i, view in ipairs(self.cardViews) do
+            -- Start Dragging
+            if clicked and not self.draggingView and view:isHovered(mx, my) then
+                self.draggingView = view
+                view.isDragging = true
+                self.dragOffset.x = mx - view.currentX
+                self.dragOffset.y = my - view.currentY
+                self.dragStartX = mx
+                self.dragStartY = my
 
-                    -- AudioManager:playHover() -- Pickup sound
-                end
-
-                -- Set Target Layout (Grid)
-                view.targetX = startX + (i - 1) * spacing
-                -- Target Y handled inside CardView based on selection
-
-                view:update(dt, mx, my, clicked)
+                -- AudioManager:playHover() -- Pickup sound
             end
+
+            -- Set Target Layout (Grid)
+            view.targetX = startX + (i - 1) * spacing
+            -- Target Y handled inside CardView based on selection
+
+            view:update(dt, mx, my, clicked)
         end
 
-        -- Play Button Logic (handled by UIEvents in new system, kept for compatibility)
-        if not self.useNewCardSystem then
-            if input.isPressed("return") then
-                self:playHand()
-            end
+        -- Play Button Logic (Simulated by pressing Enter for now)
+        if input.isPressed("return") then
+            self:playHand()
+        end
 
-            -- Discard Button Logic
-            if input.isPressed("backspace") then
-                self:discardSelected()
-            end
+        -- Discard Button Logic (Simulated by pressing Backspace)
+        if input.isPressed("backspace") then
+            self:discardSelected()
+        end
 
-            -- Sorting Keys
-            if input.isPressed("1") then
-                self:sortHand("rank")
-            end
-            if input.isPressed("2") then
-                self:sortHand("suit")
-            end
+        -- Sorting Keys
+        if input.isPressed("1") then
+            self:sortHand("rank")
+        end
+        if input.isPressed("2") then
+            self:sortHand("suit")
         end
     end
 
@@ -890,19 +645,9 @@ end
 
 function GameScene:playHand()
     local selectedCards = {}
-    
-    -- NEW: Get selected cards from CardViewModels or old CardViews
-    if self.useNewCardSystem then
-        for i, vm in ipairs(self.cardViewModels) do
-            if vm.isSelected then
-                table.insert(selectedCards, self.hand[i])
-            end
-        end
-    else
-        for i, view in ipairs(self.cardViews) do
-            if view.selected then
-                table.insert(selectedCards, self.hand[i])
-            end
+    for i, view in ipairs(self.cardViews) do
+        if view.selected then
+            table.insert(selectedCards, self.hand[i])
         end
     end
 
@@ -1390,25 +1135,8 @@ function GameScene:sortHand(criteria)
     end)
 
     -- Rebuild Views
-    if self.useNewCardSystem then
-        self:repositionCards()
-    else
-        self:rebuildHandViews()
-    end
+    self:rebuildHandViews()
     -- AudioManager:playDeal()
-end
-
---- NEW: Reposition cards (for sorting, resize, etc.)
-function GameScene:repositionCards()
-    if not self.cardViewModels then return end
-    
-    local numCards = #self.hand
-    local startX, startY, spacing = GameSceneLayout.getCenteredHandPosition(numCards)
-    
-    for i, vm in ipairs(self.cardViewModels) do
-        local x = startX + (i - 1) * spacing
-        vm:setTargetPosition(x, startY)
-    end
 end
 
 function GameScene:rebuildHandViews()
@@ -1468,20 +1196,12 @@ function GameScene:discardSelected()
     -- MVP Discard Logic via CampaignState
     if CampaignState:useDiscard() then
         -- 1. Identify indices to remove
+        -- We removed table.insert(..., 1, i) which reverses it.
+        -- Let's stick to simple list of indices and sort descending to remove safely.
         local indicesToRemove = {}
-        
-        -- NEW: Get selected cards from CardViewModels or old CardViews
-        if self.useNewCardSystem then
-            for i, vm in ipairs(self.cardViewModels) do
-                if vm.isSelected then
-                    table.insert(indicesToRemove, i)
-                end
-            end
-        else
-            for i, view in ipairs(self.cardViews) do
-                if view.selected then
-                    table.insert(indicesToRemove, i)
-                end
+        for i, view in ipairs(self.cardViews) do
+            if view.selected then
+                table.insert(indicesToRemove, i)
             end
         end
 
@@ -1527,29 +1247,16 @@ function GameScene:discardSelected()
         end
 
         -- 4. Recreate visuals (Full redraw of HAND views only, Preserving Cut Card View)
-        if self.useNewCardSystem then
-            -- NEW: Rebuild CardViewModels
-            self.cardViewModels = {}
-            local startX, startY, spacing = GameSceneLayout.getCenteredHandPosition(#self.hand)
-            
-            for i, card in ipairs(self.hand) do
-                local x = startX + (i - 1) * spacing
-                local vm = CardViewModel(card, x, startY, i)
-                table.insert(self.cardViewModels, vm)
-            end
-        else
-            -- OLD: Legacy CardView system
-            self.cardViews = {}
-            local startX = 200
-            local startY = 500
-            local spacing = 110
-            
-            local CardView = require("visuals/CardView")
-            
-            for i, card in ipairs(self.hand) do
-                local view = CardView(card, startX + (i - 1) * spacing, startY, self.cardAtlas, self.smallFont)
-                table.insert(self.cardViews, view)
-            end
+        self.cardViews = {}
+        local startX = 200
+        local startY = 500
+        local spacing = 110
+        
+        local CardView = require("visuals/CardView")
+        
+        for i, card in ipairs(self.hand) do
+            local view = CardView(card, startX + (i - 1) * spacing, startY, self.cardAtlas, self.smallFont)
+            table.insert(self.cardViews, view)
         end
 
         print("Discard used. " .. CampaignState.discardsRemaining .. " left.")
@@ -1587,34 +1294,17 @@ function GameScene:draw()
                 { r = 0.7, g = 0.7, b = 0.7, a = 0.8 })
         end
 
-        -- NEW: Draw cards using new system
-        if self.useNewCardSystem then
-            -- Draw cut card
-            if self.cutCardViewModel then
-                CardViewRefactored.draw(self.cutCardViewModel, self.cardAtlas, self.smallFont)
-            end
-            
-            -- Draw hand cards
-            for _, vm in ipairs(self.cardViewModels) do
-                CardViewRefactored.draw(vm, self.cardAtlas, self.smallFont)
-            end
-            
-            -- Draw crib cards (still using old system for now)
-            for _, view in ipairs(self.cribViews) do
-                view:draw()
-            end
-        else
-            -- OLD: Legacy rendering
-            if self.cutCardView then
-                self.cutCardView:draw()
-            end
-            
-            for _, view in ipairs(self.cardViews) do
-                view:draw()
-            end
-            for _, view in ipairs(self.cribViews) do
-                view:draw()
-            end
+        -- Draw Cut Card
+        if self.cutCardView then
+            self.cutCardView:draw()
+        end
+
+        -- Draw Cards
+        for _, view in ipairs(self.cardViews) do
+            view:draw()
+        end
+        for _, view in ipairs(self.cribViews) do
+            view:draw()
         end
 
         -- Draw Add to Crib button
