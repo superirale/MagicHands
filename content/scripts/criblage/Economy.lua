@@ -2,7 +2,7 @@
 
 Economy = {
     gold = 0,
-    baseReward = 50
+    baseReward = 20
 }
 
 function Economy:init()
@@ -27,14 +27,14 @@ function Economy:calculateReward(blindType, scoreAchieved, required)
     -- Base reward varies by blind type
     local base = self.baseReward
     if blindType == "big" then
-        base = base * 2
+        base = 30
     elseif blindType == "boss" then
-        base = base * 5
+        base = 50
     end
 
     -- Bonus for exceeding blind requirement
     local excess = scoreAchieved - required
-    local bonus = math.floor(excess / 100) * 5
+    local bonus = math.floor(excess / 100) * 1
 
     return base + bonus
 end

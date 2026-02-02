@@ -18,10 +18,10 @@ CampaignState = {
 
     blindsCleared = 0,
     crib = {}, -- Persistent crib for the current blind
-    
+
     -- Starting advantage (roguelike blessing)
     startingAdvantage = nil,
-    firstBlindHandBonus = 0  -- Extra cards for first blind only
+    firstBlindHandBonus = 0 -- Extra cards for first blind only
 }
 
 function CampaignState:init()
@@ -42,7 +42,7 @@ function CampaignState:init()
     BossManager:init()
 
     self:initDeck()
-    
+
     -- Roll and apply starting advantage
     self.startingAdvantage = StartingAdvantage:rollAdvantage()
     StartingAdvantage:apply(self.startingAdvantage, self)
@@ -142,23 +142,35 @@ function CampaignState:splitCard(idx)
         local card = self.masterDeck[idx]
         local rank = card.rank
         local suit = card.suit
-        
+
         -- Rank lookup tables
-        local rankValues = { A = 1, ["2"] = 2, ["3"] = 3, ["4"] = 4, ["5"] = 5, 
-                            ["6"] = 6, ["7"] = 7, ["8"] = 8, ["9"] = 9, ["10"] = 10, 
-                            J = 11, Q = 12, K = 13 }
+        local rankValues = {
+            A = 1,
+            ["2"] = 2,
+            ["3"] = 3,
+            ["4"] = 4,
+            ["5"] = 5,
+            ["6"] = 6,
+            ["7"] = 7,
+            ["8"] = 8,
+            ["9"] = 9,
+            ["10"] = 10,
+            J = 11,
+            Q = 12,
+            K = 13
+        }
         local valueToRank = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" }
-        
+
         -- Remove original card
         table.remove(self.masterDeck, idx)
-        
+
         -- Get numeric value of current rank
         local rankValue = rankValues[rank]
         if not rankValue then
             print("ERROR: Invalid rank: " .. tostring(rank))
             return false
         end
-        
+
         -- Add lower rank card (wrapping from A to K)
         local lowerValue = rankValue - 1
         if lowerValue < 1 then lowerValue = 13 end
@@ -168,7 +180,7 @@ function CampaignState:splitCard(idx)
             suit = suit,
             id = "split_" .. lowerRank .. suit .. os.time()
         })
-        
+
         -- Add higher rank card (wrapping from K to A)
         local higherValue = rankValue + 1
         if higherValue > 13 then higherValue = 1 end
@@ -178,7 +190,7 @@ function CampaignState:splitCard(idx)
             suit = suit,
             id = "split_" .. higherRank .. suit .. (os.time() + 1)
         })
-        
+
         return true
     end
     return false
@@ -208,17 +220,17 @@ function CampaignState:equalizeSuits()
     if #self.masterDeck < 4 then
         return false, "Deck too small to equalize"
     end
-    
-    local suits = {0, 1, 2, 3} -- Hearts, Diamonds, Clubs, Spades
+
+    local suits = { 0, 1, 2, 3 } -- Hearts, Diamonds, Clubs, Spades
     local cardsPerSuit = math.floor(#self.masterDeck / 4)
     local remainder = #self.masterDeck % 4
-    
+
     -- Collect all cards
     local allCards = {}
     for _, card in ipairs(self.masterDeck) do
         table.insert(allCards, card)
     end
-    
+
     -- Redistribute suits evenly
     local newDeck = {}
     local suitIdx = 1
@@ -237,7 +249,7 @@ function CampaignState:equalizeSuits()
         if suitIdx > 4 then suitIdx = 4 end
         table.insert(newDeck, card)
     end
-    
+
     self.masterDeck = newDeck
     return true, "Deck equalized"
 end
@@ -259,30 +271,42 @@ function CampaignState:ascendRank(idx)
     if idx < 1 or idx > #self.masterDeck then
         return false, 0
     end
-    
+
     local targetCard = self.masterDeck[idx]
     local targetRank = targetCard.rank
-    
+
     -- Rank lookup tables
-    local rankValues = { A = 1, ["2"] = 2, ["3"] = 3, ["4"] = 4, ["5"] = 5, 
-                        ["6"] = 6, ["7"] = 7, ["8"] = 8, ["9"] = 9, ["10"] = 10, 
-                        J = 11, Q = 12, K = 13 }
+    local rankValues = {
+        A = 1,
+        ["2"] = 2,
+        ["3"] = 3,
+        ["4"] = 4,
+        ["5"] = 5,
+        ["6"] = 6,
+        ["7"] = 7,
+        ["8"] = 8,
+        ["9"] = 9,
+        ["10"] = 10,
+        J = 11,
+        Q = 12,
+        K = 13
+    }
     local valueToRank = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" }
-    
+
     -- Calculate next rank (wrap King → Ace)
     local rankValue = rankValues[targetRank]
     if not rankValue then
         return false, 0
     end
-    
+
     local newValue = rankValue + 1
     if newValue > 13 then
         newValue = 1
     end
     local newRank = valueToRank[newValue]
-    
+
     local upgraded = 0
-    
+
     -- Find and upgrade all cards with target rank
     for _, card in ipairs(self.masterDeck) do
         if card.rank == targetRank then
@@ -290,14 +314,14 @@ function CampaignState:ascendRank(idx)
             -- Update card ID to avoid conflicts
             card.id = "ascend_" .. newRank .. card.suit .. os.time() .. upgraded
             upgraded = upgraded + 1
-            
+
             -- Clear imprints when rank changes
             if self.cardImprints[card.id] then
                 self.cardImprints[card.id] = nil
             end
         end
     end
-    
+
     return upgraded > 0, upgraded
 end
 
@@ -306,30 +330,42 @@ function CampaignState:collapseRank(idx)
     if idx < 1 or idx > #self.masterDeck then
         return false, 0
     end
-    
+
     local targetCard = self.masterDeck[idx]
     local targetRank = targetCard.rank
-    
+
     -- Rank lookup tables
-    local rankValues = { A = 1, ["2"] = 2, ["3"] = 3, ["4"] = 4, ["5"] = 5, 
-                        ["6"] = 6, ["7"] = 7, ["8"] = 8, ["9"] = 9, ["10"] = 10, 
-                        J = 11, Q = 12, K = 13 }
+    local rankValues = {
+        A = 1,
+        ["2"] = 2,
+        ["3"] = 3,
+        ["4"] = 4,
+        ["5"] = 5,
+        ["6"] = 6,
+        ["7"] = 7,
+        ["8"] = 8,
+        ["9"] = 9,
+        ["10"] = 10,
+        J = 11,
+        Q = 12,
+        K = 13
+    }
     local valueToRank = { "A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K" }
-    
+
     -- Calculate lower rank (wrap Ace → King)
     local rankValue = rankValues[targetRank]
     if not rankValue then
         return false, 0
     end
-    
+
     local lowerValue = rankValue - 1
     if lowerValue < 1 then
         lowerValue = 13
     end
     local lowerRank = valueToRank[lowerValue]
-    
+
     local collapsed = 0
-    
+
     -- Find and collapse all cards with lower rank into target rank
     for _, card in ipairs(self.masterDeck) do
         if card.rank == lowerRank then
@@ -337,14 +373,14 @@ function CampaignState:collapseRank(idx)
             -- Update card ID to avoid conflicts
             card.id = "collapse_" .. targetRank .. card.suit .. os.time() .. collapsed
             collapsed = collapsed + 1
-            
+
             -- Clear imprints when rank changes
             if self.cardImprints[card.id] then
                 self.cardImprints[card.id] = nil
             end
         end
     end
-    
+
     return collapsed > 0, collapsed
 end
 
@@ -469,14 +505,14 @@ function CampaignState:advanceBlind()
     self.discardsRemaining = 3
     self.currentScore = 0
     self.crib = {} -- Clear crib for new blind
-    
+
     -- Clear first blind hand bonus after blind 1
     if self.currentBlind > 1 then
         self.firstBlindHandBonus = 0
     end
 
     -- Generate shop
-    Shop:generateJokers(self.currentAct)
+    Shop:generateJokers(self.currentAct, true)
 end
 
 function CampaignState:playHand(score)

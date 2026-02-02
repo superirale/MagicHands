@@ -110,8 +110,27 @@ function Shop:selectRarity(act)
     end
 end
 
-function Shop:generateJokers(act)
+function Shop:getItemBuyPrice(id)
+    -- Check common
+    for _, jId in ipairs(self.jokerPool.common) do if jId == id then return self:getJokerPrice("common") end end
+    -- Check uncommon
+    for _, jId in ipairs(self.jokerPool.uncommon) do if jId == id then return self:getJokerPrice("uncommon") end end
+    -- Check rare
+    for _, jId in ipairs(self.jokerPool.rare) do if jId == id then return self:getJokerPrice("rare") end end
+    -- Check legendary
+    for _, jId in ipairs(self.jokerPool.legendary) do if jId == id then return self:getJokerPrice("legendary") end end
+
+    -- Check enhancements (flat price)
+    for _, eId in ipairs(self.enhancementPool) do if eId == id then return 30 end end
+
+    return 20 -- Default fallback
+end
+
+function Shop:generateJokers(act, resetCost)
     self.jokers = {}
+    if resetCost then
+        self.shopRerollCost = 10 -- Reset reroll cost for new shop
+    end
 
     local attempts = 0
     while #self.jokers < self.jokerSlots and attempts < 50 do
@@ -210,7 +229,7 @@ function Shop:buyJoker(index)
                 spectral_rainbow = true,
                 spectral_fusion = true
             }
-            
+
             if sculptorSpectrals[item.id] then
                 -- Return signal to open DeckView or selection UI
                 -- We verify funds first but don't charge yet
@@ -256,11 +275,15 @@ function Shop:reroll()
         return false, "Not enough gold for reroll"
     end
 
+    -- Increment reroll cost (1.2x scaling)
+    self.shopRerollCost = math.floor(self.shopRerollCost * 1.2)
+
     -- Emit reroll event
     events.emit("shop_reroll", { cost = self.shopRerollCost })
 
-    -- Regenerate with current act
-    self:generateJokers(CampaignState.currentAct or 1)
+    -- Regenerate with current act, but DON'T reset cost
+    self:generateJokers(CampaignState.currentAct or 1, false)
+
     return true, "Shop rerolled"
 end
 
@@ -344,7 +367,7 @@ function Shop:applySculptor(shopIndex, cardIndex, action)
         spectral_ascend = true,
         spectral_collapse = true
     }
-    
+
     if not validSculptors[item.id] then
         return false, "Item is not a deck sculptor"
     end
@@ -360,16 +383,13 @@ function Shop:applySculptor(shopIndex, cardIndex, action)
     if item.id == "spectral_remove" then
         success = CampaignState:removeCard(cardIndex)
         msg = success and "Card removed from deck" or "Failed to remove card"
-        
     elseif item.id == "spectral_clone" then
         success = CampaignState:duplicateCard(cardIndex)
         msg = success and "Card duplicated" or "Failed to duplicate card"
-        
     elseif item.id == "spectral_split" then
         -- Split a card into two adjacent ranks
         success = CampaignState:splitCard(cardIndex)
         msg = success and "Card split into two ranks" or "Failed to split card"
-        
     elseif item.id == "spectral_purge" then
         -- Purge all cards of the selected card's suit
         if cardIndex > 0 and cardIndex <= #CampaignState.masterDeck then
@@ -381,14 +401,12 @@ function Shop:applySculptor(shopIndex, cardIndex, action)
             success = false
             msg = "Invalid card selection"
         end
-        
     elseif item.id == "spectral_rainbow" then
         -- Equalize suit distribution in deck
         success, msg = CampaignState:equalizeSuits()
         if not msg then
             msg = success and "Deck suits equalized" or "Failed to equalize suits"
         end
-        
     elseif item.id == "spectral_fusion" then
         -- Merge suits: Convert selected card's suit to merge into another
         -- For now, merge into Hearts (suit 0) - could be enhanced with UI selection
@@ -403,7 +421,6 @@ function Shop:applySculptor(shopIndex, cardIndex, action)
             success = false
             msg = "Invalid card selection"
         end
-        
     elseif item.id == "spectral_ascend" then
         -- Ascend all cards of selected rank to next higher rank
         if cardIndex > 0 and cardIndex <= #CampaignState.masterDeck then
@@ -414,7 +431,6 @@ function Shop:applySculptor(shopIndex, cardIndex, action)
             success = false
             msg = "Invalid card selection"
         end
-        
     elseif item.id == "spectral_collapse" then
         -- Collapse lower adjacent rank into selected rank
         if cardIndex > 0 and cardIndex <= #CampaignState.masterDeck then

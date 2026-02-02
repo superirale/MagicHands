@@ -77,7 +77,7 @@ function EnhancementManager:resolveWarps()
         free_discard = false,
         hand_cost = 0,
         score_to_gold_pct = 0,
-        active_warps = {}  -- Store active warp IDs for complex logic
+        active_warps = {} -- Store active warp IDs for complex logic
     }
 
     -- Load warp effects dynamically from JSON
@@ -93,7 +93,7 @@ function EnhancementManager:resolveWarps()
             spectral_rainbow = true,
             spectral_fusion = true
         }
-        
+
         local path
         if sculptors[warp.id] then
             path = "content/data/spectrals/" .. warp.id .. ".json"
@@ -101,10 +101,10 @@ function EnhancementManager:resolveWarps()
             path = "content/data/warps/" .. warp.id .. ".json"
         end
         local data = files and files.loadJSON and files.loadJSON(path)
-        
+
         if data and data.effect then
             table.insert(effects.active_warps, warp.id)
-            
+
             -- Apply simple numeric effects from JSON
             if data.effect.retrigger then
                 effects.retrigger = effects.retrigger + data.effect.retrigger
@@ -118,7 +118,7 @@ function EnhancementManager:resolveWarps()
             if data.effect.free_discard then
                 effects.free_discard = true
             end
-            
+
             -- Advanced warp effects (Lua-compatible)
             if data.effect.type == "double_mult" then
                 -- warp_ascension: Double all mult
@@ -135,21 +135,21 @@ function EnhancementManager:resolveWarps()
                     effects.score_multiplier = effects.score_multiplier * 0.5
                 end
             elseif data.effect.type == "score_to_gold" then
-                -- warp_greed: 10% of score → gold
-                effects.score_to_gold_pct = 0.1
-                effects.score_penalty = effects.score_penalty * 0.9  -- Slower progression
+                -- warp_greed: 2% of score → gold
+                effects.score_to_gold_pct = 0.02
+                effects.score_penalty = effects.score_penalty * 0.95 -- Slightly less penalty for lower gain
             end
-            
+
             -- Complex warps that need special handling (flagged for GameScene)
             -- These are marked in active_warps and handled in gameplay logic
-            if data.effect.type == "blaze" or 
-               data.effect.type == "chaos_shuffle" or
-               data.effect.type == "no_limit" or
-               data.effect.type == "invert_values" or
-               data.effect.type == "mirror_categories" or
-               data.effect.type == "phantom" or
-               data.effect.type == "crib_first" or
-               data.effect.type == "wild_fives" then
+            if data.effect.type == "blaze" or
+                data.effect.type == "chaos_shuffle" or
+                data.effect.type == "no_limit" or
+                data.effect.type == "invert_values" or
+                data.effect.type == "mirror_categories" or
+                data.effect.type == "phantom" or
+                data.effect.type == "crib_first" or
+                data.effect.type == "wild_fives" then
                 -- These warps require C++ or deep gameplay changes
                 -- They are tracked in active_warps for GameScene to handle
             end

@@ -61,19 +61,20 @@ function ShopUI:init(font, layout)
     self.layout:register("Shop_Title", { anchor = "top-center", width = 100, height = 40, offsetX = 0, offsetY = 40 })
     self.layout:register("Shop_Gold", { anchor = "top-center", width = 100, height = 30, offsetX = 0, offsetY = 90 })
     self.layout:register("Shop_Reroll", { anchor = "bottom-left", width = 200, height = 60, offsetX = 0, offsetY = 0 })
-    self.layout:register("Shop_SellJokers", { anchor = "bottom-left", width = 200, height = 60, offsetX = 220, offsetY = 0 })
+    self.layout:register("Shop_SellJokers",
+        { anchor = "bottom-left", width = 200, height = 60, offsetX = 220, offsetY = 0 })
     self.layout:register("Shop_Next", { anchor = "bottom-right", width = 200, height = 60, offsetX = 0, offsetY = 0 })
 
     -- Initialize Buttons with theme-based styles
     self.nextButton = UIButton("Shop_Next", "Next Round >", self.font, function()
         self.shouldClose = true
-    end, "danger")  -- Red button for ending shop
-    
+    end, "danger") -- Red button for ending shop
+
     self.rerollButton = UIButton("Shop_Reroll", "Reroll", self.font, function()
         Shop:reroll()
         self:rebuildCards()
-    end, "primary")  -- Blue button for reroll
-    
+    end, "primary") -- Blue button for reroll
+
     self.sellButton = UIButton("Shop_SellJokers", "Sell Jokers", self.font, function()
         self.sellMode = not self.sellMode
         if self.sellMode then
@@ -81,19 +82,19 @@ function ShopUI:init(font, layout)
         else
             log.info("Sell mode disabled")
         end
-    end, "warning")  -- Gold/orange button for sell
-    
+    end, "warning") -- Gold/orange button for sell
+
     self.sellMode = false
-    self.sellPrice = 25  -- Default sell price (half of typical buy price)
-    self.jokerLabels = {}  -- UILabel instances for each joker slot
+    self.sellPrice = 25   -- Default sell price (half of typical buy price)
+    self.jokerLabels = {} -- UILabel instances for each joker slot
 end
 
 function ShopUI:updateJokerLabels()
     -- Create/update UILabel instances for joker slots
     self.jokerLabels = {}
-    
+
     if not JokerManager or not JokerManager.slots then return end
-    
+
     local winW, winH = self.layout.screenWidth, self.layout.screenHeight
     local jokerW = 120
     local jokerH = 40
@@ -102,17 +103,17 @@ function ShopUI:updateJokerLabels()
     local totalWidth = totalSlots * jokerW + (totalSlots - 1) * jokerSpacing
     local startX = (winW - totalWidth) / 2
     local startY = 140
-    
+
     -- Create labels for filled slots
     for i, joker in ipairs(JokerManager.slots) do
         local x = startX + (i - 1) * (jokerW + jokerSpacing)
         local y = startY
-        
+
         local jokerText = joker.id
         if joker.stack > 1 then
             jokerText = jokerText .. " x" .. joker.stack
         end
-        
+
         local label = UILabel(nil, jokerText, self.font, { r = 1, g = 1, b = 1, a = 1 })
         label.x = x
         label.y = y
@@ -120,20 +121,20 @@ function ShopUI:updateJokerLabels()
         label.height = jokerH
         label.align = "center"
         label.valign = "middle"
-        label.lineSpacing = 14  -- Tighter line spacing for small slots
-        
+        label.lineSpacing = 14 -- Tighter line spacing for small slots
+
         table.insert(self.jokerLabels, {
             label = label,
             index = i,
             isEmpty = false
         })
     end
-    
+
     -- Create labels for empty slots
     for i = #JokerManager.slots + 1, JokerManager.maxSlots do
         local x = startX + (i - 1) * (jokerW + jokerSpacing)
         local y = startY
-        
+
         local label = UILabel(nil, "Empty", self.font, { r = 0.5, g = 0.5, b = 0.5, a = 1 })
         label.x = x
         label.y = y
@@ -141,8 +142,8 @@ function ShopUI:updateJokerLabels()
         label.height = jokerH
         label.align = "center"
         label.valign = "middle"
-        label.wrap = false  -- "Empty" doesn't need wrapping
-        
+        label.wrap = false -- "Empty" doesn't need wrapping
+
         table.insert(self.jokerLabels, {
             label = label,
             index = i,
@@ -157,7 +158,7 @@ function ShopUI:getMetadata(id)
     -- Try Loading from JSON
     -- Determine correct path based on item ID patterns
     local path = nil
-    
+
     if string.find(id, "planet_") then
         path = "content/data/enhancements/" .. id .. ".json"
     elseif string.find(id, "warp_") or id == "spectral_echo" or id == "spectral_ghost" or id == "spectral_void" then
@@ -171,7 +172,7 @@ function ShopUI:getMetadata(id)
         -- Default to jokers directory
         path = "content/data/jokers/" .. id .. ".json"
     end
-    
+
     local data = nil
     if files and files.loadJSON then
         data = files.loadJSON(path)
@@ -192,7 +193,7 @@ end
 
 function ShopUI:handleJokerSellClick(mx, my)
     if not JokerManager or not JokerManager.slots then return nil end
-    
+
     -- Joker display area (centered at top of screen)
     local winW, winH = self.layout.screenWidth, self.layout.screenHeight
     local jokerW = 120
@@ -202,23 +203,26 @@ function ShopUI:handleJokerSellClick(mx, my)
     local totalWidth = totalSlots * jokerW + (totalSlots - 1) * jokerSpacing
     local startX = (winW - totalWidth) / 2
     local startY = 140
-    
+
     for i, joker in ipairs(JokerManager.slots) do
         local x = startX + (i - 1) * (jokerW + jokerSpacing)
         local y = startY
-        
+
         if mx >= x and mx <= x + jokerW and my >= y and my <= y + jokerH then
             -- Clicked on this joker - sell it
-            local success, msg = JokerManager:sellJoker(i, self.sellPrice)
+            local buyPrice = Shop:getItemBuyPrice(joker.id)
+            local currentSellPrice = math.floor(buyPrice * 0.5)
+
+            local success, msg = JokerManager:sellJoker(i, currentSellPrice)
             if success then
-                log.info("Sold joker: " .. msg .. " for " .. self.sellPrice .. "g")
+                log.info("Sold joker: " .. msg .. " for " .. currentSellPrice .. "g")
             else
                 log.warn("Failed to sell joker: " .. msg)
             end
             return { action = "joker_sold" }
         end
     end
-    
+
     return nil
 end
 
@@ -257,7 +261,7 @@ function ShopUI:open(reward)
     self.pendingAction = nil
     self.reward = reward
     -- Initial generation
-    Shop:generateJokers(CampaignState.currentAct or 1)
+    Shop:generateJokers(CampaignState.currentAct or 1, true)
     self:rebuildCards()
     self:updateJokerLabels()
 end
@@ -297,23 +301,23 @@ function ShopUI:update(dt, mx, my, clicked)
     self.rerollButton:setPos(rx, ry)
     self.rerollButton:setSize(rr.width, rr.height)
     self.rerollButton:update(dt, mx, my, clicked)
-    
+
     local sx, sy = self.layout:getPosition("Shop_SellJokers")
     local sr = self.layout.regions["Shop_SellJokers"]
-    
+
     self.sellButton:setPos(sx, sy)
     self.sellButton:setSize(sr.width, sr.height)
     self.sellButton:update(dt, mx, my, clicked)
-    
+
     -- Update sell button text and style based on mode
     if self.sellMode then
         self.sellButton.text = "Cancel Sell"
-        self.sellButton:setStyle("danger")  -- Red when in sell mode
+        self.sellButton:setStyle("danger") -- Red when in sell mode
     else
         self.sellButton.text = "Sell Jokers"
-        self.sellButton:setStyle("warning")  -- Gold/orange for normal sell button
+        self.sellButton:setStyle("warning") -- Gold/orange for normal sell button
     end
-    
+
     -- Handle joker selling in sell mode
     if self.sellMode and clicked then
         -- Check if player clicked on their jokers (displayed at top)
@@ -375,24 +379,42 @@ function ShopUI:draw()
     if JokerManager and JokerManager.slots then
         -- Update labels to match current joker state
         self:updateJokerLabels()
-        
+
         local jokerSectionY = 120
         local mx, my = input.getMousePosition()
-        
+
         -- Title centered above jokers
         local titleText = "Your Jokers:"
         local titleW = graphics.getTextSize(self.font, titleText)
         local titleX = (winW - titleW) / 2
         graphics.print(self.font, titleText, titleX, jokerSectionY, { r = 1, g = 1, b = 1, a = 1 })
-        
+
         -- Sell mode instruction
         if self.sellMode then
-            local instructText = "Click a joker to sell for " .. self.sellPrice .. "g"
+            local instructText = "Click a joker to sell"
+
+            -- Detect if hovering over a specific joker to show its price
+            local hw, hh = 120, 40 -- local copy of joker slot size from draw logic
+            local winW = graphics.getWindowSize()
+            local totalSlots = JokerManager.maxSlots
+            local totalWidth = totalSlots * hw + (totalSlots - 1) * 10
+            local startX = (winW - totalWidth) / 2
+            local startY = 140
+
+            for i, joker in ipairs(JokerManager.slots) do
+                local x = startX + (i - 1) * (120 + 10)
+                if mx >= x and mx <= x + 120 and my >= startY and my <= startY + 40 then
+                    local p = math.floor(Shop:getItemBuyPrice(joker.id) * 0.5)
+                    instructText = "Sell " .. joker.id .. " for " .. p .. "g?"
+                    break
+                end
+            end
+
             local instructW = graphics.getTextSize(self.font, instructText)
             local instructX = (winW - instructW) / 2
             graphics.print(self.font, instructText, instructX, jokerSectionY + 20, { r = 1, g = 0.8, b = 0.2, a = 1 })
         end
-        
+
         -- Draw joker slots with labels
         for _, slot in ipairs(self.jokerLabels) do
             local label = slot.label
@@ -400,10 +422,10 @@ function ShopUI:draw()
             local y = label.y
             local w = label.width
             local h = label.height
-            
+
             -- Check hover
             local isHovered = mx >= x and mx <= x + w and my >= y and my <= y + h
-            
+
             -- Background color
             local bgColor
             if slot.isEmpty then
@@ -411,19 +433,20 @@ function ShopUI:draw()
             else
                 bgColor = { r = 0.2, g = 0.2, b = 0.25, a = 1 }
                 if self.sellMode and isHovered then
-                    bgColor = { r = 0.8, g = 0.3, b = 0.3, a = 1 }  -- Red hover in sell mode
+                    bgColor = { r = 0.8, g = 0.3, b = 0.3, a = 1 } -- Red hover in sell mode
                 elseif isHovered then
                     bgColor = { r = 0.3, g = 0.3, b = 0.35, a = 1 }
                 end
             end
-            
+
             -- Draw slot background
             graphics.drawRect(x, y, w, h, bgColor, true)
-            
+
             -- Draw border
-            local borderColor = slot.isEmpty and { r = 0.3, g = 0.3, b = 0.3, a = 1 } or { r = 0.5, g = 0.5, b = 0.5, a = 1 }
+            local borderColor = slot.isEmpty and { r = 0.3, g = 0.3, b = 0.3, a = 1 } or
+            { r = 0.5, g = 0.5, b = 0.5, a = 1 }
             graphics.drawRect(x, y, w, h, borderColor, true)
-            
+
             -- Draw label text (centered and wrapped if needed)
             label:draw()
         end
