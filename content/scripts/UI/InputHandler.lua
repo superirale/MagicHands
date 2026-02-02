@@ -13,16 +13,16 @@ function InputHandler:init()
     self.lastMouseY = 0
     self.lastLeftButton = false
     self.lastRightButton = false
-    
+
     -- Drag state
     self.isDragging = false
     self.dragStartX = 0
     self.dragStartY = 0
-    self.dragThreshold = 5  -- Pixels before drag starts
-    
+    self.dragThreshold = 5 -- Pixels before drag starts
+
     -- Keyboard state
     self.keysPressed = {}
-    
+
     -- Touch state (for future mobile support)
     self.touches = {}
 end
@@ -33,15 +33,14 @@ end
 function InputHandler:update(dt)
     -- Get raw input from engine
     local screenX, screenY = input.getMousePosition()
-    local leftButton = input.isMouseButtonPressed("left")
-    local rightButton = input.isMouseButtonPressed("right")
-    
+    local leftButton = input.isMouseButtonDown("left")
+    local rightButton = input.isMouseButtonDown("right")
+
     -- Convert screen coordinates to viewport coordinates
     local viewportX, viewportY = CoordinateSystem.screenToViewport(screenX, screenY)
-    
-    -- Check if mouse is in viewport (not in letterbox)
+
     local inViewport = CoordinateSystem.isInViewport(screenX, screenY)
-    
+
     -- Mouse move event
     if screenX ~= self.lastMouseX or screenY ~= self.lastMouseY then
         UIEvents.emit("input:mouseMove", {
@@ -52,21 +51,20 @@ function InputHandler:update(dt)
             inViewport = inViewport
         })
     end
-    
+
     -- Left button events
     if leftButton and not self.lastLeftButton then
         -- Mouse down
         if inViewport then
             self.dragStartX = viewportX
             self.dragStartY = viewportY
-            
+
             UIEvents.emit("input:mouseDown", {
                 button = "left",
                 viewportX = viewportX,
                 viewportY = viewportY
             })
         end
-        
     elseif not leftButton and self.lastLeftButton then
         -- Mouse up
         if self.isDragging then
@@ -87,14 +85,14 @@ function InputHandler:update(dt)
                 })
             end
         end
-        
+
         UIEvents.emit("input:mouseUp", {
             button = "left",
             viewportX = viewportX,
             viewportY = viewportY
         })
     end
-    
+
     -- Handle dragging
     if leftButton and not self.isDragging then
         local dist = math.abs(viewportX - self.dragStartX) + math.abs(viewportY - self.dragStartY)
@@ -106,7 +104,7 @@ function InputHandler:update(dt)
             })
         end
     end
-    
+
     if self.isDragging then
         UIEvents.emit("input:drag", {
             viewportX = viewportX,
@@ -115,7 +113,7 @@ function InputHandler:update(dt)
             deltaY = viewportY - self.lastMouseY
         })
     end
-    
+
     -- Right button events (for context menu, etc.)
     if rightButton and not self.lastRightButton then
         if inViewport then
@@ -125,12 +123,12 @@ function InputHandler:update(dt)
             })
         end
     end
-    
+
     -- Keyboard events
     self:processKeyboard()
-    
+
     -- Update last state
-    self.lastMouseX = viewportX  -- Store in viewport space
+    self.lastMouseX = viewportX -- Store in viewport space
     self.lastMouseY = viewportY
     self.lastLeftButton = leftButton
     self.lastRightButton = rightButton
@@ -146,11 +144,11 @@ function InputHandler:processKeyboard()
         "n", "o", "p", "q", "r", "s", "t", "u", "v", "w", "x", "y", "z",
         "up", "down", "left", "right"
     }
-    
+
     for _, key in ipairs(keys) do
         if input.isPressed(key) then
             UIEvents.emit("input:keyPress", { key = key })
-            
+
             -- Emit specific key events for common actions
             if key == "return" then
                 UIEvents.emit("input:confirm", {})
