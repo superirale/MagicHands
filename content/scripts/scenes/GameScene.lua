@@ -49,7 +49,7 @@ GameScene = class()
 
 function GameScene:init()
     print("Initializing Game Scene (Constructor)...")
-    
+
     -- Store reference resolution (what we design for)
     self.referenceWidth = 1280
     self.referenceHeight = 720
@@ -58,30 +58,30 @@ function GameScene:init()
     local winW, winH = graphics.getWindowSize()
     CoordinateSystem.init(winW, winH)
     print("[GameScene] CoordinateSystem initialized: " .. winW .. "x" .. winH)
-    
+
     -- NEW: Initialize Input Handler
     self.inputHandler = InputHandler()
     print("[GameScene] InputHandler initialized")
-    
+
     -- NEW: Setup Rendering Pipeline
     self.renderPipeline = UILayer.createStandardPipeline()
     print("[GameScene] Rendering pipeline created")
-    
+
     -- NEW: Setup Layout Manager
     self.layoutManager = LayoutManager.Container(self.referenceWidth, self.referenceHeight)
     print("[GameScene] LayoutManager initialized")
 
     -- Initialize Camera (1280x720 fixed viewport)
     self.camera = Camera({ viewportWidth = 1280, viewportHeight = 720 })
-    
+
     -- CRITICAL: Set viewport immediately
     graphics.setViewport(1280, 720)
     print("GameScene: Viewport set to 1280x720")
-    
+
     -- Calculate initial UI scale factor (kept for backward compatibility)
     self.uiScale = CoordinateSystem.getScale()
     print(string.format("GameScene UI Scale: %.2f (screen: %dx%d)", self.uiScale, winW, winH))
-    
+
     -- NEW: Setup UI Event Listeners
     self:setupEventListeners()
     print("[GameScene] UI event listeners registered")
@@ -169,7 +169,7 @@ function GameScene:init()
     self.addToCribButton.bgColor = { r = 0.2, g = 0.6, b = 0.3, a = 1 }
     self.addToCribButton.hoverColor = { r = 0.3, g = 0.8, b = 0.4, a = 1 }
     self.addToCribButton.visible = false -- Only show during DEAL state
-    self:updateAddToCribButtonPosition()  -- Set initial scaled position
+    self:updateAddToCribButtonPosition() -- Set initial scaled position
 
     -- Initialize AutoPlay if enabled
     if AutoPlay and AUTOPLAY_MODE then
@@ -177,10 +177,10 @@ function GameScene:init()
     end
 
     print("Game Scene initialized!")
-    
+
     -- NEW: Track if using new architecture for cards
     self.useNewCardSystem = true
-    self.cardViewModels = {}  -- New system: CardViewModels
+    self.cardViewModels = {} -- New system: CardViewModels
     -- self.cardViews remains for backward compatibility
 end
 
@@ -190,44 +190,103 @@ function GameScene:setupEventListeners()
     UIEvents.on("card:selected", function(data)
         self:onCardSelected(data.cardIndex)
     end)
-    
+
     UIEvents.on("card:deselected", function(data)
         self:onCardDeselected(data.cardIndex)
     end)
-    
+
     -- Card drag events
     UIEvents.on("card:dragStart", function(data)
         self:onCardDragStart(data.cardIndex, data.startX, data.startY)
     end)
-    
+
     UIEvents.on("card:dragEnd", function(data)
         self:onCardDragEnd(data.cardIndex, data.x, data.y)
     end)
-    
+
     -- Input shortcuts
     UIEvents.on("input:confirm", function()
         if self.state == "PLAY" then
             self:playHand()
         end
     end)
-    
+
     UIEvents.on("input:discard", function()
         if self.state == "PLAY" then
             self:discardSelected()
         end
     end)
-    
+
     UIEvents.on("input:sortByRank", function()
         if self.state == "PLAY" then
             self:sortHand("rank")
         end
     end)
-    
+
     UIEvents.on("input:sortBySuit", function()
         if self.state == "PLAY" then
             self:sortHand("suit")
         end
     end)
+
+    UIEvents.on("input:click", function(data)
+        self:onCardClicked(data.viewportX, data.viewportY, data.button)
+    end)
+
+    UIEvents.on("input:dragStart", function(data)
+        self:onInputDragStart(data.viewportX, data.viewportY)
+    end)
+
+    UIEvents.on("input:drag", function(data)
+        self:onInputDrag(data.viewportX, data.viewportY)
+    end)
+
+    UIEvents.on("input:dragEnd", function(data)
+        self:onInputDragEnd(data.viewportX, data.viewportY)
+    end)
+end
+
+--- NEW: Input drag start handler
+function GameScene:onInputDragStart(x, y)
+    if self.state ~= "PLAY" or not self.useNewCardSystem then return end
+
+    for i, vm in ipairs(self.cardViewModels) do
+        if vm:hitTest(x, y) then
+            print("[GameScene] Input drag start on card: " .. i)
+            vm:handleInput("dragStart", x, y)
+            self.draggingCardIndex = i
+            break
+        end
+    end
+end
+
+--- NEW: Input drag handler
+function GameScene:onInputDrag(x, y)
+    if not self.draggingCardIndex or not self.cardViewModels[self.draggingCardIndex] then return end
+    local vm = self.cardViewModels[self.draggingCardIndex]
+    vm:handleInput("drag", x, y)
+end
+
+--- NEW: Input drag end handler
+function GameScene:onInputDragEnd(x, y)
+    if not self.draggingCardIndex or not self.cardViewModels[self.draggingCardIndex] then return end
+    local vm = self.cardViewModels[self.draggingCardIndex]
+    vm:handleInput("dragEnd", x, y)
+    self.draggingCardIndex = nil
+end
+
+--- NEW: Card clicked handler
+function GameScene:onCardClicked(x, y, button)
+    if self.state ~= "PLAY" or not self.useNewCardSystem then return end
+    if button ~= "left" then return end
+
+    for i, vm in ipairs(self.cardViewModels) do
+        if vm:hitTest(x, y) then
+            print("[GameScene] Card clicked: " .. i)
+            vm:handleInput("click", x, y)
+            break
+        end
+    end
 end
 
 --- NEW: Card selection handler
@@ -255,7 +314,7 @@ end
 --- NEW: Card drag end handler (drop logic)
 function GameScene:onCardDragEnd(cardIndex, x, y)
     print("[GameScene] Drag end: " .. cardIndex .. " at " .. x .. ", " .. y)
-    
+
     -- Check if dropped in crib zone (right side: ~980-1220, 480-640)
     if x > 980 and x < 1220 and y > 480 and y < 640 and #CampaignState.crib < 2 then
         -- Add card to crib
@@ -263,11 +322,11 @@ function GameScene:onCardDragEnd(cardIndex, x, y)
         if card then
             table.remove(self.hand, cardIndex)
             table.insert(CampaignState.crib, card)
-            
+
             -- Rebuild views
             self:rebuildHandViews()
             self:rebuildCribViews()
-            
+
             print("[GameScene] Card added to crib")
         end
     else
@@ -277,7 +336,7 @@ function GameScene:onCardDragEnd(cardIndex, x, y)
             self:repositionCards()
         end
     end
-    
+
     self.draggingCardIndex = nil
 end
 
@@ -313,9 +372,17 @@ function GameScene:addSelectedCardsToCrib()
 
     -- Find selected cards
     local selectedCards = {}
-    for i, view in ipairs(self.cardViews) do
-        if view.selected then
-            table.insert(selectedCards, { view = view, index = i })
+    if self.useNewCardSystem then
+        for i, vm in ipairs(self.cardViewModels) do
+            if vm.isSelected then
+                table.insert(selectedCards, { card = vm.card, index = i })
+            end
+        end
+    else
+        for i, view in ipairs(self.cardViews) do
+            if view.selected then
+                table.insert(selectedCards, { card = view.card, index = i })
+            end
         end
     end
 
@@ -343,8 +410,7 @@ function GameScene:addSelectedCardsToCrib()
 
     -- Add selected cards to crib
     for _, cardInfo in ipairs(selectedCards) do
-        local card = cardInfo.view.card
-        table.insert(CampaignState.crib, card)
+        table.insert(CampaignState.crib, cardInfo.card)
     end
 
     -- Remove from hand (iterate backwards to avoid index issues)
@@ -406,14 +472,14 @@ function GameScene:startNewHand()
 
     local baseHandSize = 6
     local handSizeBonus = 0
-    
+
     -- Apply first blind hand bonus ONLY on the very first hand of blind 1
-    if CampaignState.firstBlindHandBonus and CampaignState.firstBlindHandBonus > 0 and 
-       CampaignState.currentBlind == 1 and CampaignState.handsRemaining == 4 then
+    if CampaignState.firstBlindHandBonus and CampaignState.firstBlindHandBonus > 0 and
+        CampaignState.currentBlind == 1 and CampaignState.handsRemaining == 4 then
         handSizeBonus = CampaignState.firstBlindHandBonus
         print("✨ First Blind Bonus: +" .. handSizeBonus .. " cards in hand!")
     end
-    
+
     for i = 1, (baseHandSize + handSizeBonus) do
         table.insert(self.hand, table.remove(self.deckList))
     end
@@ -424,18 +490,18 @@ function GameScene:startNewHand()
     -- NEW: Create visual cards using CardViewModel
     if self.useNewCardSystem then
         self.cardViewModels = {}
-        
+
         -- Position hand cards using relative layout
         local startX, startY, spacing = GameSceneLayout.getCenteredHandPosition(#self.hand)
-        print(string.format("[NEW] Hand cards: startX=%.0f, startY=%.0f, spacing=%.0f, count=%d", 
+        print(string.format("[NEW] Hand cards: startX=%.0f, startY=%.0f, spacing=%.0f, count=%d",
             startX, startY, spacing, #self.hand))
-        
+
         for i, card in ipairs(self.hand) do
             local x = startX + (i - 1) * spacing
             local vm = CardViewModel(card, x, startY, i)
             table.insert(self.cardViewModels, vm)
         end
-        
+
         -- Create cut card view model
         local cutX, cutY = GameSceneLayout.getPosition("cutCard")
         print(string.format("[NEW] Cut card: x=%.0f, y=%.0f", cutX, cutY))
@@ -443,18 +509,18 @@ function GameScene:startNewHand()
     else
         -- OLD: Legacy CardView system (backward compatibility)
         self.cardViews = {}
-        
+
         local startX, startY, spacing = GameSceneLayout.getCenteredHandPosition(#self.hand)
         for i, card in ipairs(self.hand) do
             local x = startX + (i - 1) * spacing
             local view = CardView(card, x, startY, self.cardAtlas, self.smallFont)
             table.insert(self.cardViews, view)
         end
-        
+
         local cutX, cutY = GameSceneLayout.getPosition("cutCard")
         self.cutCardView = CardView(self.cutCard, cutX, cutY, self.cardAtlas, self.smallFont)
     end
-    
+
     -- Rebuild crib views from CampaignState (don't reset crib - it persists!)
     self:rebuildCribViews()
 
@@ -465,10 +531,10 @@ end
 function GameScene:rebuildCribViews()
     self.cribViews = {}
     local CardView = require("visuals/CardView")
-    
+
     -- Position crib cards using layout system
     for i, card in ipairs(CampaignState.crib) do
-        local x, y = GameSceneLayout.getPosition("crib", {slotIndex = i})
+        local x, y = GameSceneLayout.getPosition("crib", { slotIndex = i })
         print(string.format("Crib card %d: x=%.0f, y=%.0f", i, x, y))
         local view = CardView(card, x, y, self.cardAtlas, self.smallFont)
         table.insert(self.cribViews, view)
@@ -481,7 +547,7 @@ function GameScene:update(dt)
         print("Late initialization of GameScene...")
         self:init()
     end
-    
+
     -- AutoPlay bot update
     if AutoPlay and AutoPlay.enabled then
         AutoPlay:update(self, dt)
@@ -491,7 +557,7 @@ function GameScene:update(dt)
     if self.inputHandler then
         self.inputHandler:update(dt)
     end
-    
+
     -- Check for window resize to update viewport scaling and UI Layout
     local winW, winH = graphics.getWindowSize()
     if winW ~= self.lastWinW or winH ~= self.lastWinH then
@@ -501,7 +567,7 @@ function GameScene:update(dt)
 
         -- NEW: Update CoordinateSystem
         CoordinateSystem.updateScreenSize(winW, winH)
-        
+
         -- Recalculate UI scale factor
         self.uiScale = CoordinateSystem.getScale()
         print(string.format("GameScene UI Scale updated: %.2f", self.uiScale))
@@ -517,21 +583,21 @@ function GameScene:update(dt)
             print("DEBUG GameScene: Updating UILayout size")
             self.uiLayout:updateScreenSize(winW, winH)
         end
-        
+
         -- NEW: Update LayoutManager
         if self.layoutManager then
             self.layoutManager:setSize(self.referenceWidth, self.referenceHeight)
         end
-        
+
         -- Update "Add to Crib" button position
         self:updateAddToCribButtonPosition()
-        
+
         -- NEW: Reposition cards
         if self.useNewCardSystem then
             self:repositionCards()
         end
     end
-    
+
     -- NEW: Update CardViewModels (animation)
     if self.useNewCardSystem and self.state == "PLAY" then
         -- Get viewport mouse position from InputHandler
@@ -539,14 +605,14 @@ function GameScene:update(dt)
         if self.inputHandler then
             viewportX, viewportY = self.inputHandler:getMousePosition()
         end
-        
+
         for i, vm in ipairs(self.cardViewModels) do
             vm:update(dt)
-            
+
             -- Handle hover
             vm:handleInput("hover", viewportX, viewportY)
         end
-        
+
         -- Handle dragging
         if self.draggingCardIndex and self.cardViewModels[self.draggingCardIndex] then
             local vm = self.cardViewModels[self.draggingCardIndex]
@@ -554,7 +620,7 @@ function GameScene:update(dt)
                 vm:handleInput("drag", viewportX, viewportY)
             end
         end
-        
+
         -- Update cut card
         if self.cutCardViewModel then
             self.cutCardViewModel:update(dt)
@@ -689,33 +755,16 @@ function GameScene:update(dt)
             else
                 self.scorePreviewData = nil
             end
-            
+
             -- Get viewport mouse position
             local viewportX, viewportY = 0, 0
             if self.inputHandler then
                 viewportX, viewportY = self.inputHandler:getMousePosition()
             end
-            
-            -- Handle click for starting drag
-            if mLeft and not self.lastMouseState.left then
-                -- Mouse just pressed
-                for i, vm in ipairs(self.cardViewModels) do
-                    if vm:hitTest(viewportX, viewportY) then
-                        vm:handleInput("dragStart", viewportX, viewportY)
-                        self.draggingCardIndex = i
-                        break
-                    end
-                end
-            end
-            
-            -- Handle mouse release (end drag or click)
-            if not mLeft and self.lastMouseState.left then
-                if self.draggingCardIndex and self.cardViewModels[self.draggingCardIndex] then
-                    local vm = self.cardViewModels[self.draggingCardIndex]
-                    vm:handleInput("dragEnd", viewportX, viewportY)
-                end
-            end
-            
+
+            -- Input state and events (like dragging and selection) are now handled
+            -- purely via UIEvents in setupEventListeners and onCardClicked/onInputDragStart etc.
+            -- This update loop only handles visual processing.
         else
             -- OLD SYSTEM: Legacy input handling
             local selectedCards = {}
@@ -890,7 +939,7 @@ end
 
 function GameScene:playHand()
     local selectedCards = {}
-    
+
     -- NEW: Get selected cards from CardViewModels or old CardViews
     if self.useNewCardSystem then
         for i, vm in ipairs(self.cardViewModels) do
@@ -910,7 +959,7 @@ function GameScene:playHand()
     local warpEffects = EnhancementManager:resolveWarps()
     local hasInfinity = false
     local hasPhantom = false
-    
+
     if warpEffects.active_warps then
         for _, warpId in ipairs(warpEffects.active_warps) do
             if warpId == "warp_infinity" then
@@ -920,7 +969,7 @@ function GameScene:playHand()
             end
         end
     end
-    
+
     if not hasInfinity and #selectedCards ~= 4 then
         print("Must select exactly 4 cards")
         return
@@ -928,11 +977,11 @@ function GameScene:playHand()
         print("Must select at least 1 card")
         return
     end
-    
+
     if hasInfinity and #selectedCards > 4 then
         print("♾️ Warp Infinity: Playing " .. #selectedCards .. " cards (no limit)!")
     end
-    
+
     -- WARP: Phantom - Track discarded cards for scoring
     local phantomCards = {}
     if hasPhantom and self.discardedThisTurn and #self.discardedThisTurn > 0 then
@@ -964,14 +1013,14 @@ function GameScene:playHand()
 
     -- 1. Get Boss Rules (from Boss + Warps)
     local bossRules = BossManager:getEffects()
-    
+
     -- Add warp-specific boss rules (for engine warps)
     local warpEffects = EnhancementManager:resolveWarps()
     if warpEffects.active_warps then
         for _, warpId in ipairs(warpEffects.active_warps) do
             -- Check if this warp requires a boss rule for C++ scoring
-            if warpId == "warp_blaze" or warpId == "warp_mirror" or 
-               warpId == "warp_inversion" or warpId == "warp_wildfire" then
+            if warpId == "warp_blaze" or warpId == "warp_mirror" or
+                warpId == "warp_inversion" or warpId == "warp_wildfire" then
                 table.insert(bossRules, warpId)
                 print("🔥 Engine Warp Active: " .. warpId)
             end
@@ -1029,7 +1078,7 @@ function GameScene:playHand()
     if totalScoreMultiplier ~= 1.0 then
         finalScore = math.floor(finalScore * totalScoreMultiplier)
     end
-    
+
     -- Apply Warp: Score to Gold (Greed - 10% of score becomes gold)
     if warpEffects.score_to_gold_pct > 0 then
         local goldGain = math.floor(finalScore * warpEffects.score_to_gold_pct)
@@ -1038,7 +1087,7 @@ function GameScene:playHand()
             print("Warp Greed: Converted " .. goldGain .. "g from score")
         end
     end
-    
+
     -- Apply Warp: Hand Cost (Fortune - costs 5g per hand)
     if warpEffects.hand_cost > 0 then
         if Economy:spend(warpEffects.hand_cost) then
@@ -1063,8 +1112,8 @@ function GameScene:playHand()
     local cribScore = 0
     if CampaignState:isLastHand() and #CampaignState.crib == 2 then
         -- Build crib cards for scoring (2 player cards + 2 random + cut = 5 cards)
-        local cribCards = {}          -- C++ Card objects for engine
-        local cribCardsLua = {}       -- Lua table cards for imprint resolution
+        local cribCards = {}    -- C++ Card objects for engine
+        local cribCardsLua = {} -- Lua table cards for imprint resolution
 
         print("DEBUG: Building crib hand for scoring")
         print("DEBUG: Crib has " .. #CampaignState.crib .. " player-selected cards")
@@ -1078,7 +1127,7 @@ function GameScene:playHand()
                     print("DEBUG: Card.new returned type: " .. type(card))
                     if card then
                         table.insert(cribCards, card)
-                        table.insert(cribCardsLua, c)  -- Keep original table for imprints
+                        table.insert(cribCardsLua, c) -- Keep original table for imprints
                     else
                         print("ERROR: Card.new returned nil for " .. c.rank .. " of " .. c.suit)
                     end
@@ -1161,33 +1210,34 @@ function GameScene:playHand()
         if #cribCards == 5 then
             -- Apply FULL scoring pipeline to crib (same as main hand)
             print("--- CRIB SCORING PIPELINE ---")
-            
+
             -- 1. Base Score (with Boss Rules)
             local cribHandResult = cribbage.evaluate(cribCards)
             local cribBaseScore = cribbage.score(cribCards, 0, 0, bossRules)
-            
+
             -- 2. Resolve Card Imprints for crib cards
             local cribImprintEffects = EnhancementManager:resolveImprints(cribCardsLua, "score")
-            
+
             -- 3. Resolve Hand Augments (Planets) for crib patterns
             local cribAugmentEffects = EnhancementManager:resolveAugments(cribHandResult, cribCards)
-            
+
             -- 4. Resolve Rule Warps (use same warp effects as main hand)
             -- Note: Warps are global, so we reuse the same warpEffects
-            
+
             -- 5. Resolve Jokers & Stacks for crib patterns
             local cribJokerEffects = JokerManager:applyEffects(cribCards, "on_score")
-            
+
             -- 6. Aggregate Crib Score (same formula as main hand)
-            local cribFinalChips = cribBaseScore.baseChips + cribAugmentEffects.chips + 
-                                   cribJokerEffects.addedChips + cribImprintEffects.chips
-            
+            local cribFinalChips = cribBaseScore.baseChips + cribAugmentEffects.chips +
+                cribJokerEffects.addedChips + cribImprintEffects.chips
+
             -- Apply Warp: Cut Bonus (Ghost Cut)
             if warpEffects.cut_bonus > 0 then
                 cribFinalChips = cribFinalChips + warpEffects.cut_bonus
             end
 
-            local cribTotalTempMult = cribBaseScore.tempMultiplier + cribAugmentEffects.mult + cribJokerEffects.addedTempMult + cribImprintEffects.mult
+            local cribTotalTempMult = cribBaseScore.tempMultiplier + cribAugmentEffects.mult +
+                cribJokerEffects.addedTempMult + cribImprintEffects.mult
             local cribTotalPermMult = cribBaseScore.permMultiplier + cribJokerEffects.addedPermMult
 
             -- Apply Warp: Mult Multiplier (Ascension - double all mult)
@@ -1210,27 +1260,27 @@ function GameScene:playHand()
             if warpEffects.retrigger > 0 then
                 cribFinalScore = cribFinalScore * (1 + warpEffects.retrigger)
             end
-            
+
             -- Sum multipliers
-            local cribTotalTempMult = cribBaseScore.tempMultiplier + cribAugmentEffects.mult + 
-                                      cribJokerEffects.addedTempMult + cribImprintEffects.mult
+            local cribTotalTempMult = cribBaseScore.tempMultiplier + cribAugmentEffects.mult +
+                cribJokerEffects.addedTempMult + cribImprintEffects.mult
             local cribTotalPermMult = cribBaseScore.permMultiplier + cribJokerEffects.addedPermMult
-            
+
             -- Final calculation (with XMult from Imprints)
             local cribFinalMult = (1 + cribTotalTempMult + cribTotalPermMult) * cribImprintEffects.x_mult
-            
+
             cribScore = math.floor(cribFinalChips * cribFinalMult)
-            
+
             -- Apply Warp: Score Penalty (The Void)
             if warpEffects.score_penalty ~= 1.0 then
                 cribScore = math.floor(cribScore * warpEffects.score_penalty)
             end
-            
+
             -- Apply Warp: Retrigger (The Echo)
             if warpEffects.retrigger > 0 then
                 cribScore = cribScore * (1 + warpEffects.retrigger)
             end
-            
+
             -- Handle Imprint Gold from crib cards
             if cribImprintEffects.gold > 0 then
                 Economy:addGold(cribImprintEffects.gold)
@@ -1241,14 +1291,14 @@ function GameScene:playHand()
             finalScore = finalScore + cribScore
 
             print("--- CRIB SCORE BREAKDOWN ---")
-            print("Crib Base: " .. cribBaseScore.baseChips .. " x " .. 
-                  (1 + cribBaseScore.tempMultiplier + cribBaseScore.permMultiplier))
-            print("Crib Augments: +" .. cribAugmentEffects.chips .. " Chips, +" .. 
-                  cribAugmentEffects.mult .. " Mult")
-            print("Crib Jokers: +" .. cribJokerEffects.addedChips .. " Chips, +" .. 
-                  (cribJokerEffects.addedTempMult + cribJokerEffects.addedPermMult) .. " Mult")
-            print("Crib Imprints: +" .. cribImprintEffects.chips .. " Chips, +" .. 
-                  cribImprintEffects.mult .. " Mult, x" .. cribImprintEffects.x_mult)
+            print("Crib Base: " .. cribBaseScore.baseChips .. " x " ..
+                (1 + cribBaseScore.tempMultiplier + cribBaseScore.permMultiplier))
+            print("Crib Augments: +" .. cribAugmentEffects.chips .. " Chips, +" ..
+                cribAugmentEffects.mult .. " Mult")
+            print("Crib Jokers: +" .. cribJokerEffects.addedChips .. " Chips, +" ..
+                (cribJokerEffects.addedTempMult + cribJokerEffects.addedPermMult) .. " Mult")
+            print("Crib Imprints: +" .. cribImprintEffects.chips .. " Chips, +" ..
+                cribImprintEffects.mult .. " Mult, x" .. cribImprintEffects.x_mult)
             print("Crib Final Score: " .. cribScore)
             print("-----------------------------")
         else
@@ -1303,7 +1353,7 @@ function GameScene:playHand()
             end
         end
     end
-    
+
     if hasTimeWarp and cribScore > 0 then
         print("⏰ Warp Time: Scoring crib BEFORE hand!")
         print("Crib scored first: " .. cribScore)
@@ -1401,10 +1451,10 @@ end
 --- NEW: Reposition cards (for sorting, resize, etc.)
 function GameScene:repositionCards()
     if not self.cardViewModels then return end
-    
+
     local numCards = #self.hand
     local startX, startY, spacing = GameSceneLayout.getCenteredHandPosition(numCards)
-    
+
     for i, vm in ipairs(self.cardViewModels) do
         local x = startX + (i - 1) * spacing
         vm:setTargetPosition(x, startY)
@@ -1412,15 +1462,26 @@ function GameScene:repositionCards()
 end
 
 function GameScene:rebuildHandViews()
-    self.cardViews = {}
-    local startX = 200
-    local startY = 500
-    local spacing = 110
-    local CardView = require("visuals/CardView")
+    if self.useNewCardSystem then
+        self.cardViewModels = {}
+        local numCards = #self.hand
+        local startX, startY, spacing = GameSceneLayout.getCenteredHandPosition(numCards)
 
-    for i, card in ipairs(self.hand) do
-        local view = CardView(card, startX + (i - 1) * spacing, startY, self.cardAtlas, self.smallFont)
-        table.insert(self.cardViews, view)
+        for i, card in ipairs(self.hand) do
+            local x = startX + (i - 1) * spacing
+            local vm = CardViewModel(card, x, startY, i)
+            table.insert(self.cardViewModels, vm)
+        end
+    else
+        self.cardViews = {}
+        local numCards = #self.hand
+        local startX, startY, spacing = GameSceneLayout.getCenteredHandPosition(numCards)
+        local CardView = require("visuals/CardView")
+
+        for i, card in ipairs(self.hand) do
+            local view = CardView(card, startX + (i - 1) * spacing, startY, self.cardAtlas, self.smallFont)
+            table.insert(self.cardViews, view)
+        end
     end
 end
 
@@ -1469,7 +1530,7 @@ function GameScene:discardSelected()
     if CampaignState:useDiscard() then
         -- 1. Identify indices to remove
         local indicesToRemove = {}
-        
+
         -- NEW: Get selected cards from CardViewModels or old CardViews
         if self.useNewCardSystem then
             for i, vm in ipairs(self.cardViewModels) do
@@ -1510,7 +1571,7 @@ function GameScene:discardSelected()
         while #self.hand < 6 and #self.deckList > 0 do
             table.insert(self.hand, table.remove(self.deckList))
         end
-        
+
         -- WARP: Chaos - Reshuffle after discard
         local warpEffects = EnhancementManager:resolveWarps()
         if warpEffects.active_warps then
@@ -1531,7 +1592,7 @@ function GameScene:discardSelected()
             -- NEW: Rebuild CardViewModels
             self.cardViewModels = {}
             local startX, startY, spacing = GameSceneLayout.getCenteredHandPosition(#self.hand)
-            
+
             for i, card in ipairs(self.hand) do
                 local x = startX + (i - 1) * spacing
                 local vm = CardViewModel(card, x, startY, i)
@@ -1543,9 +1604,9 @@ function GameScene:discardSelected()
             local startX = 200
             local startY = 500
             local spacing = 110
-            
+
             local CardView = require("visuals/CardView")
-            
+
             for i, card in ipairs(self.hand) do
                 local view = CardView(card, startX + (i - 1) * spacing, startY, self.cardAtlas, self.smallFont)
                 table.insert(self.cardViews, view)
@@ -1563,7 +1624,7 @@ function GameScene:draw()
     if not self.camera or not self.hud then
         return
     end
-    
+
     -- Draw UI (Reset Camera to 0,0 so UI scales with Zoom but stays fixed relative to screen)
     local gameCamX, gameCamY = self.camera:getPosition()
     graphics.setCamera(0, 0)
@@ -1593,12 +1654,12 @@ function GameScene:draw()
             if self.cutCardViewModel then
                 CardViewRefactored.draw(self.cutCardViewModel, self.cardAtlas, self.smallFont)
             end
-            
+
             -- Draw hand cards
             for _, vm in ipairs(self.cardViewModels) do
                 CardViewRefactored.draw(vm, self.cardAtlas, self.smallFont)
             end
-            
+
             -- Draw crib cards (still using old system for now)
             for _, view in ipairs(self.cribViews) do
                 view:draw()
@@ -1608,7 +1669,7 @@ function GameScene:draw()
             if self.cutCardView then
                 self.cutCardView:draw()
             end
-            
+
             for _, view in ipairs(self.cardViews) do
                 view:draw()
             end
