@@ -315,13 +315,22 @@ end
 function GameScene:onCardDragEnd(cardIndex, x, y)
     print("[GameScene] Drag end: " .. cardIndex .. " at " .. x .. ", " .. y)
 
-    -- Check if dropped in crib zone (right side: ~980-1220, 480-640)
+    -- Check if dropped in crib zone
     if x > 980 and x < 1220 and y > 480 and y < 640 and #CampaignState.crib < 2 then
         -- Add card to crib
         local card = self.hand[cardIndex]
         if card then
             table.remove(self.hand, cardIndex)
             table.insert(CampaignState.crib, card)
+
+            -- Deal replacement card from deck
+            if self.deckList and #self.deckList > 0 then
+                local newCard = table.remove(self.deckList)
+                if newCard then
+                    table.insert(self.hand, newCard)
+                    print("[GameScene] Dealt replacement card")
+                end
+            end
 
             -- Rebuild views
             self:rebuildHandViews()
@@ -330,10 +339,36 @@ function GameScene:onCardDragEnd(cardIndex, x, y)
             print("[GameScene] Card added to crib")
         end
     else
-        -- Snap back to hand position
-        print("[GameScene] Card snapped back to hand")
-        if self.cardViewModels[cardIndex] then
-            self:repositionCards()
+        -- Snap back or Reorder
+        print("[GameScene] Card released in hand area or snapped back")
+
+        -- Calculate hand area bounds
+        local startX, handY, spacing = GameSceneLayout.getCenteredHandPosition(#self.hand)
+
+        -- If dropped near the hand Y axis
+        if y > handY - 100 and y < handY + 250 then
+            -- Calculate which slot it's closest to
+            local relativeX = x - startX
+            local newIndex = math.floor((relativeX + spacing / 2) / spacing) + 1
+            newIndex = math.max(1, math.min(#self.hand, newIndex))
+
+            if newIndex ~= cardIndex then
+                print("[GameScene] Reordering card from " .. cardIndex .. " to " .. newIndex)
+                local card = table.remove(self.hand, cardIndex)
+                table.insert(self.hand, newIndex, card)
+
+                -- Rebuild views to reflect new order
+                self:rebuildHandViews()
+            else
+                if self.cardViewModels[cardIndex] then
+                    self:repositionCards()
+                end
+            end
+        else
+            -- Snap back to original position
+            if self.cardViewModels[cardIndex] then
+                self:repositionCards()
+            end
         end
     end
 
