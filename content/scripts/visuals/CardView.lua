@@ -56,62 +56,61 @@ function CardView:update(dt, mx, my, clicked)
 end
 
 function CardView:draw()
-    -- Coordinate Conversion REMOVED. Assuming World Space ~ Screen Space (Top-Left 0,0)
-    -- But avoiding DrawRect (Screen Space) which might occlude DrawSub (World Space).
+    -- Use CoordinateSystem for screen-space conversion
+    local CoordinateSystem = require("UI/CoordinateSystem")
+    local screenX, screenY = CoordinateSystem.viewportToScreen(self.currentX, self.currentY)
+    local screenW = CoordinateSystem.scaleSize(self.width)
+    local screenH = CoordinateSystem.scaleSize(self.height)
 
-    -- Draw sprite (World Space defaults)
+    -- Draw sprite
     local r, s = self:getCardValues()
     local spriteX, spriteY = self:getSpriteCoords(r, s)
 
     local cardW = 1024 / 13
     local cardH = 1024 / 4
 
-    -- Use PIXEL coordinates for DrawSub (Engine expects pixels, not UVs)
-    local u = spriteX
-    local v = spriteY
-    local uw = cardW
-    local vh = cardH
-
     graphics.drawSub(self.atlas,
-        self.currentX, self.currentY, self.width, self.height, -- Dest
-        u, v, uw, vh                                           -- Source (Pixels)
+        screenX, screenY, screenW, screenH, -- Dest (Screen Space)
+        spriteX, spriteY,                   -- Source (Atlas Pixels)
+        cardW, cardH
     )
 
-
-
-    -- Visual selection highlight (Screen Space)
-    -- Visual selection highlight (Screen Space)
+    -- Visual selection highlight
     if self.selected then
-        graphics.drawRect(self.currentX - 2, self.currentY - 2, self.width + 4, self.height + 4,
+        local padding = CoordinateSystem.scaleSize(2)
+        graphics.drawRect(screenX - padding, screenY - padding, screenW + padding * 2, screenH + padding * 2,
             { r = 1, g = 1, b = 0.2, a = 0.5 },
             true)
     end
 
     -- Draw Enhancement Label
     if self.card.enhancement then
-        local label = ""
-        local color = { r = 1, g = 1, b = 1, a = 1 }
-
-        if self.card.enhancement == "planet_gold" then
-            label = "GOLD"
-            color = { r = 1, g = 0.8, b = 0, a = 1 }
-        elseif self.card.enhancement == "planet_mult" then
-            label = "MULT"
-            color = { r = 1, g = 0.2, b = 0.2, a = 1 }
-        elseif self.card.enhancement == "planet_steel" then
-            label = "STEEL"
-            color = { r = 0.7, g = 0.7, b = 0.8, a = 1 }
-        elseif self.card.enhancement == "planet_stone" then
-            label = "STONE"
-            color = { r = 0.5, g = 0.5, b = 0.5, a = 1 }
-        else
-            label = "ENH" -- Fallback
-        end
-
-        local textW = 40 -- approx
-        graphics.print(self.smallFont, label, self.currentX + (self.width - textW) / 2, self.currentY + self.height - 20,
+        local label, color = self:getEnhancementVisuals()
+        local textW = CoordinateSystem.scaleSize(40)
+        graphics.print(self.font, label, screenX + (screenW - textW) / 2,
+            screenY + screenH - CoordinateSystem.scaleSize(20),
             color)
     end
+end
+
+function CardView:getEnhancementVisuals()
+    local label = "ENH"
+    local color = { r = 1, g = 1, b = 1, a = 1 }
+
+    if self.card.enhancement == "planet_gold" then
+        label = "GOLD"
+        color = { r = 1, g = 0.8, b = 0, a = 1 }
+    elseif self.card.enhancement == "planet_mult" then
+        label = "MULT"
+        color = { r = 1, g = 0.2, b = 0.2, a = 1 }
+    elseif self.card.enhancement == "planet_steel" then
+        label = "STEEL"
+        color = { r = 0.7, g = 0.7, b = 0.8, a = 1 }
+    elseif self.card.enhancement == "planet_stone" then
+        label = "STONE"
+        color = { r = 0.5, g = 0.5, b = 0.5, a = 1 }
+    end
+    return label, color
 end
 
 function CardView:getCardValues()

@@ -3,6 +3,7 @@
 -- Works with CardViewModel for MVVM pattern
 
 local CardViewRefactored = {}
+local CoordinateSystem = require("UI/CoordinateSystem")
 
 -- Sprite atlas constants
 CardViewRefactored.ATLAS_WIDTH = 1024
@@ -27,59 +28,66 @@ function CardViewRefactored.draw(viewModel, atlas, font)
     local renderX, renderY = viewModel:getRenderPosition()
     local width = viewModel.width
     local height = viewModel.height
-    
+
+    -- Convert viewport to screen coordinates
+    local screenX, screenY = CoordinateSystem.viewportToScreen(renderX, renderY)
+    local screenW = CoordinateSystem.scaleSize(width)
+    local screenH = CoordinateSystem.scaleSize(height)
+
     -- Get sprite coordinates
     local spriteX, spriteY = CardViewRefactored.getSpriteCoords(card)
-    
+
     -- Draw card sprite
     graphics.drawSub(
         atlas,
-        renderX, renderY, width, height,  -- Destination (viewport space)
-        spriteX, spriteY,  -- Source (atlas pixels)
+        screenX, screenY, screenW, screenH, -- Destination (screen space pixels)
+        spriteX, spriteY,                   -- Source (atlas pixels)
         CardViewRefactored.CARD_WIDTH_ATLAS,
         CardViewRefactored.CARD_HEIGHT_ATLAS
     )
-    
+
     -- Draw selection highlight
     if state.isSelected then
+        local padding = CoordinateSystem.scaleSize(2)
         graphics.drawRect(
-            renderX - 2, renderY - 2,
-            width + 4, height + 4,
+            screenX - padding, screenY - padding,
+            screenW + padding * 2, screenH + padding * 2,
             { r = 1, g = 1, b = 0.2, a = 0.5 },
-            true  -- filled
+            true -- filled
         )
     end
-    
+
     -- Draw hover highlight
     if state.isHovered and not state.isSelected then
+        local padding = CoordinateSystem.scaleSize(1)
         graphics.drawRect(
-            renderX - 1, renderY - 1,
-            width + 2, height + 2,
+            screenX - padding, screenY - padding,
+            screenW + padding * 2, screenH + padding * 2,
             { r = 1, g = 1, b = 1, a = 0.3 },
-            false  -- outline
+            false -- outline
         )
     end
-    
+
     -- Draw dragging indicator
     if state.isDragging then
         graphics.drawRect(
-            renderX, renderY,
-            width, height,
+            screenX, screenY,
+            screenW, screenH,
             { r = 0.5, g = 0.5, b = 1, a = 0.4 },
             false
         )
     end
-    
+
     -- Draw enhancement label (if card has enhancement)
     if card.enhancement then
         local label, color = CardViewRefactored.getEnhancementVisuals(card.enhancement)
         if label then
-            local textWidth = 40  -- Approximate width for centering
+            local textWidth = CoordinateSystem.scaleSize(40) -- Scaled approximate width
             graphics.print(
                 font,
                 label,
-                renderX + (width - textWidth) / 2,
-                renderY + height - 20,
+                screenX + (screenW - textWidth) / 2,
+                screenY + screenH - CoordinateSystem.scaleSize(20),
                 color
             )
         end
@@ -93,13 +101,13 @@ end
 function CardViewRefactored.getSpriteCoords(card)
     local rankInt = CardViewRefactored.getRankValue(card.rank)
     local suitInt = CardViewRefactored.getSuitValue(card.suit)
-    
-    local col = rankInt - 1  -- 0-12
+
+    local col = rankInt - 1 -- 0-12
     local row = CardViewRefactored.SUIT_TO_ROW[suitInt]
-    
+
     local x = col * CardViewRefactored.CARD_WIDTH_ATLAS
     local y = row * CardViewRefactored.CARD_HEIGHT_ATLAS
-    
+
     return x, y
 end
 
@@ -149,18 +157,18 @@ function CardViewRefactored.debugDraw(viewModel)
     local renderX, renderY = viewModel:getRenderPosition()
     local width = viewModel.width
     local height = viewModel.height
-    
+
     -- Draw bounds
-    graphics.drawRect(renderX, renderY, width, height, {r=0, g=1, b=0, a=0.5}, false)
-    
+    graphics.drawRect(renderX, renderY, width, height, { r = 0, g = 1, b = 0, a = 0.5 }, false)
+
     -- Draw center point
     local centerX = renderX + width / 2
     local centerY = renderY + height / 2
-    graphics.drawRect(centerX - 2, centerY - 2, 4, 4, {r=1, g=0, b=0, a=1}, true)
-    
+    graphics.drawRect(centerX - 2, centerY - 2, 4, 4, { r = 1, g = 0, b = 0, a = 1 }, true)
+
     -- Draw target position
     local targetX, targetY = viewModel.targetX, viewModel.targetY
-    graphics.drawRect(targetX - 1, targetY - 1, 2, 2, {r=0, g=0, b=1, a=1}, true)
+    graphics.drawRect(targetX - 1, targetY - 1, 2, 2, { r = 0, g = 0, b = 1, a = 1 }, true)
 end
 
 return CardViewRefactored

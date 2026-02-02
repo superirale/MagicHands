@@ -16,6 +16,7 @@ local EffectManager = require("visuals/EffectManager")
 local AudioManager = require("audio/AudioManager")
 local Camera = require("Camera")
 local GameSceneLayout = require("scenes/GameSceneLayout")
+local ScoringUtils = require("utils/ScoringUtils")
 
 -- NEW: Refactored UI Architecture
 local CoordinateSystem = require("UI/CoordinateSystem")
@@ -392,10 +393,16 @@ end
 function GameScene:updateAddToCribButtonPosition()
     -- Use layout system for positioning
     local buttonLayout = GameSceneLayout.getPosition("addToCribButton")
-    self.addToCribButton.x = buttonLayout.x
-    self.addToCribButton.y = buttonLayout.y
-    self.addToCribButton.width = buttonLayout.width
-    self.addToCribButton.height = buttonLayout.height
+
+    -- Convert to screen space
+    local sx, sy = CoordinateSystem.viewportToScreen(buttonLayout.x, buttonLayout.y)
+    local sw = CoordinateSystem.scaleSize(buttonLayout.width)
+    local sh = CoordinateSystem.scaleSize(buttonLayout.height)
+
+    self.addToCribButton.x = sx
+    self.addToCribButton.y = sy
+    self.addToCribButton.width = sw
+    self.addToCribButton.height = sh
 end
 
 function GameScene:addSelectedCardsToCrib()
@@ -777,41 +784,52 @@ function GameScene:update(dt)
         if self.useNewCardSystem then
             -- NEW SYSTEM: Input handled via UIEvents and InputHandler
             -- Update Score Preview
-            local selectedCards = {}
+            -- Calculate effective cards for preview
+            local effectiveCards = {}
             for i, vm in ipairs(self.cardViewModels) do
-                if vm.isSelected then
-                    table.insert(selectedCards, self.hand[i])
+                if vm.isSelected then table.insert(effectiveCards, self.hand[i]) end
+            end
+
+            local warpEffects = EnhancementManager:resolveWarps()
+            local hasPhantom = false
+            local hasInfinity = false
+            if warpEffects.active_warps then
+                for _, w in ipairs(warpEffects.active_warps) do
+                    if w == "warp_phantom" then
+                        hasPhantom = true
+                    elseif w == "warp_infinity" then
+                        hasInfinity = true
+                    end
                 end
             end
 
-            if #selectedCards == 4 and self.cutCard then
-                -- Calculate score preview
-                self.scorePreviewData = ScorePreview.calculate(selectedCards, self.cutCard)
+            if hasPhantom and self.discardedThisTurn then
+                for _, c in ipairs(self.discardedThisTurn) do table.insert(effectiveCards, c) end
+            end
+
+            -- Preview condition
+            local canPreview = false
+            if hasInfinity then
+                canPreview = (#effectiveCards >= 1)
+            else
+                canPreview = (#effectiveCards == 4)
+            end
+
+            if canPreview and self.cutCard then
+                self.scorePreviewData = ScorePreview.calculate(effectiveCards, self.cutCard)
             else
                 self.scorePreviewData = nil
             end
-
-            -- Get viewport mouse position
-            local viewportX, viewportY = 0, 0
-            if self.inputHandler then
-                viewportX, viewportY = self.inputHandler:getMousePosition()
-            end
-
-            -- Input state and events (like dragging and selection) are now handled
-            -- purely via UIEvents in setupEventListeners and onCardClicked/onInputDragStart etc.
-            -- This update loop only handles visual processing.
         else
             -- OLD SYSTEM: Legacy input handling
-            local selectedCards = {}
+            local effectiveCards = {}
             for i, view in ipairs(self.cardViews) do
-                if view.selected then
-                    table.insert(selectedCards, self.hand[i])
-                end
+                if view.selected then table.insert(effectiveCards, self.hand[i]) end
             end
 
-            if #selectedCards == 4 and self.cutCard then
-                -- Calculate score preview
-                self.scorePreviewData = ScorePreview.calculate(selectedCards, self.cutCard)
+            -- Simple fallback for legacy: just check 4 cards
+            if #effectiveCards == 4 and self.cutCard then
+                self.scorePreviewData = ScorePreview.calculate(effectiveCards, self.cutCard)
             else
                 self.scorePreviewData = nil
             end
@@ -990,7 +1008,7 @@ function GameScene:playHand()
         end
     end
 
-    -- Check for warp_infinity (no hand limit)
+    -- Check for Selection
     local warpEffects = EnhancementManager:resolveWarps()
     local hasInfinity = false
     local hasPhantom = false
@@ -1013,395 +1031,107 @@ function GameScene:playHand()
         return
     end
 
-    if hasInfinity and #selectedCards > 4 then
-        print("♾️ Warp Infinity: Playing " .. #selectedCards .. " cards (no limit)!")
-    end
-
     -- WARP: Phantom - Track discarded cards for scoring
-    local phantomCards = {}
     if hasPhantom and self.discardedThisTurn and #self.discardedThisTurn > 0 then
-        print("👻 Warp Phantom: Discarded cards (" .. #self.discardedThisTurn .. ") count for scoring!")
+        print("👻 Warp Phantom: Adding discarded cards to score!")
         for _, card in ipairs(self.discardedThisTurn) do
-            table.insert(phantomCards, card)
+            table.insert(selectedCards, card)
         end
     end
 
-    -- Add cut card to make 5 cards total (required by cribbage API)
-    table.insert(selectedCards, self.cutCard)
+    -- 1. Main Hand Scoring
+    local scoreResult = ScoringUtils.calculateScore(selectedCards, self.cutCard)
+    local finalScore = scoreResult.total
+    local mainHandResult = scoreResult.handResult
+    local mainScoreBase = scoreResult.breakdown.baseChips
 
-    -- Score the hand (now with 5 cards: 4 hand + 1 cut)
-    -- We need to convert Lua tables to C++ Card objects for the engine
-    local engineCards = {}
-    for _, c in ipairs(selectedCards) do
-        -- Check if it's already a userdata (legacy) or table (new)
-        if type(c) == "userdata" then
-            table.insert(engineCards, c) -- Should not happen with new system but safety first
-        else
-            -- Convert table {rank="A", suit="H"} to Card.new("A", "H")
-            -- We might need to handle rank conversion if Card.new expects specific strings
-            -- CardBindings says: "Ace"/"A", "2".."10", "Jack"/"J", "Queen"/"Q", "King"/"K"
-            -- Suits: "Hearts"/"H", "Diamonds"/"D", etc.
-            -- Our tables use "A", "2", "3"... "H", "D"... matches bindings!
-            table.insert(engineCards, Card.new(c.rank, c.suit))
-        end
-    end
-
-    -- 1. Get Boss Rules (from Boss + Warps)
-    local bossRules = BossManager:getEffects()
-
-    -- Add warp-specific boss rules (for engine warps)
-    local warpEffects = EnhancementManager:resolveWarps()
-    if warpEffects.active_warps then
-        for _, warpId in ipairs(warpEffects.active_warps) do
-            -- Check if this warp requires a boss rule for C++ scoring
-            if warpId == "warp_blaze" or warpId == "warp_mirror" or
-                warpId == "warp_inversion" or warpId == "warp_wildfire" then
-                table.insert(bossRules, warpId)
-                print("🔥 Engine Warp Active: " .. warpId)
-            end
-        end
-    end
-
-    -- 2. Base Score (Hand Result) with Boss Rules applied
-    local handResult = cribbage.evaluate(engineCards)
-    local score = cribbage.score(engineCards, 0, 0, bossRules) -- Pass rules here
-
-    -- 3. Resolve Card Imprints (Pillar 3)
-    local imprintEffects = EnhancementManager:resolveImprints(selectedCards, "score")
-
-    -- 4. Resolve Hand Augments (Pillar 3)
-    local augmentEffects = EnhancementManager:resolveAugments(handResult, engineCards)
-
-    -- 5. Resolve Rule Warps (Pillar 3)
-    local warpEffects = EnhancementManager:resolveWarps()
-
-    -- 6. Resolve Jokers & Stacks (Pillar 1 & 2)
-    -- JokerManager logic now includes stacking simulation
-    -- PASS engineCards (C++ objects) because applyEffects calls C++ bindings
-    local jokerEffects = JokerManager:applyEffects(engineCards, "on_score")
-
-
-    -- 7. Final Score Aggregation
-
-
-    -- 7. Final Score Aggregation
-    -- Formula: (Base + Enhancements + Imprints + JokerChips + Warps)
-    local finalChips = score.baseChips + augmentEffects.chips + jokerEffects.addedChips + imprintEffects.chips
-
-    -- Apply Warp: Cut Bonus (Ghost Cut)
-    if warpEffects.cut_bonus > 0 then
-        finalChips = finalChips + warpEffects.cut_bonus
-    end
-
-    -- Summing linear multipliers
-    local totalTempMult = score.tempMultiplier + augmentEffects.mult + jokerEffects.addedTempMult + imprintEffects.mult
-    local totalPermMult = score.permMultiplier + jokerEffects.addedPermMult
-
-    -- Apply Warp: Mult Multiplier (Ascension - double all mult)
-    if warpEffects.mult_multiplier > 1.0 then
-        totalTempMult = totalTempMult * warpEffects.mult_multiplier
-        totalPermMult = totalPermMult * warpEffects.mult_multiplier
-    end
-
-    -- Final calculation (with XMult from Imprints)
-    local finalMult = (1 + totalTempMult + totalPermMult) * imprintEffects.x_mult
-
-    local finalScore = math.floor(finalChips * finalMult)
-
-    -- Apply Warp: Score Penalty (The Void) and Score Multipliers (Fortune, Gambit, Greed)
-    local totalScoreMultiplier = warpEffects.score_penalty * warpEffects.score_multiplier
-    if totalScoreMultiplier ~= 1.0 then
-        finalScore = math.floor(finalScore * totalScoreMultiplier)
-    end
-
-    -- Apply Warp: Score to Gold (Greed - 10% of score becomes gold)
-    if warpEffects.score_to_gold_pct > 0 then
-        local goldGain = math.floor(finalScore * warpEffects.score_to_gold_pct)
+    -- Side Effects
+    if scoreResult.warpEffects.score_to_gold_pct > 0 then
+        local goldGain = math.floor(finalScore * scoreResult.warpEffects.score_to_gold_pct)
         if goldGain > 0 then
             Economy:addGold(goldGain)
             print("Warp Greed: Converted " .. goldGain .. "g from score")
         end
     end
 
-    -- Apply Warp: Hand Cost (Fortune - costs 5g per hand)
-    if warpEffects.hand_cost > 0 then
-        if Economy:spend(warpEffects.hand_cost) then
-            print("Warp Fortune: Paid " .. warpEffects.hand_cost .. "g for hand")
+    if scoreResult.warpEffects.hand_cost > 0 then
+        if Economy:spend(scoreResult.warpEffects.hand_cost) then
+            print("Warp Fortune: Paid " .. scoreResult.warpEffects.hand_cost .. "g for hand")
         else
-            print("WARN: Not enough gold for Warp Fortune cost!")
+            print("WARN: Not enough gold for Warp Fortune!")
         end
     end
 
-    -- Apply Warp: Retrigger (The Echo) - Simplified as 2x score for MVP
-    if warpEffects.retrigger > 0 then
-        finalScore = finalScore * (1 + warpEffects.retrigger)
+    if scoreResult.imprintEffects.gold > 0 then
+        Economy:addGold(scoreResult.imprintEffects.gold)
+        print("Earned " .. scoreResult.imprintEffects.gold .. "g from Imprints")
     end
 
-    -- Handle Imprint Gold (e.g. Gold Inlay)
-    if imprintEffects.gold > 0 then
-        Economy:addGold(imprintEffects.gold)
-        print("Earned " .. imprintEffects.gold .. "g from Imprints")
-    end
-
-    -- NEW: Score the crib on the last hand only
+    -- 2. Crib Scoring (Last hand of blind only)
     local cribScore = 0
     if CampaignState:isLastHand() and #CampaignState.crib == 2 then
-        -- Build crib cards for scoring (2 player cards + 2 random + cut = 5 cards)
-        local cribCards = {}    -- C++ Card objects for engine
-        local cribCardsLua = {} -- Lua table cards for imprint resolution
+        local cribCards = {}
+        for _, c in ipairs(CampaignState.crib) do table.insert(cribCards, c) end
 
-        print("DEBUG: Building crib hand for scoring")
-        print("DEBUG: Crib has " .. #CampaignState.crib .. " player-selected cards")
-
-        for i, c in ipairs(CampaignState.crib) do
-            print("DEBUG: Crib card " .. i .. " type: " .. type(c))
-            if type(c) == "table" then
-                if c.rank and c.suit then
-                    print("DEBUG: Converting table card: " .. c.rank .. " of " .. c.suit)
-                    local card = Card.new(c.rank, c.suit)
-                    print("DEBUG: Card.new returned type: " .. type(card))
-                    if card then
-                        table.insert(cribCards, card)
-                        table.insert(cribCardsLua, c) -- Keep original table for imprints
-                    else
-                        print("ERROR: Card.new returned nil for " .. c.rank .. " of " .. c.suit)
-                    end
-                else
-                    print("ERROR: Crib card is table but missing rank or suit")
-                end
-            else
-                -- Card is already a userdata Card object
-                print("DEBUG: Using existing Card object")
-                table.insert(cribCards, c)
-                -- Try to find corresponding lua table in original crib
-                table.insert(cribCardsLua, CampaignState.crib[i])
-            end
-        end
-
-        -- Add 2 random cards from the deck to fill the crib
-        print("DEBUG: Adding 2 random cards from deck to crib")
-        print("DEBUG: Deck size: " .. #self.deckList)
         local availableCards = {}
-        for _, card in ipairs(self.deckList) do
-            if card then
-                table.insert(availableCards, card)
-            end
-        end
-        print("DEBUG: Available cards after filtering: " .. #availableCards)
+        for _, card in ipairs(self.deckList) do table.insert(availableCards, card) end
 
-        -- Randomly select 2 cards
         for i = 1, 2 do
             if #availableCards > 0 then
                 local randomIndex = math.random(1, #availableCards)
-                local randomCard = table.remove(availableCards, randomIndex)
-
-                if randomCard then
-                    if type(randomCard) == "table" then
-                        if randomCard.rank and randomCard.suit then
-                            print("DEBUG: Adding random card: " .. randomCard.rank .. " of " .. randomCard.suit)
-                            local card = Card.new(randomCard.rank, randomCard.suit)
-                            if card then
-                                table.insert(cribCards, card)
-                                table.insert(cribCardsLua, randomCard)
-                            end
-                        end
-                    else
-                        table.insert(cribCards, randomCard)
-                        -- For userdata, create a table representation
-                        table.insert(cribCardsLua, randomCard)
-                    end
-                else
-                    print("ERROR: Random card is nil")
-                end
+                table.insert(cribCards, table.remove(availableCards, randomIndex))
             end
         end
 
-        -- Add cut card to make it a proper hand
-        print("DEBUG: Cut card type: " .. type(self.cutCard))
-        if type(self.cutCard) == "table" then
-            if self.cutCard.rank and self.cutCard.suit then
-                print("DEBUG: Converting cut card: " .. self.cutCard.rank .. " of " .. self.cutCard.suit)
-                local cutCard = Card.new(self.cutCard.rank, self.cutCard.suit)
-                print("DEBUG: Cut Card.new returned type: " .. type(cutCard))
-                if cutCard then
-                    table.insert(cribCards, cutCard)
-                    table.insert(cribCardsLua, self.cutCard)
-                else
-                    print("ERROR: Card.new returned nil for cut card " ..
-                        self.cutCard.rank .. " of " .. self.cutCard.suit)
-                end
-            else
-                print("ERROR: Cut card is table but missing rank or suit")
-            end
-        else
-            print("DEBUG: Using existing cut Card object")
-            table.insert(cribCards, self.cutCard)
-            table.insert(cribCardsLua, self.cutCard)
-        end
+        local cribResult = ScoringUtils.calculateScore(cribCards, self.cutCard)
+        cribScore = cribResult.total
+        finalScore = finalScore + cribScore
 
-        print("DEBUG: Total cards for crib scoring: " .. #cribCards)
+        print("--- CRIB SCORE BREAKDOWN ---")
+        print("Crib Total: " .. cribScore)
+        print("-----------------------------")
 
-        -- Only score if we have exactly 5 cards (4 crib + 1 cut)
-        if #cribCards == 5 then
-            -- Apply FULL scoring pipeline to crib (same as main hand)
-            print("--- CRIB SCORING PIPELINE ---")
-
-            -- 1. Base Score (with Boss Rules)
-            local cribHandResult = cribbage.evaluate(cribCards)
-            local cribBaseScore = cribbage.score(cribCards, 0, 0, bossRules)
-
-            -- 2. Resolve Card Imprints for crib cards
-            local cribImprintEffects = EnhancementManager:resolveImprints(cribCardsLua, "score")
-
-            -- 3. Resolve Hand Augments (Planets) for crib patterns
-            local cribAugmentEffects = EnhancementManager:resolveAugments(cribHandResult, cribCards)
-
-            -- 4. Resolve Rule Warps (use same warp effects as main hand)
-            -- Note: Warps are global, so we reuse the same warpEffects
-
-            -- 5. Resolve Jokers & Stacks for crib patterns
-            local cribJokerEffects = JokerManager:applyEffects(cribCards, "on_score")
-
-            -- 6. Aggregate Crib Score (same formula as main hand)
-            local cribFinalChips = cribBaseScore.baseChips + cribAugmentEffects.chips +
-                cribJokerEffects.addedChips + cribImprintEffects.chips
-
-            -- Apply Warp: Cut Bonus (Ghost Cut)
-            if warpEffects.cut_bonus > 0 then
-                cribFinalChips = cribFinalChips + warpEffects.cut_bonus
-            end
-
-            local cribTotalTempMult = cribBaseScore.tempMultiplier + cribAugmentEffects.mult +
-                cribJokerEffects.addedTempMult + cribImprintEffects.mult
-            local cribTotalPermMult = cribBaseScore.permMultiplier + cribJokerEffects.addedPermMult
-
-            -- Apply Warp: Mult Multiplier (Ascension - double all mult)
-            if warpEffects.mult_multiplier > 1.0 then
-                cribTotalTempMult = cribTotalTempMult * warpEffects.mult_multiplier
-                cribTotalPermMult = cribTotalPermMult * warpEffects.mult_multiplier
-            end
-
-            local cribFinalMult = (1 + cribTotalTempMult + cribTotalPermMult) * cribImprintEffects.x_mult
-
-            local cribFinalScore = math.floor(cribFinalChips * cribFinalMult)
-
-            -- Apply Warp: Score Penalty (The Void) and Score Multipliers (Fortune, Gambit, Greed)
-            local totalScoreMultiplier = warpEffects.score_penalty * warpEffects.score_multiplier
-            if totalScoreMultiplier ~= 1.0 then
-                cribFinalScore = math.floor(cribFinalScore * totalScoreMultiplier)
-            end
-
-            -- Apply Warp: Retrigger (The Echo) - Simplified as 2x score for MVP
-            if warpEffects.retrigger > 0 then
-                cribFinalScore = cribFinalScore * (1 + warpEffects.retrigger)
-            end
-
-            -- Sum multipliers
-            local cribTotalTempMult = cribBaseScore.tempMultiplier + cribAugmentEffects.mult +
-                cribJokerEffects.addedTempMult + cribImprintEffects.mult
-            local cribTotalPermMult = cribBaseScore.permMultiplier + cribJokerEffects.addedPermMult
-
-            -- Final calculation (with XMult from Imprints)
-            local cribFinalMult = (1 + cribTotalTempMult + cribTotalPermMult) * cribImprintEffects.x_mult
-
-            cribScore = math.floor(cribFinalChips * cribFinalMult)
-
-            -- Apply Warp: Score Penalty (The Void)
-            if warpEffects.score_penalty ~= 1.0 then
-                cribScore = math.floor(cribScore * warpEffects.score_penalty)
-            end
-
-            -- Apply Warp: Retrigger (The Echo)
-            if warpEffects.retrigger > 0 then
-                cribScore = cribScore * (1 + warpEffects.retrigger)
-            end
-
-            -- Handle Imprint Gold from crib cards
-            if cribImprintEffects.gold > 0 then
-                Economy:addGold(cribImprintEffects.gold)
-                print("Earned " .. cribImprintEffects.gold .. "g from Crib Imprints")
-            end
-
-            -- Add crib score to final score
-            finalScore = finalScore + cribScore
-
-            print("--- CRIB SCORE BREAKDOWN ---")
-            print("Crib Base: " .. cribBaseScore.baseChips .. " x " ..
-                (1 + cribBaseScore.tempMultiplier + cribBaseScore.permMultiplier))
-            print("Crib Augments: +" .. cribAugmentEffects.chips .. " Chips, +" ..
-                cribAugmentEffects.mult .. " Mult")
-            print("Crib Jokers: +" .. cribJokerEffects.addedChips .. " Chips, +" ..
-                (cribJokerEffects.addedTempMult + cribJokerEffects.addedPermMult) .. " Mult")
-            print("Crib Imprints: +" .. cribImprintEffects.chips .. " Chips, +" ..
-                cribImprintEffects.mult .. " Mult, x" .. cribImprintEffects.x_mult)
-            print("Crib Final Score: " .. cribScore)
-            print("-----------------------------")
-        else
-            print("ERROR: Expected 5 cards for crib scoring but got " .. #cribCards)
+        if cribResult.imprintEffects.gold > 0 then
+            Economy:addGold(cribResult.imprintEffects.gold)
+            print("Earned " .. cribResult.imprintEffects.gold .. "g from Crib Imprints")
         end
     end
 
-    -- Debug: Show joker effects
-    print("--- SCORE BREAKDOWN ---")
-    print("Base: " .. score.baseChips .. " x " .. (1 + score.tempMultiplier + score.permMultiplier))
-    print("Augments: +" .. augmentEffects.chips .. " Chips, +" .. augmentEffects.mult .. " Mult")
-    print("Jokers: +" ..
-        jokerEffects.addedChips .. " Chips, +" .. (jokerEffects.addedTempMult + jokerEffects.addedPermMult) .. " Mult")
-    print("Warps: Cut Bonus " .. warpEffects.cut_bonus .. ", Retrigger " .. warpEffects.retrigger)
-    print("-----------------------")
+    -- 3. Visuals and Events
+    print(string.format("Scored: %d (Chips: %d, Mult: %.2f)", finalScore, scoreResult.chips, scoreResult.mult))
+    EffectManager:spawnChips(640, 360, 20)
+    if finalScore > 50 then EffectManager:shake(5, 0.5) end
 
-    if jokerEffects.addedChips > 0 or jokerEffects.addedTempMult > 0 then
-        print(string.format("Joker effects: +%d chips, +%.2f mult", jokerEffects.addedChips, jokerEffects.addedTempMult))
-    end
-    print("Scored: " .. finalScore)
-
-    -- Visual FX: Chip Burst!
-    -- Spawn centered or distributed? Let's center for now
-    EffectManager:spawnChips(640, 360, 20) -- 20 particles
-    -- AudioManager:playScore()
-
-    -- Screen Shake for impact
-    if finalScore > 50 then
-        EffectManager:shake(5, 0.5)
-    end
-
-    -- Emit hand scored event for achievements
     events.emit("hand_scored", {
         score = finalScore,
         handTotal = self:calculateHandTotal(selectedCards),
         categoriesScored = {
-            fifteens = score.baseChips > 0 and handResult.fifteens and #handResult.fifteens or 0,
-            pairs = score.baseChips > 0 and handResult.pairs and #handResult.pairs or 0,
-            runs = score.baseChips > 0 and handResult.runs and #handResult.runs or 0,
-            flushes = score.baseChips > 0 and handResult.flushCount or 0,
-            nobs = score.baseChips > 0 and handResult.hasNobs and 1 or 0
+            fifteens = mainScoreBase > 0 and mainHandResult.fifteens and #mainHandResult.fifteens or 0,
+            pairs = mainScoreBase > 0 and mainHandResult.pairs and #mainHandResult.pairs or 0,
+            runs = mainScoreBase > 0 and mainHandResult.runs and #mainHandResult.runs or 0,
+            flushes = mainScoreBase > 0 and mainHandResult.flushCount or 0,
+            nobs = mainScoreBase > 0 and mainHandResult.hasNobs and 1 or 0
         }
     })
 
-    -- WARP: Time Warp - Score crib BEFORE hand
+    -- Time Warp: score crib before hand
     local hasTimeWarp = false
-    if warpEffects.active_warps then
-        for _, warpId in ipairs(warpEffects.active_warps) do
-            if warpId == "warp_time" then
-                hasTimeWarp = true
-                break
+    if scoreResult.warpEffects.active_warps then
+        for _, w in ipairs(scoreResult.warpEffects.active_warps) do
+            if w == "warp_time" then
+                hasTimeWarp = true; break
             end
         end
     end
-
     if hasTimeWarp and cribScore > 0 then
-        print("⏰ Warp Time: Scoring crib BEFORE hand!")
-        print("Crib scored first: " .. cribScore)
         CampaignState.currentScore = CampaignState.currentScore + cribScore
     end
 
-    -- Check campaign result
+    -- 4. Result Processing
     local result, reward = CampaignState:playHand(finalScore)
 
     if result == "win" then
-        print("Blind Cleared! entering shop...")
-
-        -- Emit blind won event for achievements
+        print("Blind Cleared!")
         local currentBlind = CampaignState:getCurrentBlind()
         events.emit("blind_won", {
             blindType = currentBlind.type or "small",
@@ -1409,17 +1139,12 @@ function GameScene:playHand()
             bossId = BossManager.activeBoss and BossManager.activeBoss.id or nil,
             score = finalScore
         })
-
         self.state = "SHOP"
         self.shopUI:open(reward)
     elseif result == "loss" then
         print("GAME OVER")
         self.state = "GAME_OVER"
-
-        -- Emit run complete event
-        events.emit("run_complete", { won = false })
     else
-        -- High enough for demo to just refresh hand
         self:startNewHand()
     end
 end
@@ -1485,14 +1210,16 @@ end
 
 --- NEW: Reposition cards (for sorting, resize, etc.)
 function GameScene:repositionCards()
-    if not self.cardViewModels then return end
+    if not self.useNewCardSystem then return end
 
     local numCards = #self.hand
-    local startX, startY, spacing = GameSceneLayout.getCenteredHandPosition(numCards)
+    local startX, handY, spacing = GameSceneLayout.getCenteredHandPosition(numCards)
 
     for i, vm in ipairs(self.cardViewModels) do
-        local x = startX + (i - 1) * spacing
-        vm:setTargetPosition(x, startY)
+        local targetX = startX + (i - 1) * spacing
+        vm:setTargetPosition(targetX, handY)
+        -- Update the VM's internal index to keep track of its position in the hand
+        vm.index = i
     end
 end
 
@@ -1664,13 +1391,20 @@ function GameScene:draw()
     local gameCamX, gameCamY = self.camera:getPosition()
     graphics.setCamera(0, 0)
 
-    -- Draw Background (screenSpace = false to use zoom, but clamped to 0,0)
-    graphics.drawRect(0, 0, 1280, 720, { r = 0.1, g = 0.3, b = 0.2, a = 1.0 }, false)
+    -- Draw Background
+    local winW, winH = graphics.getWindowSize()
+    graphics.drawRect(0, 0, winW, winH, { r = 0.1, g = 0.3, b = 0.2, a = 1.0 }, false)
 
     -- Crib Placeholder UI
-    graphics.print(self.font, "CRIB", 1000, 450, { r = 1, g = 1, b = 1, a = 0.5 })
-    graphics.drawRect(980, 480, 110, 150, { r = 0, g = 0, b = 0, a = 0.3 }, true)
-    graphics.drawRect(1100, 480, 110, 150, { r = 0, g = 0, b = 0, a = 0.3 }, true)
+    local cribX, cribY = CoordinateSystem.viewportToScreen(1000, 450)
+    graphics.print(self.font, "CRIB", cribX, cribY, { r = 1, g = 1, b = 1, a = 0.5 })
+
+    local slot1X, slot1Y = CoordinateSystem.viewportToScreen(980, 480)
+    local slot2X, slot2Y = CoordinateSystem.viewportToScreen(1100, 480)
+    local slotW, slotH = CoordinateSystem.scaleSize(110), CoordinateSystem.scaleSize(150)
+
+    graphics.drawRect(slot1X, slot1Y, slotW, slotH, { r = 0, g = 0, b = 0, a = 0.3 }, true)
+    graphics.drawRect(slot2X, slot2Y, slotW, slotH, { r = 0, g = 0, b = 0, a = 0.3 }, true)
 
     if self.hud then
         -- Draw HUD
@@ -1679,7 +1413,8 @@ function GameScene:draw()
         -- Phase 3: Draw keyboard shortcuts helper text
         if self.state == "PLAY" then
             local shortcutX, shortcutY = GameSceneLayout.getPosition("shortcuts")
-            graphics.print(self.smallFont, "[C] Collection  [TAB] Stats  [Z] Undo", shortcutX, shortcutY,
+            local sx, sy = CoordinateSystem.viewportToScreen(shortcutX, shortcutY)
+            graphics.print(self.smallFont, "[C] Collection  [TAB] Stats  [Z] Undo", sx, sy,
                 { r = 0.7, g = 0.7, b = 0.7, a = 0.8 })
         end
 
@@ -1733,7 +1468,8 @@ function GameScene:draw()
 
         -- Phase 3: Draw Score Preview (in PLAY state)
         if self.state == "PLAY" and self.scorePreviewData then
-            ScorePreview.draw(850, 300, self.scorePreviewData, self.font, self.smallFont)
+            local px, py = CoordinateSystem.viewportToScreen(850, 300)
+            ScorePreview.draw(px, py, self.scorePreviewData, self.font, self.smallFont)
         end
 
         -- Phase 3: Draw Tier Indicators on Jokers
