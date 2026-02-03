@@ -2,15 +2,17 @@
 #include "AudioManager.h" // Orpheus header
 #include "core/Logger.h"
 
-std::unique_ptr<Orpheus::AudioManager> AudioSystem::s_Engine;
-static float s_MasterVolume = 1.0f; // Default to full volume
+AudioSystem &AudioSystem::Instance() {
+  static AudioSystem instance;
+  return instance;
+}
 
 bool AudioSystem::Init() {
   LOG_INFO("Initializing Orpheus Audio System...");
-  s_Engine = std::make_unique<Orpheus::AudioManager>();
+  m_Engine = std::make_unique<Orpheus::AudioManager>();
 
   // Status is Result<void>, check with !result or !result.IsOk()
-  if (!s_Engine->Init()) {
+  if (!m_Engine->Init()) {
     LOG_ERROR("Failed to initialize Orpheus Audio Engine");
     return false;
   }
@@ -20,21 +22,21 @@ bool AudioSystem::Init() {
 }
 
 void AudioSystem::Destroy() {
-  if (s_Engine) {
-    s_Engine->Shutdown();
-    s_Engine.reset();
+  if (m_Engine) {
+    m_Engine->Shutdown();
+    m_Engine.reset();
   }
 }
 
 void AudioSystem::Update(float dt) {
-  if (s_Engine) {
-    s_Engine->Update(dt);
+  if (m_Engine) {
+    m_Engine->Update(dt);
   }
 }
 
 void AudioSystem::LoadBank(const std::string &path) {
-  if (s_Engine) {
-    auto result = s_Engine->LoadEventsFromFile(path);
+  if (m_Engine) {
+    auto result = m_Engine->LoadEventsFromFile(path);
     if (!result) {
       LOG_ERROR("Failed to load sound bank: %s (Error: %s)", path.c_str(),
                 result.GetError().What().c_str());
@@ -45,10 +47,10 @@ void AudioSystem::LoadBank(const std::string &path) {
 }
 
 void AudioSystem::PlayEvent(const std::string &name) {
-  if (!s_Engine)
+  if (!m_Engine)
     return;
 
-  auto result = s_Engine->PlayEvent(name);
+  auto result = m_Engine->PlayEvent(name);
   if (!result) {
     LOG_WARN("Failed to play event '%s': %s", name.c_str(),
              result.GetError().Message().c_str());
@@ -57,26 +59,26 @@ void AudioSystem::PlayEvent(const std::string &name) {
 
 void AudioSystem::SetMasterVolume(float volume) {
   // Clamp volume to 0.0-1.0 range
-  s_MasterVolume = std::max(0.0f, std::min(1.0f, volume));
-  LOG_DEBUG("Master volume set to: %.2f", s_MasterVolume);
+  m_MasterVolume = std::max(0.0f, std::min(1.0f, volume));
+  LOG_DEBUG("Master volume set to: %.2f", m_MasterVolume);
 
   // TODO: Apply volume to Orpheus AudioManager when API is available
   // For now, just store the value
 }
 
-float AudioSystem::GetMasterVolume() { return s_MasterVolume; }
+float AudioSystem::GetMasterVolume() const { return m_MasterVolume; }
 
 // --- Lua Bindings ---
 
 int AudioSystem::Lua_LoadBank(lua_State *L) {
   const char *path = luaL_checkstring(L, 1);
-  LoadBank(path);
+  Instance().LoadBank(path);
   return 0;
 }
 
 int AudioSystem::Lua_PlayEvent(lua_State *L) {
   const char *name = luaL_checkstring(L, 1);
-  PlayEvent(name);
+  Instance().PlayEvent(name);
   return 0;
 }
 
@@ -88,8 +90,6 @@ void AudioSystem::RegisterLua(lua_State *L) {
 
   lua_pushcfunction(L, Lua_LoadBank);
   lua_setfield(L, -2, "loadBank");
-
-  // Removed legacy playSound mapping
 
   lua_setglobal(L, "audio");
 }

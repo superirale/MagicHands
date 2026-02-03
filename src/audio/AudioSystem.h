@@ -16,26 +16,34 @@ extern "C" {
 
 class AudioSystem {
 public:
-  static bool Init();
-  static void Destroy();
-  static void Update(float dt);
+  static AudioSystem &Instance();
+
+  bool Init();
+  void Destroy();
+  void Update(float dt);
 
   // Core API
-  static void LoadBank(const std::string &path);
-  static void PlayEvent(const std::string &name);
+  void LoadBank(const std::string &path);
+  void PlayEvent(const std::string &name);
 
   // Volume control
-  static void SetMasterVolume(float volume); // 0.0 to 1.0
-  static float GetMasterVolume();
-
-  // Legacy PlaySound removed as per user request. Use PlayEvent.
+  void SetMasterVolume(float volume); // 0.0 to 1.0
+  float GetMasterVolume() const;
 
   // Lua Bindings
   static int Lua_LoadBank(lua_State *L);
   static int Lua_PlayEvent(lua_State *L);
 
-  static void RegisterLua(lua_State *L);
+  void RegisterLua(lua_State *L);
 
 private:
-  static std::unique_ptr<Orpheus::AudioManager> s_Engine;
+  AudioSystem() = default;
+  ~AudioSystem() = default;
+
+  // Non-copyable
+  AudioSystem(const AudioSystem &) = delete;
+  AudioSystem &operator=(const AudioSystem &) = delete;
+
+  std::unique_ptr<Orpheus::AudioManager> m_Engine;
+  float m_MasterVolume = 1.0f;
 };

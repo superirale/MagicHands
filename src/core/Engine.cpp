@@ -52,8 +52,8 @@ bool Engine::Init() {
   // Initialize physics
   m_Physics.Init();
 
-  // Initialize audio (static system)
-  AudioSystem::Init();
+  // Initialize audio (singleton)
+  AudioSystem::Instance().Init();
 
   // Initialize input system
   if (!m_Input.Init()) {
@@ -82,10 +82,11 @@ bool Engine::Init() {
       WindowManager::getInstance().subscribeToFocusEvents([this](bool focused) {
         if (!focused) {
           LOG_DEBUG("Window lost focus - reducing audio volume");
-          AudioSystem::SetMasterVolume(0.3f); // Reduce to 30% when unfocused
+          AudioSystem::Instance().SetMasterVolume(
+              0.3f); // Reduce to 30% when unfocused
         } else {
           LOG_DEBUG("Window gained focus - restoring audio volume");
-          AudioSystem::SetMasterVolume(1.0f); // Restore full volume
+          AudioSystem::Instance().SetMasterVolume(1.0f); // Restore full volume
         }
       });
 
@@ -98,12 +99,12 @@ bool Engine::InitHeadless() {
   m_Headless = true;
 
   // Initialize only non-graphical systems
-  
+
   // Initialize physics (works without GPU)
   m_Physics.Init();
 
   // Initialize audio (works without GPU)
-  AudioSystem::Init();
+  AudioSystem::Instance().Init();
 
   // Initialize input system (works without window events)
   if (!m_Input.Init()) {
@@ -126,7 +127,7 @@ void Engine::Update(float dt) {
   InputManager::Instance().Update(dt);
 
   // Update audio system
-  AudioSystem::Update(dt);
+  AudioSystem::Instance().Update(dt);
 
   // Make sure WindowManager updates its state (e.g. tracking size changes if
   // needed via events) But WindowManager::updateWindow() is called in main loop
@@ -159,7 +160,7 @@ void Engine::Destroy() {
   FontRenderer::Destroy();
   m_Renderer.Destroy();
   m_Physics.Destroy();
-  AudioSystem::Destroy();
+  AudioSystem::Instance().Destroy();
 
   if (m_GPUDevice) {
     SDL_DestroyGPUDevice(m_GPUDevice);

@@ -612,7 +612,7 @@ void LuaBindings::Register(lua_State *L) {
   ParticleSystem::RegisterLua(L, &Engine::Instance().Particles());
 
   // Register AudioSystem bindings
-  AudioSystem::RegisterLua(L);
+  AudioSystem::Instance().RegisterLua(L);
 
   // Register UI
   lua_newtable(L);

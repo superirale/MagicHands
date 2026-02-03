@@ -16,8 +16,8 @@ extern "C" {
 #include "graphics/FontRenderer.h"
 #include "graphics/ParticleSystem.h"
 #include "graphics/SpriteRenderer.h"
-#include "input/InputSystem.h"
 #include "input/InputManager.h"
+#include "input/InputSystem.h"
 #include "physics/NoiseGenerator.h"
 #include "physics/PhysicsSystem.h"
 #include "ui/UISystem.h"
@@ -52,9 +52,9 @@ bool CheckLua(lua_State *L, int r) {
 int main(int argc, char *argv[]) {
   // 0. Parse command line arguments
   bool autoplayMode = false;
-  int autoplayRuns = 100;  // default
-  const char* autoplayStrategy = "Random";  // default
-  
+  int autoplayRuns = 100;                  // default
+  const char *autoplayStrategy = "Random"; // default
+
   for (int i = 1; i < argc; i++) {
     if (strcmp(argv[i], "--autoplay") == 0) {
       autoplayMode = true;
@@ -64,10 +64,10 @@ int main(int argc, char *argv[]) {
       autoplayStrategy = argv[i] + 20;
     }
   }
-  
+
   // Initialize Logger first
   Logger::Init(LogLevel::Info);
-  
+
   if (autoplayMode) {
     LOG_INFO("=== AutoPlay QA Bot Mode Enabled ===");
     LOG_INFO("Runs: %d", autoplayRuns);
@@ -104,8 +104,8 @@ int main(int argc, char *argv[]) {
   // Register Physics & Input & Audio & Font
   Engine::Instance().Physics().RegisterLua(L);
   InputSystem::RegisterLua(L);
-  InputManager::RegisterLua(L);  // Gamepad & unified input
-  AudioSystem::RegisterLua(L);
+  InputManager::RegisterLua(L); // Gamepad & unified input
+  AudioSystem::Instance().RegisterLua(L);
   FontRenderer::RegisterLua(L);
   // Register JSON utilities (Phase 5: now includes file I/O)
   RegisterJsonUtils(L);
@@ -268,7 +268,7 @@ int main(int argc, char *argv[]) {
       // Sleep briefly to avoid spinning the CPU
       SDL_Delay(16); // ~60 FPS equivalent
     }
-    
+
     // Check if AutoPlay wants to quit
     if (autoplayMode) {
       lua_getglobal(L, "AUTOPLAY_QUIT");
@@ -286,7 +286,7 @@ int main(int argc, char *argv[]) {
   Engine::Instance().Destroy();
   WindowManager::getInstance().shutdown();
   lua_close(L);
-  
+
   if (autoplayMode) {
     LOG_INFO("AutoPlay QA Bot Shutdown Complete");
   }
