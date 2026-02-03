@@ -24,10 +24,16 @@ function EnhancementManager:addEnhancement(id, type)
         table.insert(self.augments, { id = id, count = 1 })
         return true, "Added Augment " .. id
     elseif type == "warp" or type == "spectral" then
-        -- Check duplicates for warps?
+        -- Check duplicates for warps
         for _, w in ipairs(self.warps) do
             if w.id == id then return false, "Warp already active" end
         end
+
+        -- GDD Section 3: Max 3 active Rule Warps
+        if #self.warps >= 3 then
+            return false, "Maximum active warps reached (3)"
+        end
+
         table.insert(self.warps, { id = id })
         return true, "Added Warp " .. id
     end

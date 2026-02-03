@@ -512,18 +512,11 @@ function GameScene:startNewHand()
     self.dragStartX = 0
     self.dragStartY = 0
 
-    local baseHandSize = 6
-    local handSizeBonus = 0
-
-    -- Apply first blind hand bonus ONLY on the very first hand of blind 1
-    if CampaignState.firstBlindHandBonus and CampaignState.firstBlindHandBonus > 0 and
-        CampaignState.currentBlind == 1 and CampaignState.handsRemaining == 4 then
-        handSizeBonus = CampaignState.firstBlindHandBonus
-        print("✨ First Blind Bonus: +" .. handSizeBonus .. " cards in hand!")
-    end
-
-    for i = 1, (baseHandSize + handSizeBonus) do
-        table.insert(self.hand, table.remove(self.deckList))
+    local handSize = CampaignState:getMaxHandSize()
+    for i = 1, handSize do
+        if #self.deckList > 0 then
+            table.insert(self.hand, table.remove(self.deckList))
+        end
     end
 
     -- Cut card
@@ -1145,7 +1138,7 @@ function GameScene:playHand()
     end
 
     -- 4. Result Processing
-    local result, reward = CampaignState:playHand(finalScore)
+    local result, reward = CampaignState:playHand(finalScore, selectedCards)
 
     if result == "win" then
         print("Blind Cleared!")
@@ -1347,7 +1340,8 @@ function GameScene:discardSelected()
             return
         end
 
-        while #self.hand < 6 and #self.deckList > 0 do
+        local maxHandSize = CampaignState:getMaxHandSize()
+        while #self.hand < maxHandSize and #self.deckList > 0 do
             table.insert(self.hand, table.remove(self.deckList))
         end
 

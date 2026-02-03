@@ -515,7 +515,7 @@ function CampaignState:advanceBlind()
     Shop:generateJokers(self.currentAct, true)
 end
 
-function CampaignState:playHand(score)
+function CampaignState:playHand(score, playedCards)
     print("DEBUG Campaign: playHand score=" .. score)
     self.handsRemaining = self.handsRemaining - 1
     self.currentScore = self.currentScore + score
@@ -523,6 +523,41 @@ function CampaignState:playHand(score)
 
     local currentBlind = self:getCurrentBlind()
     local required = blind.getRequiredScore(currentBlind, self.difficulty)
+
+    -- GDD BOSS COUNTERS
+    local bossEffects = BossManager and BossManager:getEffects() or {}
+    for _, effectId in ipairs(bossEffects) do
+        -- 1. THE COLLAPSER: Stack Scaling
+        if effectId == "stack_scaling" then
+            local totalStacks = 0
+            for _, joker in ipairs(JokerManager.slots) do
+                totalStacks = totalStacks + joker.stack
+            end
+            -- Increase difficulty based on total stacks
+            if totalStacks > 1 then
+                local multiplier = 1.0 + (totalStacks * 0.1) -- 10% per stack
+                required = math.floor(required * multiplier)
+                print("THE COLLAPSER: Required score increased to " .. required .. " (Stacks: " .. totalStacks .. ")")
+            end
+        end
+
+        -- 2. THE BREAKER: Imprint Shatter
+        -- Cards with imprints are destroyed after scoring
+        if effectId == "imprint_shatter" and playedCards then
+            for _, card in ipairs(playedCards) do
+                if card.imprints and #card.imprints > 0 then
+                    -- Find and remove from master deck
+                    for i, masterCard in ipairs(self.masterDeck) do
+                        if masterCard.id == card.id then
+                            print("THE BREAKER: Destroying imprinted card " .. card.rank .. card.suit)
+                            self:removeCard(i)
+                            break
+                        end
+                    end
+                end
+            end
+        end
+    end
 
     if self.currentScore >= required then
         -- Win! Calculate reward
@@ -549,6 +584,17 @@ end
 
 function CampaignState:isLastHand()
     return self.handsRemaining == 1
+end
+
+function CampaignState:getMaxHandSize()
+    local baseSize = 6
+    local bossEffects = BossManager and BossManager:getEffects() or {}
+    for _, effectId in ipairs(bossEffects) do
+        if effectId == "hand_size_reduced" then
+            baseSize = baseSize - 1
+        end
+    end
+    return baseSize + (self.firstBlindHandBonus or 0)
 end
 
 return CampaignState

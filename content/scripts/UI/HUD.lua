@@ -2,6 +2,7 @@
 -- Heads-up Display for score and status
 
 local Theme = require("UI.Theme")
+local EnhancementPanel = require("ui/EnhancementPanel")
 
 local HUD = class()
 
@@ -9,7 +10,7 @@ function HUD:init(font, smallFont, layout)
     self.font = font
     self.smallFont = smallFont
     self.layout = layout -- Store layout instance
-    
+
     -- Cache theme colors for performance
     self.colors = {
         background = Theme.get("colors.overlay"),
@@ -30,14 +31,17 @@ function HUD:init(font, smallFont, layout)
     -- Act Info (Top Right - approximate offset based on 1280 width)
     self.layout:register("HUD_Act", { anchor = "top-right", width = 100, height = 30, offsetX = 0, offsetY = 20 })
 
-    -- Boss Info (Center-Top ish)
-    self.layout:register("HUD_Boss", { anchor = "top-center", width = 300, height = 60, offsetX = 0, offsetY = 80 })
+    -- Boss Info (Top Right - relocate from center)
+    self.layout:register("HUD_Boss", { anchor = "top-right", width = 300, height = 60, offsetX = 0, offsetY = 60 })
 
     -- Jokers (Bottom Left)
     self.layout:register("HUD_Jokers", { anchor = "bottom-left", width = 200, height = 100, offsetX = 20, offsetY = 0 })
 
     -- Controls (Bottom Right)
     self.layout:register("HUD_Controls", { anchor = "bottom-right", width = 380, height = 40, offsetX = 0, offsetY = 0 })
+
+    -- Initialize Sub-panels
+    self.enhancementPanel = EnhancementPanel(self.font, self.smallFont, self.layout)
 end
 
 function HUD:draw(state)
@@ -51,7 +55,8 @@ function HUD:draw(state)
     -- Blind Info
     local bx, by = self.layout:getPosition("HUD_Blind")
     graphics.print(self.font, "Blind: " .. currentBlind.type:upper(), bx, by, self.colors.text)
-    graphics.print(self.smallFont, "Score: " .. state.currentScore .. " / " .. required, bx, by + 30, self.colors.textMuted)
+    graphics.print(self.smallFont, "Score: " .. state.currentScore .. " / " .. required, bx, by + 30,
+    self.colors.textMuted)
 
     -- Stats
     local hx, hy = self.layout:getPosition("HUD_Hands")
@@ -72,6 +77,9 @@ function HUD:draw(state)
         graphics.print(self.font, "BOSS: " .. BossManager.activeBoss.name, box, boy, self.colors.danger)
         graphics.print(self.smallFont, BossManager.activeBoss.description, box, boy + 30, self.colors.dangerLight)
     end
+
+    -- Enhancement Panel (Left)
+    self.enhancementPanel:draw()
 
     -- Jokers Display
     local jokers = JokerManager:getJokers()

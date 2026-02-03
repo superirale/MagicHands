@@ -9,20 +9,34 @@ function JokerManager:init()
     self.slots = {}
 end
 
+function JokerManager:isStackable(jokerId)
+    local path = "content/data/jokers/" .. jokerId .. ".json"
+    if files and files.loadJSON then
+        local data = files.loadJSON(path)
+        if data then
+            return data.stackable == true
+        end
+    end
+    -- Fallback: check if id contains tiered
+    return string.find(jokerId, "tiered") ~= nil
+end
+
 function JokerManager:addJoker(jokerId)
-    -- Check for existing stackable joker
+    -- Check for existing joker to stack
+    local stackable = self:isStackable(jokerId)
+
     for i, joker in ipairs(self.slots) do
         if joker.id == jokerId then
-            -- For MVP, assume all are stackable to max 5, or check data
-            if joker.stack < 5 then
-                joker.stack = joker.stack + 1
-                
-                -- Emit joker stacked event
-                events.emit("joker_added", { id = jokerId, stack = joker.stack })
-                
-                return true, "Stacked " .. jokerId .. " (x" .. joker.stack .. ")"
+            if stackable then
+                if joker.stack < 5 then
+                    joker.stack = joker.stack + 1
+                    events.emit("joker_added", { id = jokerId, stack = joker.stack })
+                    return true, "Stacked " .. jokerId .. " (x" .. joker.stack .. ")"
+                else
+                    return false, "Max stack reached for " .. jokerId
+                end
             else
-                return false, "Max stack reached for " .. jokerId
+                return false, "Joker " .. jokerId .. " is not stackable"
             end
         end
     end
@@ -33,15 +47,15 @@ function JokerManager:addJoker(jokerId)
 
     -- Add new joker instance
     table.insert(self.slots, { id = jokerId, stack = 1 })
-    
+
     -- Emit joker added event
     events.emit("joker_added", { id = jokerId, stack = 1 })
-    
+
     -- Check if slots are full
     if #self.slots >= self.maxSlots then
         events.emit("joker_slots_full", { count = self.maxSlots })
     end
-    
+
     return true, "Added " .. jokerId
 end
 
@@ -77,28 +91,28 @@ function JokerManager:sellJoker(index, sellPrice)
     if index < 1 or index > #self.slots then
         return false, "Invalid index"
     end
-    
+
     local joker = self.slots[index]
     local jokerId = joker.id
-    
+
     if joker.stack > 1 then
         -- Decrease stack by 1
         joker.stack = joker.stack - 1
         Economy:addGold(sellPrice)
-        
+
         -- Emit event
         events.emit("joker_sold", { id = jokerId, stack = joker.stack, remaining = true })
-        
+
         return true, jokerId .. " (x" .. (joker.stack + 1) .. " -> x" .. joker.stack .. ")"
     else
         -- Stack is 1, remove the joker entirely
         local success, removedId = self:removeJoker(index)
         if success then
             Economy:addGold(sellPrice)
-            
+
             -- Emit event
             events.emit("joker_sold", { id = jokerId, stack = 0, remaining = false })
-            
+
             return true, removedId
         end
         return false, removedId
@@ -118,7 +132,7 @@ function JokerManager:applyEffects(hand, trigger)
     -- Build paths and stack counts for tier system
     local jokerPaths = {}
     local stackCounts = {}
-    
+
     for _, jokerObj in ipairs(self.slots) do
         table.insert(jokerPaths, "content/data/jokers/" .. jokerObj.id .. ".json")
         table.insert(stackCounts, jokerObj.stack)
