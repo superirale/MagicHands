@@ -36,6 +36,11 @@ function Economy:calculateReward(blindType, scoreAchieved, required)
     local excess = scoreAchieved - required
     local bonus = math.floor(excess / 100) * 1
 
+    -- Cap bonus at 20 gold
+    if bonus > 20 then
+        bonus = 20
+    end
+
     return base + bonus
 end
 

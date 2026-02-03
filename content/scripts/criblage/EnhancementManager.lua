@@ -124,9 +124,9 @@ function EnhancementManager:resolveWarps()
                 -- warp_ascension: Double all mult
                 effects.mult_multiplier = effects.mult_multiplier * 2.0
             elseif data.effect.type == "fortune" then
-                -- warp_fortune: Score x1.5 but costs 5g per hand
+                -- warp_fortune: Score x1.5 but costs 15g per hand
                 effects.score_multiplier = effects.score_multiplier * 1.5
-                effects.hand_cost = effects.hand_cost + 5
+                effects.hand_cost = effects.hand_cost + 15
             elseif data.effect.type == "gambit" then
                 -- warp_gambit: 50% chance for 3x or 0.5x
                 if math.random() < 0.5 then

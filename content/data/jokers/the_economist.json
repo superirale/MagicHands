@@ -1,7 +1,7 @@
 {
     "id": "the_economist",
     "name": "The Economist",
-    "description": "Gain 1 gold per 100 chips scored",
+    "description": "Gain 1 gold per 200 chips scored (max 5g)",
     "rarity": "uncommon",
     "type": "economy",
     "stackable": false,

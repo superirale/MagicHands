@@ -2,9 +2,9 @@
     "id": "gold_inlay",
     "name": "Gold Inlay",
     "type": "imprint",
-    "description": "Earn +3 Gold when this card is scored",
+    "description": "Earn +1 Gold when this card is scored",
     "trigger": "on_score",
     "effect": {
-        "gold": 3
+        "gold": 1
     }
 }

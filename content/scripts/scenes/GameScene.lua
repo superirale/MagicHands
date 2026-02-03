@@ -1067,6 +1067,23 @@ function GameScene:playHand()
         print("Earned " .. scoreResult.imprintEffects.gold .. "g from Imprints")
     end
 
+    -- Joker: The Economist (1g per 200 chips, total cap 5g)
+    local hasEconomist = false
+    for _, jokerObj in ipairs(JokerManager.slots) do
+        if jokerObj.id == "the_economist" then
+            hasEconomist = true
+            break
+        end
+    end
+
+    if hasEconomist then
+        local econGold = math.min(5, math.floor(finalScore / 200))
+        if econGold > 0 then
+            Economy:addGold(econGold)
+            print("The Economist: Earned " .. econGold .. "g from score")
+        end
+    end
+
     -- 2. Crib Scoring (Last hand of blind only)
     local cribScore = 0
     if CampaignState:isLastHand() and #CampaignState.crib == 2 then
