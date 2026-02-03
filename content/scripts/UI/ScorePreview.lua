@@ -6,7 +6,7 @@ function ScorePreview.calculate(selectedCards, cutCard)
         return nil
     end
 
-    local scoreResult = ScoringUtils.calculateScore(selectedCards, cutCard)
+    local scoreResult = ScoringUtils.calculateScore(selectedCards, cutCard, true)
 
     return {
         total = scoreResult.total,

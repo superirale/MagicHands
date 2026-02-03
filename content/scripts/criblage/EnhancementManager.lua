@@ -73,7 +73,7 @@ end
 
 -- Resolve Warps (Spectrals)
 -- Returns table of warp specific modifiers
-function EnhancementManager:resolveWarps()
+function EnhancementManager:resolveWarps(deterministic)
     local effects = {
         retrigger = 0,
         cut_bonus = 0,
@@ -135,7 +135,10 @@ function EnhancementManager:resolveWarps()
                 effects.hand_cost = effects.hand_cost + 15
             elseif data.effect.type == "gambit" then
                 -- warp_gambit: 50% chance for 3x or 0.5x
-                if math.random() < 0.5 then
+                if deterministic then
+                    -- Use expected value (1.75x) for stable preview
+                    effects.score_multiplier = effects.score_multiplier * 1.75
+                elseif math.random() < 0.5 then
                     effects.score_multiplier = effects.score_multiplier * 3.0
                 else
                     effects.score_multiplier = effects.score_multiplier * 0.5
@@ -171,8 +174,9 @@ end
 -- Resolve Imprints (Card specific)
 -- @param cards: Array of card objects with .id and .imprints array
 -- @param trigger: Event trigger (e.g., "on_score", "on_held")
+-- @param deterministic: If true, ignore random chance for preview
 -- @return effects table with chips, mult, x_mult, gold
-function EnhancementManager:resolveImprints(cards, trigger)
+function EnhancementManager:resolveImprints(cards, trigger, deterministic)
     local effects = { chips = 0, mult = 0, x_mult = 1.0, gold = 0 }
 
     if not cards then
@@ -205,7 +209,13 @@ function EnhancementManager:resolveImprints(cards, trigger)
                     -- Check chance (for lucky_pips type effects)
                     local shouldApply = true
                     if imprint.chance then
-                        shouldApply = (math.random() < imprint.chance)
+                        if deterministic then
+                            -- For preview, we show the expected value if it's a multiplier,
+                            -- but for simplicity here we assume it triggers to show potential.
+                            shouldApply = true
+                        else
+                            shouldApply = (math.random() < imprint.chance)
+                        end
                     end
 
                     if shouldApply and effect then

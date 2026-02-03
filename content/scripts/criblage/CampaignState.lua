@@ -19,6 +19,12 @@ CampaignState = {
     blindsCleared = 0,
     crib = {}, -- Persistent crib for the current blind
 
+    -- Shop Generation Metrics (Phase 9)
+    runSeed = 42,
+    shopIndex = 0,
+    playerGoldSpentTotal = 0,
+    recentTriggers = {}, -- Queue of last 3 hands trigger counts
+
     -- Starting advantage (roguelike blessing)
     startingAdvantage = nil,
     firstBlindHandBonus = 0 -- Extra cards for first blind only
@@ -34,6 +40,12 @@ function CampaignState:init()
     self.blindsCleared = 0
     self.crib = {} -- Initialize empty crib
     self.firstBlindHandBonus = 0
+
+    -- Phase 9 Init
+    self.runSeed = math.random(1000000)
+    self.shopIndex = 0
+    self.playerGoldSpentTotal = 0
+    self.recentTriggers = {}
 
     -- Initialize subsystems
     Economy:init()
@@ -512,10 +524,11 @@ function CampaignState:advanceBlind()
     end
 
     -- Generate shop
+    self.shopIndex = self.shopIndex + 1
     Shop:generateJokers(self.currentAct, true)
 end
 
-function CampaignState:playHand(score, playedCards)
+function CampaignState:playHand(score, playedCards, cutCard)
     print("DEBUG Campaign: playHand score=" .. score)
     self.handsRemaining = self.handsRemaining - 1
     self.currentScore = self.currentScore + score
@@ -559,9 +572,36 @@ function CampaignState:playHand(score, playedCards)
         end
     end
 
+    -- Record build tags (Phase 9)
+    local triggers = {
+        fifteen = 0,
+        run = 0,
+        pair = 0,
+        flush = 0,
+        nobs = 0
+    }
+
+    local ScoringUtils = require("utils/ScoringUtils")
+    local scoreDetails = ScoringUtils.calculateScore(playedCards, cutCard or self.cutCard, true)
+    if scoreDetails and scoreDetails.handResult then
+        local hr = scoreDetails.handResult
+        if hr.fifteens then triggers.fifteen = #hr.fifteens end
+        if hr.runs then triggers.run = #hr.runs end
+        if hr.pairs then triggers.pair = #hr.pairs end
+        if hr.flush then triggers.flush = 1 end
+        if hr.nobs then triggers.nobs = 1 end
+    end
+
+    table.insert(self.recentTriggers, triggers)
+    if #self.recentTriggers > 3 then
+        table.remove(self.recentTriggers, 1)
+    end
+
     if self.currentScore >= required then
         -- Win! Calculate reward
         local reward = Economy:calculateReward(currentBlind.type, self.currentScore, required)
+        self.playerGoldSpentTotal = self.playerGoldSpentTotal -- Placeholder for tracking total spent?
+        -- Actually playerGoldSpentTotal should be updated when spending gold.
         Economy:addGold(reward)
         self:advanceBlind()
         return "win", reward

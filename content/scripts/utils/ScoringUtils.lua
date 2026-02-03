@@ -10,8 +10,9 @@ local JokerManager = require("criblage/JokerManager")
 --- Calculate the total score for a hand
 --- @param selectedCards table Array of 4 (or more with infinity) cards from hand
 --- @param cutCard table The cut card
+--- @param deterministic boolean If true, returns average values for random effects
 --- @return table Detailed results including total, chips, mult, and side-effects
-function ScoringUtils.calculateScore(selectedCards, cutCard)
+function ScoringUtils.calculateScore(selectedCards, cutCard, deterministic)
     -- 1. Preparation
     local cardsForScoring = {}
     for _, c in ipairs(selectedCards) do table.insert(cardsForScoring, c) end
@@ -23,13 +24,18 @@ function ScoringUtils.calculateScore(selectedCards, cutCard)
         if type(c) == "userdata" then
             table.insert(engineCards, c)
         else
-            table.insert(engineCards, Card.new(c.rank, c.suit))
+            local newCard = Card.new(c.rank, c.suit)
+            if newCard then
+                table.insert(engineCards, newCard)
+            end
         end
     end
 
     -- 2. Resolve Rules & Bosses
     -- 2. Resolve Rules, Bosses & Warps
-    local bossRules = BossManager and BossManager:getEffects() or {}
+    local activeBossEffects = BossManager and BossManager:getEffects() or {}
+    local bossRules = {}
+    for _, rule in ipairs(activeBossEffects) do table.insert(bossRules, rule) end
 
     -- GDD: The Purist disables Rule Warps
     local warpsDisabled = false
@@ -52,7 +58,7 @@ function ScoringUtils.calculateScore(selectedCards, cutCard)
     }
 
     if not warpsDisabled and EnhancementManager then
-        warpEffects = EnhancementManager:resolveWarps()
+        warpEffects = EnhancementManager:resolveWarps(deterministic)
     elseif warpsDisabled then
         print("THE PURIST: Rule Warps are disabled!")
     end
@@ -75,7 +81,7 @@ function ScoringUtils.calculateScore(selectedCards, cutCard)
     -- GDD SECTION 4: GLOBAL RESOLUTION ORDER
 
     -- 1. Card Imprints (Individual card effects)
-    local imprintEffects = EnhancementManager:resolveImprints(selectedCards, "on_score")
+    local imprintEffects = EnhancementManager:resolveImprints(selectedCards, "on_score", deterministic)
 
     -- 2. Hand Augments (Category upgrades like planets)
     local augmentEffects = EnhancementManager:resolveAugments(evaluateResult, engineCards)

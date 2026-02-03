@@ -1,3 +1,6 @@
+local events = _G.events or { emit = function(...) end }
+local files = _G.files or { load = function(...) end, save = function(...) end, loadJSON = function(...) end }
+
 -- Shop system for purchasing jokers and upgrades
 
 Shop = {
@@ -50,13 +53,49 @@ Shop = {
         "spectral_ghost", "spectral_echo", "spectral_void",
         "warp_wildfire", "warp_ascension", "warp_greed", "warp_gambit",
         "warp_time", "warp_infinity", "warp_chaos", "warp_inversion",
-        "warp_mirror", "warp_fortune", "warp_blaze", "warp_phantom",
+        "warp_mirror", "warp_fortune", "warp_blaze", "warp_phantom"
+    },
 
-        -- Sculptors (8 total)
+    -- Sculptors (8 total) - Rare/Mythic Deck Shapers
+    sculptorPool = {
         "spectral_remove", "spectral_clone", "spectral_ascend", "spectral_collapse",
         "spectral_split", "spectral_purge", "spectral_rainbow", "spectral_fusion"
+    },
+
+    -- Phase 9: Metadata Registry (Fallback for missing JSON tags)
+    itemMetadata = {
+        fifteen_fever = { weight = 10, power = 4, tags = { "fifteen" }, anti = { "run" } },
+        lucky_seven = { weight = 10, power = 3, tags = { "seven", "high_mult" } },
+        big_hand = { weight = 10, power = 4, tags = { "hand_size" } },
+        face_card_fan = { weight = 10, power = 3, tags = { "face_cards" } },
+        even_stevens = { weight = 10, power = 2, tags = { "even" } },
+        low_roller = { weight = 10, power = 3, tags = { "low_rank" } },
+        pair_power = { weight = 8, power = 5, tags = { "pair" } },
+        run_master = { weight = 8, power = 6, tags = { "run" } },
+        nobs_hunter = { weight = 8, power = 4, tags = { "nobs" } },
+        ace_in_hole = { weight = 8, power = 5, tags = { "ace" } },
+        the_multiplier = { weight = 5, power = 8, tags = { "high_mult" } },
+        flush_king = { weight = 5, power = 9, tags = { "flush" } },
+        combo_king = { weight = 5, power = 10, tags = { "fifteen", "run" } },
+        blackjack = { weight = 5, power = 8, tags = { "fifteen" } },
+        golden_ratio = { weight = 2, power = 10, tags = { "high_mult" } },
+        the_gambler = { weight = 2, power = 9, tags = { "risk" } },
+
+        -- Default for categories
+        planet_default = { weight = 10, power = 2, tags = { "augment" } },
+        warp_default = { weight = 5, power = 5, tags = { "warp", "risk" } },
+        sculptor_default = { weight = 3, power = 8, tags = { "sculptor", "exotic" } }
     }
 }
+
+-- Phase 9: Helper for local RNG
+local function createRNG(seed)
+    local state = seed
+    return function()
+        state = (1103515245 * state + 12345) % math.max(2147483648, 1)
+        return state / 2147483648
+    end
+end
 
 function Shop:init()
     self.jokers = {}
@@ -75,34 +114,53 @@ function Shop:getJokerPrice(rarity)
     return 20
 end
 
-function Shop:selectRarity(act)
-    -- Rarity chances increase with act
-    local roll = math.random()
-
-    if act == 1 then
-        if roll < 0.7 then
+function Shop:selectRarity(ante, rng)
+    local roll = rng()
+    -- Spec Rarity Tables (Jokers)
+    if ante <= 2 then
+        if roll < 0.70 then
             return "common"
         elseif roll < 0.95 then
             return "uncommon"
         else
             return "rare"
         end
-    elseif act == 2 then
-        if roll < 0.5 then
+    elseif ante <= 4 then
+        if roll < 0.55 then
             return "common"
-        elseif roll < 0.85 then
+        elseif roll < 0.90 then
             return "uncommon"
-        elseif roll < 0.98 then
+        elseif roll < 0.99 then
             return "rare"
         else
             return "legendary"
         end
-    else -- Act 3+
-        if roll < 0.3 then
+    elseif ante <= 6 then
+        if roll < 0.45 then
+            return "common"
+        elseif roll < 0.83 then
+            return "uncommon"
+        elseif roll < 0.97 then
+            return "rare"
+        else
+            return "legendary"
+        end
+    elseif ante <= 8 then
+        if roll < 0.35 then
+            return "common"
+        elseif roll < 0.75 then
+            return "uncommon"
+        elseif roll < 0.95 then
+            return "rare"
+        else
+            return "legendary"
+        end
+    else -- 9+
+        if roll < 0.25 then
             return "common"
         elseif roll < 0.65 then
             return "uncommon"
-        elseif roll < 0.92 then
+        elseif roll < 0.90 then
             return "rare"
         else
             return "legendary"
@@ -120,73 +178,262 @@ function Shop:getItemBuyPrice(id)
     -- Check legendary
     for _, jId in ipairs(self.jokerPool.legendary) do if jId == id then return self:getJokerPrice("legendary") end end
 
-    -- Check enhancements (flat price)
+    -- Check enhancements
     for _, eId in ipairs(self.enhancementPool) do if eId == id then return 30 end end
+    -- Check sculptors
+    for _, sId in ipairs(self.sculptorPool) do if sId == id then return 60 end end
 
     return 20 -- Default fallback
 end
 
-function Shop:generateJokers(act, resetCost)
-    self.jokers = {}
-    if resetCost then
-        self.shopRerollCost = 10 -- Reset reroll cost for new shop
+function Shop:canGenerateItem(id, currentShopItems)
+    -- 1. Uniqueness check (Universal Duplicate Prevention)
+    for _, item in ipairs(currentShopItems) do
+        if item.id == id then return false end
     end
 
+    -- 2. Max Stack Filter (Jokers)
+    if JokerManager and JokerManager.slots then
+        for _, slot in ipairs(JokerManager.slots) do
+            if slot.id == id then
+                if slot.stack >= 5 then return false end
+                -- Also prevent duplicate base jokers in inventory if not stackable
+                if not JokerManager:isStackable(id) then return false end
+            end
+        end
+    end
+
+    -- 3. Warp Check (Max 3)
+    if string.find(id, "warp") or string.find(id, "spectral_echo") or string.find(id, "spectral_ghost") then
+        local EnhancementManager = require("criblage/EnhancementManager")
+        if EnhancementManager and #EnhancementManager.warps >= 3 then
+            return false
+        end
+    end
+
+    return true
+end
+
+function Shop:getWeight(id, context, ante)
+    local meta = self.itemMetadata[id] or
+        self.itemMetadata
+        [id:gsub("planet_.*", "planet_default"):gsub("warp_.*", "warp_default"):gsub("spectral_.*", "sculptor_default")]
+    if not meta then meta = { weight = 10, power = 5, tags = {} } end
+
+    local weight = meta.weight or 10
+
+    -- Ante constraints (optional, can be added to metadata)
+    if meta.min_ante and ante < meta.min_ante then return 0 end
+    if meta.max_ante and ante > meta.max_ante then return 0 end
+
+    -- Synergy Boost (1.75x)
+    if meta.tags and context.dominantTags then
+        for _, tag in ipairs(meta.tags) do
+            if context.dominantTags[tag] then
+                weight = weight * 1.75
+                break
+            end
+        end
+    end
+
+    -- Anti-Synergy (0.35x)
+    if meta.anti and context.dominantTags then
+        for _, tag in ipairs(meta.anti) do
+            if context.dominantTags[tag] then
+                weight = weight * 0.35
+                break
+            end
+        end
+    end
+
+    -- Unique check
+    if meta.unique then
+        -- This should be handled by canGenerateItem but good for weight zeroing
+    end
+
+    return weight
+end
+
+function Shop:analyzeBuild(state)
+    local context = { dominantTags = {} }
+    if not state.recentTriggers or #state.recentTriggers == 0 then return context end
+
+    local counts = {}
+    for _, hand in ipairs(state.recentTriggers) do
+        for tag, count in pairs(hand) do
+            if count > 0 then
+                counts[tag] = (counts[tag] or 0) + count
+            end
+        end
+    end
+
+    -- Tag is dominant if it appeared in at least 2 hands or has high count
+    for tag, count in pairs(counts) do
+        if count >= 3 then -- Arbitrary threshold: 3 triggers over 3 hands
+            context.dominantTags[tag] = true
+        end
+    end
+
+    return context
+end
+
+function Shop:generateJokers(ante, resetCost)
+    self.jokers = {}
+    local CampaignState = require("criblage/CampaignState")
+
+    -- 1. Deterministic Seeding
+    local seed = CampaignState.runSeed or 42
+    seed = (seed * 31 + (ante or 1)) * 31 + (CampaignState.shopIndex or 0)
+    seed = seed * 31 + (CampaignState.playerGoldSpentTotal or 0)
+    local rng = createRNG(seed % 2147483647)
+
+    if resetCost then
+        self.shopRerollCost = 2 -- Master Spec: Base 2 gold
+    end
+
+    -- 2. Entropy Adjustment (Anti-Snowball)
+    local synergyMultiplier = 1.75
+    if CampaignState.recentShopsSynergyRate and #CampaignState.recentShopsSynergyRate >= 5 then
+        local avgRate = 0
+        for _, rate in ipairs(CampaignState.recentShopsSynergyRate) do avgRate = avgRate + rate end
+        avgRate = avgRate / 5
+        if avgRate > 0.6 then        -- Too high synergy
+            synergyMultiplier = 1.35 -- Reduce boost
+        end
+    end
+
+    local context = self:analyzeBuild(CampaignState)
+    local maxPower = 6 + (ante * 2)
+    local currentPower = 0
+    local synergyCount = 0
+
     local attempts = 0
-    while #self.jokers < self.jokerSlots and attempts < 50 do
+    while #self.jokers < self.jokerSlots and attempts < 100 do
         attempts = attempts + 1
+        local item = nil
+        local roll = rng()
 
-        -- 30% chance to be an Enhancement instead of a Joker
-        local isEnhancement = math.random() < 0.3
+        -- Category selection
+        if roll < 0.30 then
+            -- Enhancements (Rotation bias: 1=Augment, 2=Imprint, 3=Warp)
+            local rotation = ((CampaignState.shopIndex or 0) % 3) + 1
+            local targetCategory = (rotation == 1 and "planet" or (rotation == 2 and "imprint" or "warp"))
 
-        if isEnhancement then
-            -- Pick random enhancement (Planet, Imprint, Warp)
-            local itemID = self.enhancementPool[math.random(#self.enhancementPool)]
-            table.insert(self.jokers, {
-                id = itemID,
-                type = "enhancement",
-                price = 30, -- Flat price for enhancements
-                rarity = "common"
-            })
+            -- Filter pool by category (rough filter by ID prefix)
+            local subPool = {}
+            for _, id in ipairs(self.enhancementPool) do
+                if string.find(id, targetCategory) or (targetCategory == "imprint" and not string.find(id, "planet") and not string.find(id, "warp")) then
+                    table.insert(subPool, id)
+                end
+            end
+            if #subPool == 0 then subPool = self.enhancementPool end -- Fallback
+
+            local id = subPool[math.floor(rng() * #subPool) + 1]
+            if self:canGenerateItem(id, self.jokers) then
+                local meta = self.itemMetadata[id] or { power = 3 }
+                item = { id = id, type = "enhancement", price = 30, rarity = "common", power = meta.power or 3 }
+            end
         else
-            local rarity = self:selectRarity(act)
-
-            -- Select random joker from pool
+            -- Jokers
+            local rarity = self:selectRarity(ante, rng)
             local pool = self.jokerPool[rarity]
             if pool and #pool > 0 then
-                local joker_id = pool[math.random(#pool)]
-
-                -- Validation 1: Don't allow duplicates in the same shop
-                local alreadyInShop = false
-                for _, j in ipairs(self.jokers) do
-                    if j.id == joker_id then
-                        alreadyInShop = true
-                        break
+                -- Weighted selection within pool
+                local totalWeight = 0
+                local weights = {}
+                local synergies = {}
+                for _, id in ipairs(pool) do
+                    local w = self:getWeight(id, context, ante)
+                    local isSynergistic = (w > (self.itemMetadata[id] and self.itemMetadata[id].weight or 10))
+                    if isSynergistic then
+                        -- Apply adjusted multiplier if synergistic
+                        w = (self.itemMetadata[id] and self.itemMetadata[id].weight or 10) * synergyMultiplier
                     end
+
+                    table.insert(weights, w)
+                    table.insert(synergies, isSynergistic)
+                    totalWeight = totalWeight + w
                 end
 
-                -- Validation 2: Check current stack count
-                -- JokerManager is global
-                local currentStack = 0
-                if JokerManager and JokerManager.slots then
-                    for _, slot in ipairs(JokerManager.slots) do
-                        if slot.id == joker_id then
-                            currentStack = slot.stack
+                if totalWeight > 0 then
+                    local wRoll = rng() * totalWeight
+                    local currentW = 0
+                    for i, w in ipairs(weights) do
+                        currentW = currentW + w
+                        if wRoll <= currentW then
+                            local id = pool[i]
+                            if self:canGenerateItem(id, self.jokers) then
+                                local meta = self.itemMetadata[id] or { power = 5 }
+                                item = {
+                                    id = id,
+                                    type = "joker",
+                                    rarity = rarity,
+                                    price = self:getJokerPrice(rarity),
+                                    power = meta.power or 5,
+                                    synergistic = synergies[i]
+                                }
+                            end
                             break
                         end
                     end
                 end
-                local isMaxed = (currentStack >= 5)
+            end
+        end
 
-                if not alreadyInShop and not isMaxed then
-                    table.insert(self.jokers, {
-                        id = joker_id,
-                        type = "joker",
-                        rarity = rarity,
-                        price = self:getJokerPrice(rarity)
-                    })
+        if item then
+            -- Power Budget check
+            if currentPower + item.power > maxPower then
+                -- Skip
+            else
+                currentPower = currentPower + item.power
+                if item.synergistic then synergyCount = synergyCount + 1 end
+                table.insert(self.jokers, item)
+            end
+        end
+    end
+
+    -- Track synergy rate for entropy meter
+    if not CampaignState.recentShopsSynergyRate then CampaignState.recentShopsSynergyRate = {} end
+    table.insert(CampaignState.recentShopsSynergyRate, synergyCount / math.max(1, #self.jokers))
+    if #CampaignState.recentShopsSynergyRate > 5 then table.remove(CampaignState.recentShopsSynergyRate, 1) end
+
+    -- 3. Pivot Injection Rule (Every 3rd shop)
+    if (CampaignState.shopIndex or 0) % 3 == 0 and #self.jokers > 0 then
+        -- Replace the last item with one that has ZERO build overlap
+        local pivotItem = nil
+        local pivotAttempts = 0
+        while not pivotItem and pivotAttempts < 50 do
+            pivotAttempts = pivotAttempts + 1
+            local rarity = self:selectRarity(ante, rng)
+            local pool = self.jokerPool[rarity]
+            local id = pool[math.floor(rng() * #pool) + 1]
+
+            local hasOverlap = false
+            local meta = self.itemMetadata[id]
+            if meta and meta.tags then
+                for _, tag in ipairs(meta.tags) do
+                    if context.dominantTags[tag] then
+                        hasOverlap = true
+                        break
+                    end
                 end
             end
+
+            if not hasOverlap and self:canGenerateItem(id, self.jokers) then
+                local meta = self.itemMetadata[id] or { power = 5 }
+                pivotItem = {
+                    id = id,
+                    type = "joker",
+                    rarity = rarity,
+                    price = self:getJokerPrice(rarity),
+                    power = meta.power or 5,
+                    isPivot = true
+                }
+            end
+        end
+
+        if pivotItem then
+            self.jokers[#self.jokers] = pivotItem
         end
     end
 end
@@ -227,7 +474,9 @@ function Shop:buyJoker(index)
                 spectral_split = true,
                 spectral_purge = true,
                 spectral_rainbow = true,
-                spectral_fusion = true
+                spectral_fusion = true,
+                spectral_ascend = true,
+                spectral_collapse = true
             }
 
             if sculptorSpectrals[item.id] then
@@ -275,13 +524,14 @@ function Shop:reroll()
         return false, "Not enough gold for reroll"
     end
 
-    -- Increment reroll cost (1.2x scaling)
-    self.shopRerollCost = math.floor(self.shopRerollCost * 1.2)
+    -- Increment reroll cost (Base + 2g per reroll per Spec)
+    self.shopRerollCost = self.shopRerollCost + 2
 
     -- Emit reroll event
     events.emit("shop_reroll", { cost = self.shopRerollCost })
 
-    -- Regenerate with current act, but DON'T reset cost
+    -- Regenerate with current ante, but DON'T reset cost
+    local CampaignState = require("criblage/CampaignState")
     self:generateJokers(CampaignState.currentAct or 1, false)
 
     return true, "Shop rerolled"

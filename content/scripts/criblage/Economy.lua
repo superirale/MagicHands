@@ -17,6 +17,10 @@ end
 function Economy:spend(amount)
     if self.gold >= amount then
         self.gold = self.gold - amount
+        local CampaignState = require("criblage/CampaignState")
+        if CampaignState then
+            CampaignState.playerGoldSpentTotal = (CampaignState.playerGoldSpentTotal or 0) + amount
+        end
         events.emit("gold_changed", { amount = self.gold, delta = -amount })
         return true
     end

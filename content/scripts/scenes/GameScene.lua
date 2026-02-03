@@ -1138,7 +1138,7 @@ function GameScene:playHand()
     end
 
     -- 4. Result Processing
-    local result, reward = CampaignState:playHand(finalScore, selectedCards)
+    local result, reward = CampaignState:playHand(finalScore, selectedCards, self.cutCard)
 
     if result == "win" then
         print("Blind Cleared!")
