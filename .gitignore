@@ -27,7 +27,7 @@ compile_commands.json
 .venv/
 __pycache__/
 *.pyc
-
+qa_results/
 # Save files (development only - remove if saves should be tracked)
 saves/autosave.json
 

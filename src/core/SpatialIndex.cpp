@@ -12,6 +12,7 @@ Quadtree::Quadtree(Rect bounds, int maxObjects, int maxLevels)
       m_MaxObjects(maxObjects), m_MaxLevels(maxLevels) {
   // Pre-allocate space for expected object count
   m_ObjectBounds.reserve(1024);
+  m_ObjectNodes.reserve(1024);
 }
 
 Quadtree::~Quadtree() {
@@ -39,17 +40,22 @@ void Quadtree::insertPoint(int id, float x, float y) {
 // =============================================================================
 
 void Quadtree::remove(int id) {
-  // Look up bounds from cache
-  auto it = m_ObjectBounds.find(id);
-  if (it == m_ObjectBounds.end()) {
-    return; // Object doesn't exist, no-op
+  auto it = m_ObjectNodes.find(id);
+  if (it == m_ObjectNodes.end()) {
+    return;
   }
 
-  Rect bounds = it->second;
-  m_ObjectBounds.erase(it);
+  QuadtreeNode *node = it->second;
+  auto &ids = node->objectIds;
+  ids.erase(std::remove(ids.begin(), ids.end(), id), ids.end());
 
-  // Remove from tree
-  removeFromNode(m_Root.get(), id, bounds);
+  m_ObjectBounds.erase(id);
+  m_ObjectNodes.erase(it);
+
+  // After removal, if this node has a parent, it might be possible to merge
+  // siblings. Since we don't store parent pointers, we'd need them or do it
+  // during a traverse. For now, we'll implement a simple merge check if we
+  // ever do a tree-wide cleanup.
 }
 
 // =============================================================================
@@ -57,22 +63,33 @@ void Quadtree::remove(int id) {
 // =============================================================================
 
 void Quadtree::update(int id, Rect newBounds) {
-  // Look up old bounds
-  auto it = m_ObjectBounds.find(id);
-  if (it == m_ObjectBounds.end()) {
-    // Object doesn't exist, just insert
+  auto itNode = m_ObjectNodes.find(id);
+  if (itNode == m_ObjectNodes.end()) {
     insert(id, newBounds);
     return;
   }
 
-  Rect oldBounds = it->second;
-
-  // Optimization: If bounds are very close, might still be in same node
-  // For simplicity, we'll just remove and re-insert
-  // A more advanced implementation would check if getQuadrant returns the same
-  // result
+  QuadtreeNode *node = itNode->second;
   m_ObjectBounds[id] = newBounds;
-  removeFromNode(m_Root.get(), id, oldBounds);
+
+  // Optimization: If still fits in same node, no need to re-insert
+  if (node->bounds.contains(newBounds)) {
+    // But check if it could now fit in a child (if this node is subdivided)
+    if (node->children[0] != nullptr) {
+      int quadrant = getQuadrant(node, newBounds);
+      if (quadrant != -1) {
+        // Fits in child, move it
+        auto &ids = node->objectIds;
+        ids.erase(std::remove(ids.begin(), ids.end(), id), ids.end());
+        insertIntoNode(node->children[quadrant].get(), id, newBounds);
+      }
+    }
+    return;
+  }
+
+  // Moved out of current node, full re-insert
+  auto &ids = node->objectIds;
+  ids.erase(std::remove(ids.begin(), ids.end(), id), ids.end());
   insertIntoNode(m_Root.get(), id, newBounds);
 }
 
@@ -153,6 +170,7 @@ int Quadtree::queryNearest(float x, float y, float maxRadius) {
 
 void Quadtree::clear() {
   m_ObjectBounds.clear();
+  m_ObjectNodes.clear();
   clearNode(m_Root.get());
 }
 
@@ -181,6 +199,7 @@ void Quadtree::insertIntoNode(QuadtreeNode *node, int id, const Rect &bounds) {
 
   // Store in this node
   node->objectIds.push_back(id);
+  m_ObjectNodes[id] = node;
 
   // Check if we need to subdivide
   if (node->objectIds.size() > static_cast<size_t>(m_MaxObjects) &&
@@ -194,18 +213,44 @@ void Quadtree::insertIntoNode(QuadtreeNode *node, int id, const Rect &bounds) {
 // =============================================================================
 
 void Quadtree::removeFromNode(QuadtreeNode *node, int id, const Rect &bounds) {
-  // Try to remove from children first
-  if (node->children[0] != nullptr) {
-    int quadrant = getQuadrant(node, bounds);
-    if (quadrant != -1) {
-      removeFromNode(node->children[quadrant].get(), id, bounds);
-      return;
+  // Constant-time remove is now handled by remove(id) using m_ObjectNodes
+}
+
+void Quadtree::tryMerge(QuadtreeNode *node) {
+  if (node->children[0] == nullptr)
+    return;
+
+  int total = countSubtreeObjects(node);
+  if (total <= m_MaxObjects) {
+    // Collect all objects from children recursively
+    for (int i = 0; i < 4; ++i) {
+      std::vector<int> childResults;
+      // Simple lambda to collect child objects
+      std::function<void(QuadtreeNode *)> collect = [&](QuadtreeNode *n) {
+        for (int id : n->objectIds) {
+          node->objectIds.push_back(id);
+          m_ObjectNodes[id] = node;
+        }
+        if (n->children[0] != nullptr) {
+          for (int j = 0; j < 4; ++j) {
+            collect(n->children[j].get());
+          }
+        }
+      };
+      collect(node->children[i].get());
+      node->children[i].reset();
     }
   }
+}
 
-  // Remove from this node
-  auto &ids = node->objectIds;
-  ids.erase(std::remove(ids.begin(), ids.end(), id), ids.end());
+int Quadtree::countSubtreeObjects(QuadtreeNode *node) const {
+  int count = static_cast<int>(node->objectIds.size());
+  if (node->children[0] != nullptr) {
+    for (int i = 0; i < 4; ++i) {
+      count += countSubtreeObjects(node->children[i].get());
+    }
+  }
+  return count;
 }
 
 // =============================================================================
@@ -270,6 +315,7 @@ void Quadtree::subdivide(QuadtreeNode *node) {
     if (quadrant != -1) {
       // Object fits in a child
       node->children[quadrant]->objectIds.push_back(id);
+      m_ObjectNodes[id] = node->children[quadrant].get(); // Update node pointer
     } else {
       // Object crosses boundaries, keep in parent
       remaining.push_back(id);

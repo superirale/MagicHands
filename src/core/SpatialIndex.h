@@ -182,7 +182,8 @@ private:
 
   // Tree structure
   std::unique_ptr<QuadtreeNode> m_Root;
-  std::unordered_map<int, Rect> m_ObjectBounds; // ID -> bounds cache
+  std::unordered_map<int, Rect> m_ObjectBounds;          // ID -> bounds cache
+  std::unordered_map<int, QuadtreeNode *> m_ObjectNodes; // ID -> current node
 
   // Configuration
   int m_MaxObjects; // Max objects before split
@@ -194,6 +195,8 @@ private:
   void queryNode(QuadtreeNode *node, const Rect &area,
                  std::vector<int> &results);
   void subdivide(QuadtreeNode *node);
+  void tryMerge(QuadtreeNode *node);
+  int countSubtreeObjects(QuadtreeNode *node) const;
   int getQuadrant(const QuadtreeNode *node, const Rect &bounds) const;
   void clearNode(QuadtreeNode *node);
   void collectStats(QuadtreeNode *node, Stats &stats) const;

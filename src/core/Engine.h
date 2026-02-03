@@ -7,6 +7,8 @@
 #include "physics/PhysicsSystem.h"
 #include "ui/UISystem.h"
 
+struct lua_State;
+
 class Engine {
 public:
   // Singleton accessor
@@ -14,15 +16,28 @@ public:
 
   // Initialize all subsystems
   bool Init();
-  
+
   // Initialize in headless mode (no window/GPU)
   bool InitHeadless();
 
   // Update subsystems
   void Update(float dt);
-  
+
+  // Main Engine Loop
+  void Run(lua_State *L);
+
+  // Register all subsystem Lua bindings
+  void RegisterLua(lua_State *L);
+
   // Check if running in headless mode
   bool IsHeadless() const { return m_Headless; }
+
+  // Set autoplay mode
+  void SetAutoplayMode(bool enabled) { m_AutoplayMode = enabled; }
+  bool IsAutoplayMode() const { return m_AutoplayMode; }
+
+  // Check Lua error helper
+  bool CheckLua(lua_State *L, int r);
 
   // Shutdown all subsystems in reverse order
   void Destroy();
@@ -53,6 +68,7 @@ private:
 
   SDL_GPUDevice *m_GPUDevice = nullptr;
   bool m_Headless = false;
+  bool m_AutoplayMode = false;
 
   SpriteRenderer m_Renderer;
   PhysicsSystem m_Physics;

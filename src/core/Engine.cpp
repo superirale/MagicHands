@@ -1,11 +1,23 @@
 #include "core/Engine.h"
 #include "asset/AssetManager.h"
 #include "audio/AudioSystem.h"
+#include "core/JsonUtils.h"
 #include "core/Logger.h"
 #include "core/Profiler.h"
+#include "events/EventSystem.h"
 #include "gameplay/cribbage/effects/EffectFactory.h"
 #include "graphics/FontRenderer.h"
 #include "input/InputManager.h"
+#include "physics/NoiseGenerator.h"
+#include "scripting/LuaBindings.h"
+
+#include <SDL3/SDL.h>
+
+extern "C" {
+#include <lauxlib.h>
+#include <lua.h>
+#include <lualib.h>
+}
 
 Engine &Engine::Instance() {
   static Engine instance;
@@ -128,12 +140,163 @@ void Engine::Update(float dt) {
 
   // Update audio system
   AudioSystem::Instance().Update(dt);
+}
 
-  // Make sure WindowManager updates its state (e.g. tracking size changes if
-  // needed via events) But WindowManager::updateWindow() is called in main loop
-  // for events? Actually main loop calls SDL_PollEvent,
-  // WindowManager::updateWindowImpl processes it? Engine::Update doesn't need
-  // to call WindowManager update if main loop does.
+void Engine::Run(lua_State *L) {
+  LOG_INFO("Magic Hands Engine Starting");
+  bool quit = false;
+
+  Uint64 lastTime = SDL_GetPerformanceCounter();
+  Uint64 freq = SDL_GetPerformanceFrequency();
+
+  while (!quit && !WindowManager::getInstance().shouldClose()) {
+    PROFILE_FRAME(); // Tracy frame marker
+
+    // Prepare Input System for new frame (clear text input)
+    m_Input.BeginFrame();
+
+    // Process Window Events (Resize, Quit, etc.)
+    WindowManager::getInstance().updateWindow();
+
+    if (WindowManager::getInstance().shouldClose()) {
+      quit = true;
+      break;
+    }
+
+    // Hot reload shortcuts
+    if (m_Input.IsKeyPressed(SDL_SCANCODE_F11)) {
+      LOG_INFO("Toggling fullscreen (F11)");
+      WindowManager::getInstance().toggleFullscreen();
+    }
+
+    if (m_Input.IsKeyPressed(SDL_SCANCODE_F5)) {
+      LOG_INFO("=== HOT RELOAD (F5) ===");
+
+      // 1. Reload all shaders
+      LOG_INFO("Reloading shaders...");
+      lua_getglobal(L, "ReloadAllShaders");
+      if (lua_isfunction(L, -1)) {
+        lua_pcall(L, 0, 0, 0);
+      } else {
+        LOG_WARN("ReloadAllShaders function not found");
+        lua_pop(L, 1);
+      }
+
+      // 2. Reload all Lua scripts
+      LOG_INFO("Reloading scripts...");
+      lua_getglobal(L, "package");
+      lua_getfield(L, -1, "loaded");
+      lua_pushnil(L);
+      while (lua_next(L, -2)) {
+        lua_pop(L, 1);        // Pop value
+        lua_pushvalue(L, -1); // Duplicate key
+        lua_pushnil(L);       // Set to nil
+        lua_settable(L, -4);  // package.loaded[key] = nil
+      }
+      lua_pop(L, 2); // Pop loaded and package
+
+      int result = luaL_dofile(L, "content/scripts/main.lua");
+      if (result != LUA_OK) {
+        LOG_ERROR("Script reload error: %s", lua_tostring(L, -1));
+        lua_pop(L, 1);
+      } else {
+        LOG_INFO("Hot reload complete!");
+      }
+    }
+
+    Uint64 now = SDL_GetPerformanceCounter();
+    float dt = (float)((double)(now - lastTime) / freq);
+    lastTime = now;
+
+    // Fixed timestep physics update (60 Hz)
+    static const float FIXED_DT = 1.0f / 60.0f;
+    static const float MAX_FRAME_TIME = 0.25f;
+    static float physicsAccumulator = 0.0f;
+
+    if (dt > MAX_FRAME_TIME) {
+      LOG_DEBUG("Long frame (%.3fs) - resetting physics accumulator", dt);
+      physicsAccumulator = 0.0f;
+      dt = FIXED_DT;
+    }
+
+    physicsAccumulator += dt;
+    while (physicsAccumulator >= FIXED_DT) {
+      m_Physics.Update(FIXED_DT);
+      physicsAccumulator -= FIXED_DT;
+    }
+
+    // Update Engine (Audio, Input, etc)
+    Update(dt);
+
+    // Rendering
+    if (!WindowManager::getInstance().isMinimized()) {
+      if (m_GPUDevice) {
+        SDL_GPUCommandBuffer *cmdBuf = SDL_AcquireGPUCommandBuffer(m_GPUDevice);
+        if (cmdBuf) {
+          m_Renderer.BeginFrame(cmdBuf);
+
+          // Call Lua Update(dt)
+          lua_getglobal(L, "update");
+          if (lua_isfunction(L, -1)) {
+            lua_pushnumber(L, dt);
+            if (!CheckLua(L, lua_pcall(L, 1, 0, 0))) {
+              // Error already printed
+            }
+          } else {
+            lua_pop(L, 1);
+          }
+
+          m_Renderer.EndFrame();
+          SDL_SubmitGPUCommandBuffer(cmdBuf);
+        }
+      }
+    } else {
+      lua_getglobal(L, "update");
+      if (lua_isfunction(L, -1)) {
+        lua_pushnumber(L, dt);
+        if (!CheckLua(L, lua_pcall(L, 1, 0, 0))) {
+          // Error already printed
+        }
+      } else {
+        lua_pop(L, 1);
+      }
+      SDL_Delay(16);
+    }
+
+    // Check if AutoPlay wants to quit
+    if (m_AutoplayMode) {
+      lua_getglobal(L, "AUTOPLAY_QUIT");
+      if (lua_isboolean(L, -1) && lua_toboolean(L, -1)) {
+        LOG_INFO("AutoPlay requested quit");
+        quit = true;
+      }
+      lua_pop(L, 1);
+    }
+  }
+}
+
+void Engine::RegisterLua(lua_State *L) {
+  // Register all subsystem Lua bindings
+  LuaBindings::Register(L);
+  m_Physics.RegisterLua(L);
+  m_Input.RegisterLua(L); // InputSystem
+  InputManager::Instance().RegisterLua(L);
+  AudioSystem::Instance().RegisterLua(L);
+  FontRenderer::RegisterLua(L);
+  RegisterJsonUtils(L);
+  NoiseGenerator::RegisterLua(L);
+  ParticleSystem::RegisterLua(L, &m_Particles);
+  EventSystem::Instance().Init(L);
+  EventSystem::RegisterLua(L);
+  WindowManager::RegisterLua(L);
+}
+
+bool Engine::CheckLua(lua_State *L, int r) {
+  if (r != LUA_OK) {
+    LOG_ERROR("Lua Error: %s", lua_tostring(L, -1));
+    return false;
+  }
+  return true;
 }
 
 void Engine::Destroy() {
